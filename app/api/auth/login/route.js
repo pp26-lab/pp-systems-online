@@ -14,7 +14,7 @@ export async function POST(request) {
   const licenseUrl = process.env.LICENSE_SERVER_URL || 'http://118.27.147.48:4000';
 
   try {
-    const res = await fetch(`${licenseUrl}/api/license/validate`, {
+    const res = await fetch(`${licenseUrl}/api/validate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ license_key: licenseKey }),
