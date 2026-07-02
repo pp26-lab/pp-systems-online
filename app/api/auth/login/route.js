@@ -14,10 +14,16 @@ export async function POST(request) {
   const licenseUrl = process.env.LICENSE_SERVER_URL || 'http://118.27.147.48:4000';
 
   try {
-    const res = await fetch(`${licenseUrl}/api/validate`, {
+    const machineId = 'web-' + Buffer.from(licenseKey).toString('base64').substring(0, 16);
+
+    const res = await fetch(`${licenseUrl}/api/activate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_key: licenseKey }),
+      body: JSON.stringify({
+        license_key: licenseKey,
+        machine_id: machineId,
+        machine_name: 'PP Systems Online Web',
+      }),
     });
 
     const data = await res.json();
