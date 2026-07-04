@@ -205,6 +205,16 @@ export default function OrdersPage() {
                       className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90"
                     >{t('print_shipping', lang)}</button>
                   )}
+                  {order.status !== 'cancelled' && (
+                    <button
+                      onClick={() => {
+                        if (confirm(lang === 'lo' ? 'ຢືນຢັນຍົກເລີກອໍເດີ້?' : lang === 'th' ? 'ยืนยันยกเลิกออเดอร์?' : 'Cancel this order?')) {
+                          updateOrderStatus(order.id, 'cancelled');
+                        }
+                      }}
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 ml-auto"
+                    >{t('cancel_order', lang)}</button>
+                  )}
                 </div>
               </div>
             )}

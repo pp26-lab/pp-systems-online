@@ -31,7 +31,10 @@ export default function POSPage() {
   useEffect(() => {
     fetchProducts();
     fetchCurrencies();
-    fetch('/api/shop-settings').then(r => r.json()).then(setShopSettings).catch(() => {});
+    fetch('/api/shop-settings').then(r => r.json()).then(data => {
+      setShopSettings(data);
+      if (data.default_order_type) setOrderType(data.default_order_type);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {

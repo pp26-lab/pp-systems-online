@@ -97,8 +97,22 @@ export async function PUT(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
-  if (body.status) {
-    await query('UPDATE orders SET status = ? WHERE id = ? AND shop_id = ?', [body.status, body.id, shopId]);
+  if (!body.status) return NextResponse.json({ success: true });
+
+  const current = await queryOne('SELECT status FROM orders WHERE id = ? AND shop_id = ?', [body.id, shopId]);
+  if (!current) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  if (body.status === 'cancelled' && current.status !== 'cancelled') {
+    const items = await query('SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ?', [body.id]);
+    for (const item of items) {
+      if (item.variant_id) {
+        await query('UPDATE product_variants SET quantity = quantity + ? WHERE id = ? AND shop_id = ?', [item.quantity, item.variant_id, shopId]);
+      } else {
+        await query("UPDATE inventory SET quantity = quantity + ? WHERE product_id = ? AND status = 'in_stock' AND shop_id = ? ORDER BY id LIMIT 1", [item.quantity, item.product_id, shopId]);
+      }
+    }
   }
+
+  await query('UPDATE orders SET status = ? WHERE id = ? AND shop_id = ?', [body.status, body.id, shopId]);
   return NextResponse.json({ success: true });
 }

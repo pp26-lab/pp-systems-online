@@ -11,6 +11,9 @@ export default function SettingsPage() {
     shop_address: '',
     shop_logo: '',
     receipt_footer: '',
+    default_order_type: 'walk_in',
+    variant_label_1: 'color',
+    variant_label_2: 'size',
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -22,6 +25,9 @@ export default function SettingsPage() {
         shop_address: data.shop_address || '',
         shop_logo: data.shop_logo || '',
         receipt_footer: data.receipt_footer || '',
+        default_order_type: data.default_order_type || 'walk_in',
+        variant_label_1: data.variant_label_1 || 'color',
+        variant_label_2: data.variant_label_2 || 'size',
       });
     });
   }, []);
@@ -108,6 +114,32 @@ export default function SettingsPage() {
                 placeholder={lang === 'lo' ? 'ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ' : lang === 'th' ? 'ขอบคุณที่ใช้บริการ' : 'Thank you for your purchase'}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('default_order_type', lang)}</label>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setForm({ ...form, default_order_type: 'walk_in' })}
+                  className={`flex-1 px-4 py-2 rounded-lg font-semibold ${form.default_order_type === 'walk_in' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}`}>
+                  {t('walk_in', lang)}
+                </button>
+                <button type="button" onClick={() => setForm({ ...form, default_order_type: 'online' })}
+                  className={`flex-1 px-4 py-2 rounded-lg font-semibold ${form.default_order_type === 'online' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}`}>
+                  {t('online', lang)}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('variant_labels', lang)}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" value={form.variant_label_1}
+                  onChange={e => setForm({ ...form, variant_label_1: e.target.value })}
+                  placeholder="color" className="px-4 py-2 border border-gray-300 rounded-lg" />
+                <input type="text" value={form.variant_label_2}
+                  onChange={e => setForm({ ...form, variant_label_2: e.target.value })}
+                  placeholder="size" className="px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
             </div>
 
             <button

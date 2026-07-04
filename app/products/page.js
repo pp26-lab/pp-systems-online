@@ -22,9 +22,22 @@ export default function ProductsPage() {
   const [uploading, setUploading] = useState(false);
   const [variants, setVariants] = useState([]);
   const [showVariants, setShowVariants] = useState(null);
+  const [variantLabels, setVariantLabels] = useState({ label1: 'color', label2: 'size' });
 
-  useEffect(() => { fetchProducts(); fetchCurrencies(); }, []);
+  useEffect(() => {
+    fetchProducts();
+    fetchCurrencies();
+    fetch('/api/shop-settings').then(r => r.json()).then(data => {
+      setVariantLabels({
+        label1: data.variant_label_1 || 'color',
+        label2: data.variant_label_2 || 'size',
+      });
+    }).catch(() => {});
+  }, []);
   useEffect(() => { fetchProducts(); }, [search]);
+
+  function label1() { return variantLabels.label1; }
+  function label2() { return variantLabels.label2; }
 
   async function fetchProducts() {
     const params = new URLSearchParams();
@@ -255,11 +268,11 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {Object.entries(grouped).map(([color, variants]) => (
                   <div key={color} className="bg-white rounded-lg p-3 border">
-                    <p className="font-semibold text-sm mb-1">{t('color', lang)}: {color}</p>
+                    <p className="font-semibold text-sm mb-1">{label1()}: {color}</p>
                     <div className="space-y-1">
                       {variants.map(v => (
                         <div key={v.id} className="flex justify-between text-xs">
-                          <span>{t('size', lang)}: {v.size || '-'}</span>
+                          <span>{label2()}: {v.size || '-'}</span>
                           <span className={`font-bold ${v.quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
                             {v.quantity} {t('in_stock', lang).toLowerCase ? t('in_stock', lang) : ''}
                           </span>
@@ -353,8 +366,8 @@ export default function ProductsPage() {
                 {variants.length > 0 ? (
                   <div className="space-y-2">
                     <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-500 px-1">
-                      <span className="col-span-3">{t('color', lang)}</span>
-                      <span className="col-span-3">{t('size', lang)}</span>
+                      <span className="col-span-3">{label1()}</span>
+                      <span className="col-span-3">{label2()}</span>
                       <span className="col-span-2">{t('sku', lang)}</span>
                       <span className="col-span-2">{t('quantity', lang)}</span>
                       <span className="col-span-2"></span>
@@ -362,9 +375,9 @@ export default function ProductsPage() {
                     {variants.map((v, idx) => (
                       <div key={v.id || v._tempId} className="grid grid-cols-12 gap-2 items-center">
                         <input type="text" value={v.color} onChange={e => updateVariant(idx, 'color', e.target.value)}
-                          placeholder={t('color', lang)} className="col-span-3 px-2 py-1.5 border rounded text-sm" />
+                          placeholder={label1()} className="col-span-3 px-2 py-1.5 border rounded text-sm" />
                         <input type="text" value={v.size} onChange={e => updateVariant(idx, 'size', e.target.value)}
-                          placeholder={t('size', lang)} className="col-span-3 px-2 py-1.5 border rounded text-sm" />
+                          placeholder={label2()} className="col-span-3 px-2 py-1.5 border rounded text-sm" />
                         <input type="text" value={v.sku_suffix || ''} onChange={e => updateVariant(idx, 'sku_suffix', e.target.value)}
                           placeholder="-BL-S" className="col-span-2 px-2 py-1.5 border rounded text-sm" />
                         <input type="number" value={v.quantity} onChange={e => updateVariant(idx, 'quantity', parseInt(e.target.value) || 0)}
