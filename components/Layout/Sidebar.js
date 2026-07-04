@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, onToggle, lang }) {
         }`}
       >
         <div className="p-4 border-b border-white/10 flex items-center gap-2 justify-center lg:justify-start">
-          <img src={shopLogo || '/logo.png'} alt="" className="w-9 h-9 object-contain rounded bg-white/10 flex-shrink-0" />
+          <img src={shopLogo || '/logo.png'} alt="" onError={(e) => { e.target.src = '/logo.png'; }} className="w-9 h-9 object-contain rounded bg-white/10 flex-shrink-0" />
           <h1 className={`font-bold text-xl ${!isOpen && 'lg:hidden'}`}>
             {shopName}
           </h1>
