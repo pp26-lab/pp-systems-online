@@ -11,7 +11,6 @@ const menuItems = [
   { key: 'orders', path: '/orders', icon: '📋' },
   { key: 'inventory', path: '/inventory', icon: '🏭' },
   { key: 'currencies', path: '/currencies', icon: '💱' },
-  { key: 'reports', path: '/reports', icon: '📈' },
   { key: 'settings', path: '/settings', icon: '⚙️' },
 ];
 

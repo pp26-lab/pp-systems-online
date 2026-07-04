@@ -130,17 +130,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('variant_labels', lang)}</label>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="text" value={form.variant_label_1}
-                  onChange={e => setForm({ ...form, variant_label_1: e.target.value })}
-                  placeholder="color" className="px-4 py-2 border border-gray-300 rounded-lg" />
-                <input type="text" value={form.variant_label_2}
-                  onChange={e => setForm({ ...form, variant_label_2: e.target.value })}
-                  placeholder="size" className="px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-            </div>
 
             <button
               type="submit"

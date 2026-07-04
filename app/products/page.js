@@ -9,6 +9,7 @@ const emptyProduct = {
   cost_price: 0, cost_currency: 'THB', freight_cost: 0, customs_duty: 0,
   proxy_fee: 0, transfer_fee: 0, selling_price_lak: 0, initial_stock: 0,
   image_url: '', sale_end_date: '', has_variants: 0,
+  variant_label_1: 'color', variant_label_2: 'size',
 };
 
 export default function ProductsPage() {
@@ -22,22 +23,14 @@ export default function ProductsPage() {
   const [uploading, setUploading] = useState(false);
   const [variants, setVariants] = useState([]);
   const [showVariants, setShowVariants] = useState(null);
-  const [variantLabels, setVariantLabels] = useState({ label1: 'color', label2: 'size' });
 
-  useEffect(() => {
-    fetchProducts();
-    fetchCurrencies();
-    fetch('/api/shop-settings').then(r => r.json()).then(data => {
-      setVariantLabels({
-        label1: data.variant_label_1 || 'color',
-        label2: data.variant_label_2 || 'size',
-      });
-    }).catch(() => {});
-  }, []);
+  useEffect(() => { fetchProducts(); fetchCurrencies(); }, []);
   useEffect(() => { fetchProducts(); }, [search]);
 
-  function label1() { return variantLabels.label1; }
-  function label2() { return variantLabels.label2; }
+  function label1() { return form.variant_label_1 || 'color'; }
+  function label2() { return form.variant_label_2 || 'size'; }
+  function prodLabel1(p) { return p.variant_label_1 || 'color'; }
+  function prodLabel2(p) { return p.variant_label_2 || 'size'; }
 
   async function fetchProducts() {
     const params = new URLSearchParams();
@@ -268,11 +261,11 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {Object.entries(grouped).map(([color, variants]) => (
                   <div key={color} className="bg-white rounded-lg p-3 border">
-                    <p className="font-semibold text-sm mb-1">{label1()}: {color}</p>
+                    <p className="font-semibold text-sm mb-1">{prodLabel1(p)}: {color}</p>
                     <div className="space-y-1">
                       {variants.map(v => (
                         <div key={v.id} className="flex justify-between text-xs">
-                          <span>{label2()}: {v.size || '-'}</span>
+                          <span>{prodLabel2(p)}: {v.size || '-'}</span>
                           <span className={`font-bold ${v.quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
                             {v.quantity} {t('in_stock', lang).toLowerCase ? t('in_stock', lang) : ''}
                           </span>
@@ -362,6 +355,20 @@ export default function ProductsPage() {
                     className="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-purple-700">
                     + {t('add_variant', lang)}
                   </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('variant_labels', lang)} 1</label>
+                    <input type="text" value={form.variant_label_1 || ''}
+                      onChange={e => updateForm('variant_label_1', e.target.value)}
+                      placeholder="color" className="w-full px-3 py-1.5 border rounded text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{t('variant_labels', lang)} 2</label>
+                    <input type="text" value={form.variant_label_2 || ''}
+                      onChange={e => updateForm('variant_label_2', e.target.value)}
+                      placeholder="size" className="w-full px-3 py-1.5 border rounded text-sm" />
+                  </div>
                 </div>
                 {variants.length > 0 ? (
                   <div className="space-y-2">
