@@ -1,13 +1,34 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { initDatabase, query, queryOne, ensureShopData } from '../../../../lib/db';
 import { createSession, createSessionCookie } from '../../../../lib/auth';
 
+const attempts = new Map();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000;
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = attempts.get(ip);
+  if (!record || now - record.start > WINDOW_MS) {
+    attempts.set(ip, { count: 1, start: now });
+    return true;
+  }
+  record.count++;
+  return record.count <= MAX_ATTEMPTS;
+}
+
 export async function POST(request) {
+  const h = headers();
+  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown';
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: 'Too many attempts. Try again in 15 minutes.' }, { status: 429 });
+  }
+
   const body = await request.json();
   const licenseKey = body.license_key?.trim();
 
-  if (!licenseKey) {
+  if (!licenseKey || licenseKey.length > 100) {
     return NextResponse.json({ error: 'License key required' }, { status: 400 });
   }
 
