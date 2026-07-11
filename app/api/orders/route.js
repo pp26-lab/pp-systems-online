@@ -11,6 +11,8 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
   const date = searchParams.get('date');
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
   const orderType = searchParams.get('order_type');
 
   let sql = 'SELECT * FROM orders WHERE shop_id = ?';
@@ -18,6 +20,8 @@ export async function GET(request) {
 
   if (status) { sql += ' AND status = ?'; params.push(status); }
   if (date) { sql += ' AND DATE(created_at) = ?'; params.push(date); }
+  if (from) { sql += ' AND created_at >= ?'; params.push(from); }
+  if (to) { sql += ' AND created_at <= ?'; params.push(to); }
   if (orderType) { sql += ' AND order_type = ?'; params.push(orderType); }
 
   sql += ' ORDER BY created_at DESC';

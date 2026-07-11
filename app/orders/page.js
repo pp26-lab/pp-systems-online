@@ -16,32 +16,41 @@ export default function OrdersPage() {
   useEffect(() => { fetchOrders(); }, [filterType, filterStatus, datePreset]);
   useEffect(() => { fetch('/api/shop-settings').then(r => r.json()).then(setShopSettings).catch(() => {}); }, []);
 
-  function isInRange(dateStr) {
-    if (datePreset === 'all') return true;
-    const d = new Date(dateStr);
+  function toMysqlUtc(d) {
+    return d.toISOString().slice(0, 19).replace('T', ' ');
+  }
+  function getDateRange() {
+    if (datePreset === 'all') return { from: null, to: null };
     const now = new Date();
     if (datePreset === 'today') {
-      return d.toDateString() === now.toDateString();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      return { from: toMysqlUtc(start), to: toMysqlUtc(end) };
     }
     if (datePreset === 'week') {
       const day = now.getDay();
       const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(now); monday.setDate(diff); monday.setHours(0,0,0,0);
-      return d >= monday;
+      const start = new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      return { from: toMysqlUtc(start), to: toMysqlUtc(end) };
     }
     if (datePreset === 'month') {
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      return { from: toMysqlUtc(start), to: toMysqlUtc(end) };
     }
-    return true;
+    return { from: null, to: null };
   }
 
   async function fetchOrders() {
     const params = new URLSearchParams();
     if (filterType) params.set('order_type', filterType);
     if (filterStatus) params.set('status', filterStatus);
+    const { from, to } = getDateRange();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
     const res = await fetch(`/api/orders?${params}`);
-    const data = await res.json();
-    setOrders(data.filter(o => isInRange(o.created_at)));
+    setOrders(await res.json());
   }
 
   function getProductName(item) {
