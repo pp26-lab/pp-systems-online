@@ -72,8 +72,9 @@ export default function InventoryPage() {
     ? inventory.filter(i => i.status === filterStatus)
     : inventory;
 
+  const variantTotal = products.filter(p => p.has_variants).reduce((s, p) => s + (p.variant_total_qty || 0), 0);
   const statusCounts = {
-    in_stock: inventory.filter(i => i.status === 'in_stock').reduce((s, i) => s + i.quantity, 0),
+    in_stock: inventory.filter(i => i.status === 'in_stock').reduce((s, i) => s + i.quantity, 0) + variantTotal,
     in_transit: inventory.filter(i => i.status === 'in_transit').reduce((s, i) => s + i.quantity, 0),
     pre_order: inventory.filter(i => i.status === 'pre_order').reduce((s, i) => s + i.quantity, 0),
     ready_to_ship: inventory.filter(i => i.status === 'ready_to_ship').reduce((s, i) => s + i.quantity, 0),

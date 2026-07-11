@@ -186,7 +186,6 @@ export default function POSPage() {
       setAmountReceived('');
       setDeliveryDate('');
       setShippingNotes('');
-      setOrderType('walk_in');
       fetchProducts();
     }
   }

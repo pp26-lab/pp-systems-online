@@ -10,17 +10,38 @@ export default function OrdersPage() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [filterType, setFilterType] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [datePreset, setDatePreset] = useState('today');
   const [shopSettings, setShopSettings] = useState({ shop_name: 'PP Systems' });
 
-  useEffect(() => { fetchOrders(); }, [filterType, filterStatus]);
+  useEffect(() => { fetchOrders(); }, [filterType, filterStatus, datePreset]);
   useEffect(() => { fetch('/api/shop-settings').then(r => r.json()).then(setShopSettings).catch(() => {}); }, []);
+
+  function isInRange(dateStr) {
+    if (datePreset === 'all') return true;
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (datePreset === 'today') {
+      return d.toDateString() === now.toDateString();
+    }
+    if (datePreset === 'week') {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(now); monday.setDate(diff); monday.setHours(0,0,0,0);
+      return d >= monday;
+    }
+    if (datePreset === 'month') {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    return true;
+  }
 
   async function fetchOrders() {
     const params = new URLSearchParams();
     if (filterType) params.set('order_type', filterType);
     if (filterStatus) params.set('status', filterStatus);
     const res = await fetch(`/api/orders?${params}`);
-    setOrders(await res.json());
+    const data = await res.json();
+    setOrders(data.filter(o => isInRange(o.created_at)));
   }
 
   function getProductName(item) {
@@ -88,9 +109,9 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
         <h1 className="text-2xl font-bold">{t('orders', lang)}</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <select value={filterType} onChange={e => setFilterType(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm">
             <option value="">{t('order_type', lang)}: All</option>
@@ -100,12 +121,26 @@ export default function OrdersPage() {
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg text-sm">
             <option value="">Status: All</option>
-            <option value="pending">Pending</option>
-            <option value="shipping">{t('shipping', lang)}</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="pending">{t('status_ordered', lang)}</option>
+            <option value="shipping">{t('status_shipped', lang)}</option>
+            <option value="completed">{t('status_delivered', lang)}</option>
+            <option value="cancelled">{t('cancel', lang)}</option>
           </select>
         </div>
+      </div>
+
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {[
+          { key: 'today', label: t('today', lang) },
+          { key: 'week', label: t('this_week', lang) },
+          { key: 'month', label: t('this_month', lang) },
+          { key: 'all', label: 'All' },
+        ].map(p => (
+          <button key={p.key} onClick={() => setDatePreset(p.key)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-semibold ${datePreset === p.key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            {p.label}
+          </button>
+        ))}
       </div>
 
       <div className="space-y-3">
@@ -131,7 +166,10 @@ export default function OrdersPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
-                  {order.status === 'shipping' ? t('shipping', lang) : order.status}
+                  {order.status === 'pending' ? t('status_ordered', lang) :
+                   order.status === 'shipping' ? t('status_shipped', lang) :
+                   order.status === 'completed' ? t('status_delivered', lang) :
+                   order.status === 'cancelled' ? t('cancel', lang) : order.status}
                 </span>
                 <span className="font-bold">{formatCurrency(order.total, order.currency)}</span>
                 <span className="text-gray-400">{expandedOrder === order.id ? '▲' : '▼'}</span>
@@ -142,16 +180,19 @@ export default function OrdersPage() {
               <div className="px-4 pb-4 border-t border-gray-100">
                 {/* Delivery info for online orders */}
                 {order.order_type === 'online' && (
-                  <div className="bg-purple-50 rounded-lg p-3 mt-2 text-sm space-y-1">
-                    {order.customer_address && (
-                      <div><strong>{t('customer_address', lang)}:</strong> {order.customer_address}</div>
-                    )}
-                    {order.delivery_date && (
-                      <div><strong>{t('delivery_date', lang)}:</strong> {order.delivery_date}</div>
-                    )}
-                    {order.shipping_notes && (
-                      <div><strong>{t('shipping_notes', lang)}:</strong> {order.shipping_notes}</div>
-                    )}
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-3 text-sm">
+                    <h4 className="font-bold text-purple-700 mb-2">📦 {t('shipping_info', lang)}</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div><strong className="text-gray-600">{t('customer_name', lang)}:</strong> {order.customer_name || '-'}</div>
+                      <div><strong className="text-gray-600">{t('customer_phone', lang)}:</strong> {order.customer_phone || '-'}</div>
+                      <div className="sm:col-span-2"><strong className="text-gray-600">{t('customer_address', lang)}:</strong> {order.customer_address || '-'}</div>
+                      {order.delivery_date && (
+                        <div><strong className="text-gray-600">{t('delivery_date', lang)}:</strong> {order.delivery_date}</div>
+                      )}
+                      {order.shipping_notes && (
+                        <div className="sm:col-span-2"><strong className="text-gray-600">{t('shipping_notes', lang)}:</strong> {order.shipping_notes}</div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -191,13 +232,13 @@ export default function OrdersPage() {
                     <button
                       onClick={() => updateOrderStatus(order.id, 'shipping')}
                       className="bg-secondary text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90"
-                    >{t('mark_shipped', lang)}</button>
+                    >→ {t('status_shipped', lang)}</button>
                   )}
                   {order.status === 'shipping' && (
                     <button
                       onClick={() => updateOrderStatus(order.id, 'completed')}
                       className="bg-success text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90"
-                    >{t('mark_completed', lang)}</button>
+                    >→ {t('status_delivered', lang)}</button>
                   )}
                   {order.order_type === 'online' && (
                     <button
