@@ -17,6 +17,41 @@ export default function SettingsPage() {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [apiKeys, setApiKeys] = useState([]);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [newKeyCreated, setNewKeyCreated] = useState(null);
+
+  async function fetchKeys() {
+    const res = await fetch('/api/bot/keys');
+    if (res.ok) setApiKeys(await res.json());
+  }
+
+  async function createKey() {
+    if (!newKeyName.trim()) return;
+    setCreatingKey(true);
+    const res = await fetch('/api/bot/keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newKeyName.trim() }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setNewKeyCreated(data);
+      setNewKeyName('');
+      fetchKeys();
+    }
+    setCreatingKey(false);
+  }
+
+  async function deleteKey(id) {
+    if (!confirm(t('confirm_delete', lang))) return;
+    await fetch(`/api/bot/keys?id=${id}`, { method: 'DELETE' });
+    fetchKeys();
+  }
+
+  useEffect(() => { fetchKeys(); }, []);
+
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
       setForm({
@@ -171,6 +206,70 @@ export default function SettingsPage() {
                  'All data is stored in the cloud and synced automatically'}
               </p>
             </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-lg font-bold mb-2">🤖 Chatbot API Keys</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              {lang === 'th' ? 'ใช้สำหรับ chatbot เรียก API ของร้าน (ดูสินค้า/สั่งซื้อ)' :
+               lang === 'lo' ? 'ໃຊ້ສຳລັບ chatbot ເອີ້ນ API ຂອງຮ້ານ' :
+               'For chatbot to call your shop API'}
+            </p>
+
+            {newKeyCreated && (
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <p className="text-xs font-bold text-yellow-800 mb-1">⚠️ Save this key — you won't see it again</p>
+                <div className="flex items-center gap-2 bg-white p-2 rounded font-mono text-xs break-all border">
+                  {newKeyCreated.key}
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => { navigator.clipboard.writeText(newKeyCreated.key); }}
+                    className="text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">Copy</button>
+                  <button onClick={() => setNewKeyCreated(null)}
+                    className="text-xs bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Done</button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 mb-3">
+              <input type="text" value={newKeyName} onChange={e => setNewKeyName(e.target.value)}
+                placeholder="Key name (e.g. Chatbot)"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              <button onClick={createKey} disabled={creatingKey || !newKeyName.trim()}
+                className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-dark disabled:opacity-50">
+                + Create
+              </button>
+            </div>
+
+            {apiKeys.length > 0 ? (
+              <div className="space-y-2">
+                {apiKeys.map(k => (
+                  <div key={k.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">{k.name || '(no name)'}</p>
+                      <p className="text-xs text-gray-500 font-mono">{k.key_preview}</p>
+                      {k.last_used_at && <p className="text-xs text-gray-400">Last used: {new Date(k.last_used_at).toLocaleString()}</p>}
+                    </div>
+                    <button onClick={() => deleteKey(k.id)} className="text-red-500 hover:text-red-700 text-sm">🗑️</button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-3">No API keys yet</p>
+            )}
+
+            <details className="mt-4">
+              <summary className="text-xs text-primary cursor-pointer">📖 API Documentation</summary>
+              <div className="mt-2 text-xs text-gray-600 space-y-2 font-mono bg-gray-50 p-3 rounded">
+                <div><strong>Base URL:</strong> https://ppsystems-shop.com</div>
+                <div><strong>Auth:</strong> Header <code>x-api-key: YOUR_KEY</code></div>
+                <hr />
+                <div><strong>GET /api/bot/products?search=xxx</strong> — list products</div>
+                <div><strong>GET /api/bot/products/[sku]</strong> — get product + stock</div>
+                <div><strong>POST /api/bot/orders</strong> — create order</div>
+                <div><strong>GET /api/bot/orders?order_number=XX</strong> — check order</div>
+              </div>
+            </details>
           </div>
         </div>
       </div>
