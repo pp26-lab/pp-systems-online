@@ -196,9 +196,9 @@ export default function Dashboard() {
             <h3 className="font-bold">{t('top_products', lang)}</h3>
             <Link href="/orders" className="text-sm text-primary hover:text-primary-dark">→</Link>
           </div>
-          {report.topProducts.length > 0 ? (
+          {(report.topProductsAllTime || report.topProducts).length > 0 ? (
             <div className="space-y-2">
-              {report.topProducts.slice(0, 5).map((p, idx) => (
+              {(report.topProductsAllTime || report.topProducts).slice(0, 5).map((p, idx) => (
                 <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">{idx + 1}</span>

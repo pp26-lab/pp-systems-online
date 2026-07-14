@@ -14,8 +14,6 @@ export default function SettingsPage() {
     default_order_type: 'walk_in',
     variant_label_1: 'color',
     variant_label_2: 'size',
-    whatsapp_template: '',
-    whatsapp_country_code: '856',
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -23,6 +21,26 @@ export default function SettingsPage() {
   const [newKeyName, setNewKeyName] = useState('');
   const [creatingKey, setCreatingKey] = useState(false);
   const [newKeyCreated, setNewKeyCreated] = useState(null);
+  const [unlocked, setUnlocked] = useState(false);
+  const [unlockInput, setUnlockInput] = useState('');
+  const [unlockError, setUnlockError] = useState('');
+
+  async function tryUnlock(e) {
+    e.preventDefault();
+    setUnlockError('');
+    const res = await fetch('/api/bot/keys/unlock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ license_key: unlockInput.trim() }),
+    });
+    if (res.ok) {
+      setUnlocked(true);
+      setUnlockInput('');
+      fetchKeys();
+    } else {
+      setUnlockError(lang === 'th' ? 'License Key ไม่ถูกต้อง' : lang === 'lo' ? 'License Key ບໍ່ຖືກຕ້ອງ' : 'Invalid license key');
+    }
+  }
 
   async function fetchKeys() {
     const res = await fetch('/api/bot/keys');
@@ -52,7 +70,6 @@ export default function SettingsPage() {
     fetchKeys();
   }
 
-  useEffect(() => { fetchKeys(); }, []);
 
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
@@ -65,8 +82,6 @@ export default function SettingsPage() {
         default_order_type: data.default_order_type || 'walk_in',
         variant_label_1: data.variant_label_1 || 'color',
         variant_label_2: data.variant_label_2 || 'size',
-        whatsapp_template: data.whatsapp_template || '',
-        whatsapp_country_code: data.whatsapp_country_code || '856',
       });
     });
   }, []);
@@ -169,34 +184,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <label className="block text-sm font-bold text-gray-700 mb-2">💬 WhatsApp Message Template</label>
-              <div className="mb-2">
-                <label className="block text-xs text-gray-500 mb-1">Country Code (ไม่มี +)</label>
-                <input type="text" value={form.whatsapp_country_code}
-                  onChange={e => setForm({ ...form, whatsapp_country_code: e.target.value.replace(/\D/g, '') })}
-                  placeholder="856 (Laos), 66 (Thailand)"
-                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              </div>
-              <textarea value={form.whatsapp_template}
-                onChange={e => setForm({ ...form, whatsapp_template: e.target.value })}
-                rows={5}
-                placeholder={`Hello {name}, your order {order_number} is confirmed.\nTotal: {total}\nWe will deliver on {delivery_date}.\nThank you!`}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm font-mono" />
-              <div className="mt-2 text-xs text-gray-500">
-                <p className="font-semibold mb-1">Placeholders (ใส่ตรงนี้ ระบบแทนค่าอัตโนมัติ):</p>
-                <div className="grid grid-cols-2 gap-1">
-                  <span><code className="bg-gray-100 px-1">{'{name}'}</code> ชื่อลูกค้า</span>
-                  <span><code className="bg-gray-100 px-1">{'{phone}'}</code> เบอร์ลูกค้า</span>
-                  <span><code className="bg-gray-100 px-1">{'{order_number}'}</code> เลขบิล</span>
-                  <span><code className="bg-gray-100 px-1">{'{total}'}</code> ยอดรวม</span>
-                  <span><code className="bg-gray-100 px-1">{'{status}'}</code> สถานะ</span>
-                  <span><code className="bg-gray-100 px-1">{'{delivery_date}'}</code> วันจัดส่ง</span>
-                  <span><code className="bg-gray-100 px-1">{'{address}'}</code> ที่อยู่</span>
-                  <span><code className="bg-gray-100 px-1">{'{shop}'}</code> ชื่อร้าน</span>
-                </div>
-              </div>
-            </div>
 
 
             <button
@@ -249,6 +236,24 @@ export default function SettingsPage() {
                'For chatbot to call your shop API'}
             </p>
 
+            {!unlocked ? (
+              <form onSubmit={tryUnlock} className="p-4 bg-gray-50 rounded-lg">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  🔒 {lang === 'th' ? 'ใส่ License Key เพื่อจัดการ API Keys' :
+                       lang === 'lo' ? 'ໃສ່ License Key ເພື່ອຈັດການ API Keys' :
+                       'Enter License Key to manage API Keys'}
+                </label>
+                <input type="password" value={unlockInput} onChange={e => setUnlockInput(e.target.value.toUpperCase())}
+                  placeholder="PP-XXXXXXXX-XXXXXXXX-XXXXXXXX"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono" />
+                {unlockError && <p className="text-red-600 text-xs mt-2">{unlockError}</p>}
+                <button type="submit" disabled={!unlockInput.trim()}
+                  className="mt-3 w-full bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary-dark disabled:opacity-50">
+                  {lang === 'th' ? 'ปลดล็อก' : lang === 'lo' ? 'ປົດລັອກ' : 'Unlock'}
+                </button>
+              </form>
+            ) : (
+              <>
             {newKeyCreated && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
                 <p className="text-xs font-bold text-yellow-800 mb-1">⚠️ Save this key — you won't see it again</p>
@@ -303,6 +308,8 @@ export default function SettingsPage() {
                 <div><strong>GET /api/bot/orders?order_number=XX</strong> — check order</div>
               </div>
             </details>
+              </>
+            )}
           </div>
         </div>
       </div>

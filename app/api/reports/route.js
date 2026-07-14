@@ -74,8 +74,18 @@ export async function GET(request) {
     [shopId]
   );
 
+  const topProductsAllTime = await query(`
+    SELECT p.name_lo, p.name_th, p.name_en, p.sku,
+      SUM(oi.quantity) as total_qty, SUM(oi.total) as total_revenue
+    FROM order_items oi
+    JOIN products p ON oi.product_id = p.id
+    JOIN orders o ON oi.order_id = o.id
+    WHERE ${statusFilter} AND o.shop_id = ?
+    GROUP BY p.id ORDER BY total_qty DESC LIMIT 10
+  `, [shopId]);
+
   return NextResponse.json({
-    dateFrom, dateTo, daySales, monthSales, topProducts, salesByCurrency,
+    dateFrom, dateTo, daySales, monthSales, topProducts, topProductsAllTime, salesByCurrency,
     salesByType, dailyData,
     profitReport: profitReport || { revenue: 0, cost_of_goods: 0, gross_profit: 0, items_sold: 0 },
     pendingOnlineOrders: pendingOnline?.count || 0,

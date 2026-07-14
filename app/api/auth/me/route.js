@@ -20,6 +20,5 @@ export async function GET() {
     shop_id: session.shop_id,
     shop_name: settings?.shop_name || session.shop_name,
     shop_logo: settings?.shop_logo || '',
-    license_key: session.license_key,
   });
 }

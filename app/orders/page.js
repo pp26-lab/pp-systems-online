@@ -70,26 +70,35 @@ export default function OrdersPage() {
 
   function sendWhatsApp(order) {
     if (!order.customer_phone) {
-      alert(lang === 'th' ? 'ไม่มีเบอร์โทรลูกค้า' : lang === 'lo' ? 'ບໍ່ມີເບີໂທລູກຄ້າ' : 'No customer phone');
+      alert('ບໍ່ມີເບີໂທລູກຄ້າ');
       return;
     }
-    const template = shopSettings.whatsapp_template || 'Hello {name}, your order {order_number} is confirmed. Total: {total}. Thank you!';
-    const statusLabel = order.status === 'pending' ? t('status_ordered', lang) :
-      order.status === 'shipping' ? t('status_shipped', lang) :
-      order.status === 'completed' ? t('status_delivered', lang) : order.status;
-    const message = template
-      .replace(/\{name\}/g, order.customer_name || '')
-      .replace(/\{phone\}/g, order.customer_phone || '')
-      .replace(/\{order_number\}/g, order.order_number || '')
-      .replace(/\{total\}/g, formatCurrency(order.total, order.currency))
-      .replace(/\{status\}/g, statusLabel)
-      .replace(/\{delivery_date\}/g, order.delivery_date || '-')
-      .replace(/\{address\}/g, order.customer_address || '-')
-      .replace(/\{shop\}/g, shopSettings.shop_name || '');
-    const countryCode = (shopSettings.whatsapp_country_code || '856').replace(/\D/g, '');
+    const statusMsg = order.status === 'pending'
+      ? '✅ ຢືນຢັນອໍເດີ້ຂອງທ່ານແລ້ວ'
+      : order.status === 'shipping'
+      ? '🚚 ອໍເດີ້ຂອງທ່ານກຳລັງຈັດສົ່ງ'
+      : order.status === 'completed'
+      ? '📦 ອໍເດີ້ຂອງທ່ານຈັດສົ່ງຮອດແລ້ວ'
+      : order.status === 'cancelled'
+      ? '❌ ອໍເດີ້ຂອງທ່ານຖືກຍົກເລີກ'
+      : 'ອໍເດີ້ຂອງທ່ານ';
+
+    const lines = [
+      `ສະບາຍດີ ຄຸນ ${order.customer_name || 'ລູກຄ້າ'} 🌸`,
+      '',
+      statusMsg,
+      '',
+      `🔖 ເລກທີ່ອໍເດີ້: ${order.order_number}`,
+      `💰 ຍອດລວມ: ${formatCurrency(order.total, order.currency)}`,
+    ];
+    if (order.delivery_date) lines.push(`📅 ວັນຈັດສົ່ງ: ${order.delivery_date}`);
+    if (order.customer_address) lines.push(`📍 ທີ່ຢູ່: ${order.customer_address}`);
+    lines.push('', 'ຂໍຂອບໃຈທີ່ໃຫ້ຄວາມໄວ້ວາງໃຈ 💖', `— ${shopSettings.shop_name || 'PP Systems'}`);
+
+    const message = lines.join('\n');
     let phone = (order.customer_phone || '').replace(/\D/g, '');
-    if (phone.startsWith('0')) phone = countryCode + phone.slice(1);
-    else if (!phone.startsWith(countryCode)) phone = countryCode + phone;
+    if (phone.startsWith('0')) phone = '856' + phone.slice(1);
+    else if (!phone.startsWith('856') && !phone.startsWith('66')) phone = '856' + phone;
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   }
