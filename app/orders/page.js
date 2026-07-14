@@ -68,6 +68,32 @@ export default function OrdersPage() {
     fetchOrders();
   }
 
+  function sendWhatsApp(order) {
+    if (!order.customer_phone) {
+      alert(lang === 'th' ? 'ไม่มีเบอร์โทรลูกค้า' : lang === 'lo' ? 'ບໍ່ມີເບີໂທລູກຄ້າ' : 'No customer phone');
+      return;
+    }
+    const template = shopSettings.whatsapp_template || 'Hello {name}, your order {order_number} is confirmed. Total: {total}. Thank you!';
+    const statusLabel = order.status === 'pending' ? t('status_ordered', lang) :
+      order.status === 'shipping' ? t('status_shipped', lang) :
+      order.status === 'completed' ? t('status_delivered', lang) : order.status;
+    const message = template
+      .replace(/\{name\}/g, order.customer_name || '')
+      .replace(/\{phone\}/g, order.customer_phone || '')
+      .replace(/\{order_number\}/g, order.order_number || '')
+      .replace(/\{total\}/g, formatCurrency(order.total, order.currency))
+      .replace(/\{status\}/g, statusLabel)
+      .replace(/\{delivery_date\}/g, order.delivery_date || '-')
+      .replace(/\{address\}/g, order.customer_address || '-')
+      .replace(/\{shop\}/g, shopSettings.shop_name || '');
+    const countryCode = (shopSettings.whatsapp_country_code || '856').replace(/\D/g, '');
+    let phone = (order.customer_phone || '').replace(/\D/g, '');
+    if (phone.startsWith('0')) phone = countryCode + phone.slice(1);
+    else if (!phone.startsWith(countryCode)) phone = countryCode + phone;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  }
+
   function printShippingBill(order) {
     const win = window.open('', '_blank', 'width=400,height=600');
     const items = order.items?.map(item =>
@@ -254,6 +280,12 @@ export default function OrdersPage() {
                       onClick={() => printShippingBill(order)}
                       className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90"
                     >{t('print_shipping', lang)}</button>
+                  )}
+                  {order.customer_phone && (
+                    <button
+                      onClick={() => sendWhatsApp(order)}
+                      className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 flex items-center gap-1"
+                    >💬 WhatsApp</button>
                   )}
                   {order.status !== 'cancelled' && (
                     <button

@@ -14,6 +14,8 @@ export default function SettingsPage() {
     default_order_type: 'walk_in',
     variant_label_1: 'color',
     variant_label_2: 'size',
+    whatsapp_template: '',
+    whatsapp_country_code: '856',
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -63,6 +65,8 @@ export default function SettingsPage() {
         default_order_type: data.default_order_type || 'walk_in',
         variant_label_1: data.variant_label_1 || 'color',
         variant_label_2: data.variant_label_2 || 'size',
+        whatsapp_template: data.whatsapp_template || '',
+        whatsapp_country_code: data.whatsapp_country_code || '856',
       });
     });
   }, []);
@@ -162,6 +166,35 @@ export default function SettingsPage() {
                   className={`flex-1 px-4 py-2 rounded-lg font-semibold ${form.default_order_type === 'online' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}`}>
                   {t('online', lang)}
                 </button>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <label className="block text-sm font-bold text-gray-700 mb-2">💬 WhatsApp Message Template</label>
+              <div className="mb-2">
+                <label className="block text-xs text-gray-500 mb-1">Country Code (ไม่มี +)</label>
+                <input type="text" value={form.whatsapp_country_code}
+                  onChange={e => setForm({ ...form, whatsapp_country_code: e.target.value.replace(/\D/g, '') })}
+                  placeholder="856 (Laos), 66 (Thailand)"
+                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <textarea value={form.whatsapp_template}
+                onChange={e => setForm({ ...form, whatsapp_template: e.target.value })}
+                rows={5}
+                placeholder={`Hello {name}, your order {order_number} is confirmed.\nTotal: {total}\nWe will deliver on {delivery_date}.\nThank you!`}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm font-mono" />
+              <div className="mt-2 text-xs text-gray-500">
+                <p className="font-semibold mb-1">Placeholders (ใส่ตรงนี้ ระบบแทนค่าอัตโนมัติ):</p>
+                <div className="grid grid-cols-2 gap-1">
+                  <span><code className="bg-gray-100 px-1">{'{name}'}</code> ชื่อลูกค้า</span>
+                  <span><code className="bg-gray-100 px-1">{'{phone}'}</code> เบอร์ลูกค้า</span>
+                  <span><code className="bg-gray-100 px-1">{'{order_number}'}</code> เลขบิล</span>
+                  <span><code className="bg-gray-100 px-1">{'{total}'}</code> ยอดรวม</span>
+                  <span><code className="bg-gray-100 px-1">{'{status}'}</code> สถานะ</span>
+                  <span><code className="bg-gray-100 px-1">{'{delivery_date}'}</code> วันจัดส่ง</span>
+                  <span><code className="bg-gray-100 px-1">{'{address}'}</code> ที่อยู่</span>
+                  <span><code className="bg-gray-100 px-1">{'{shop}'}</code> ชื่อร้าน</span>
+                </div>
               </div>
             </div>
 
