@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
   }, [pathname]);
 
   async function checkAuth() {
-    if (pathname === '/login') {
+    if (pathname === '/login' || pathname.startsWith('/admin')) {
       setLoading(false);
       return;
     }
@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
     router.push('/login');
   }
 
-  if (pathname === '/login') {
+  if (pathname === '/login' || pathname.startsWith('/admin')) {
     return (
       <html lang={lang}>
         <head>
