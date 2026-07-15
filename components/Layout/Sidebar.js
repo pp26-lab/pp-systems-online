@@ -9,6 +9,7 @@ const menuItems = [
   { key: 'pos', path: '/pos', icon: '🛒' },
   { key: 'products', path: '/products', icon: '📦' },
   { key: 'orders', path: '/orders', icon: '📋' },
+  { key: 'handoffs', path: '/handoffs', icon: '💬', badge: true },
   { key: 'inventory', path: '/inventory', icon: '🏭' },
   { key: 'currencies', path: '/currencies', icon: '💱' },
   { key: 'settings', path: '/settings', icon: '⚙️' },
@@ -18,6 +19,7 @@ export default function Sidebar({ isOpen, onToggle, lang }) {
   const pathname = usePathname();
   const [shopName, setShopName] = useState('PP Systems');
   const [shopLogo, setShopLogo] = useState('');
+  const [pendingHandoffs, setPendingHandoffs] = useState(0);
 
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
@@ -25,6 +27,21 @@ export default function Sidebar({ isOpen, onToggle, lang }) {
       if (data.shop_logo) setShopLogo(data.shop_logo);
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    async function fetchCount() {
+      try {
+        const res = await fetch('/api/handoffs/count');
+        if (res.ok) {
+          const data = await res.json();
+          setPendingHandoffs(data.pending || 0);
+        }
+      } catch {}
+    }
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [pathname]);
 
   return (
     <>
@@ -49,13 +66,20 @@ export default function Sidebar({ isOpen, onToggle, lang }) {
               <Link
                 key={item.key}
                 href={item.path}
-                className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-colors relative ${
                   isActive
                     ? 'bg-sidebar-active text-white'
                     : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
                 } ${!isOpen && 'lg:justify-center lg:px-2'}`}
               >
-                <span className="text-xl">{item.icon}</span>
+                <span className="text-xl relative">
+                  {item.icon}
+                  {item.badge && pendingHandoffs > 0 && (
+                    <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                      {pendingHandoffs > 9 ? '9+' : pendingHandoffs}
+                    </span>
+                  )}
+                </span>
                 <span className={!isOpen ? 'lg:hidden' : ''}>{t(item.key, lang)}</span>
               </Link>
             );
