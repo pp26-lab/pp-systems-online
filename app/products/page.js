@@ -23,6 +23,8 @@ export default function ProductsPage() {
   const [uploading, setUploading] = useState(false);
   const [variants, setVariants] = useState([]);
   const [showVariants, setShowVariants] = useState(null);
+  const [extraImages, setExtraImages] = useState([]);
+  const [uploadingExtra, setUploadingExtra] = useState(false);
 
   useEffect(() => { fetchProducts(); fetchCurrencies(); }, []);
   useEffect(() => { fetchProducts(); }, [search]);
@@ -66,11 +68,52 @@ export default function ProductsPage() {
     return p.name_en;
   }
 
-  function editProduct(p) {
+  async function editProduct(p) {
     setForm({ ...p, sale_end_date: p.sale_end_date || '' });
     setEditId(p.id);
     setVariants(p.variants || []);
+    const imgs = await fetch(`/api/products/${p.id}/images`).then(r => r.json()).catch(() => []);
+    setExtraImages(Array.isArray(imgs) ? imgs : []);
     setShowForm(true);
+  }
+
+  function openAddForm() {
+    setForm({ ...emptyProduct });
+    setEditId(null);
+    setVariants([]);
+    setExtraImages([]);
+    setShowForm(true);
+  }
+
+  async function handleExtraUpload(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !editId) return;
+    setUploadingExtra(true);
+    for (const file of files) {
+      if (extraImages.length >= 5) break;
+      const fd = new FormData();
+      fd.append('file', file);
+      const up = await fetch('/api/upload', { method: 'POST', body: fd });
+      if (!up.ok) continue;
+      const { url } = await up.json();
+      const add = await fetch(`/api/products/${editId}/images`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: url }),
+      });
+      if (add.ok) {
+        const { id } = await add.json();
+        setExtraImages(prev => [...prev, { id, image_url: url }]);
+      }
+    }
+    setUploadingExtra(false);
+    e.target.value = '';
+  }
+
+  async function deleteExtraImage(imageId) {
+    if (!editId) return;
+    await fetch(`/api/products/${editId}/images?image_id=${imageId}`, { method: 'DELETE' });
+    setExtraImages(prev => prev.filter(i => i.id !== imageId));
   }
 
   async function handleImageUpload(e) {
@@ -174,7 +217,7 @@ export default function ProductsPage() {
           <input type="text" placeholder={t('search', lang)} value={search}
             onChange={e => setSearch(e.target.value)}
             className="flex-1 sm:w-64 px-4 py-2 border border-gray-300 rounded-lg" />
-          <button onClick={() => { setForm({ ...emptyProduct }); setEditId(null); setVariants([]); setShowForm(true); }}
+          <button onClick={openAddForm}
             className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark whitespace-nowrap">
             + {t('add_product', lang)}
           </button>
@@ -346,6 +389,37 @@ export default function ProductsPage() {
                   {lang === 'th' ? 'ไม่ใส่ = ไม่มีกำหนด' : lang === 'lo' ? 'ບໍ່ໃສ່ = ບໍ່ມີກຳນົດ' : 'Leave empty = no expiry'}
                 </p>
               </div>
+
+              {/* Extra Images Section (only when editing) */}
+              {editId && (
+                <div className="sm:col-span-2 border-t pt-4 mt-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-lg">🖼️ {t('extra_images', lang)}</h3>
+                    <label className={`bg-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold cursor-pointer ${extraImages.length >= 5 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}`}>
+                      {uploadingExtra ? '...' : `+ ${t('upload_image', lang)} (${extraImages.length}/5)`}
+                      <input type="file" accept="image/*" multiple onChange={handleExtraUpload}
+                        disabled={extraImages.length >= 5 || uploadingExtra} className="hidden" />
+                    </label>
+                  </div>
+                  {extraImages.length > 0 ? (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {extraImages.map(img => (
+                        <div key={img.id} className="relative group">
+                          <img src={img.image_url} alt="" className="w-full aspect-square object-cover rounded-lg border" />
+                          <button type="button" onClick={() => deleteExtraImage(img.id)}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 text-center py-3">
+                      {lang === 'th' ? 'ยังไม่มีรูปเพิ่มเติม — chatbot จะไม่มีรูปเสริมส่งให้ลูกค้า' :
+                       lang === 'lo' ? 'ຍັງບໍ່ມີຮູບເພີ່ມເຕີມ' :
+                       'No extra images yet'}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Variants Section */}
               <div className="sm:col-span-2 border-t pt-4 mt-2">

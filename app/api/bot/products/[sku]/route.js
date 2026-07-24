@@ -4,6 +4,13 @@ import { verifyBotKey, botRateLimit, corsHeaders } from '../../../../../lib/bot-
 
 export const dynamic = 'force-dynamic';
 
+const BASE_URL = process.env.PUBLIC_BASE_URL || 'https://ppsystems-shop.com';
+function absoluteUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return BASE_URL + (path.startsWith('/') ? '' : '/') + path;
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders() });
 }
@@ -34,6 +41,13 @@ export async function GET(request, { params }) {
     );
     product.stock = product.variants.reduce((s, v) => s + v.quantity, 0);
   }
+
+  const extras = await query(
+    'SELECT image_url FROM product_images WHERE product_id = ? AND shop_id = ? ORDER BY sort_order, id',
+    [product.id, auth.shopId]
+  );
+  product.image_url = absoluteUrl(product.image_url);
+  product.extra_images = extras.map(e => absoluteUrl(e.image_url));
 
   return NextResponse.json(product, { headers: corsHeaders() });
 }
