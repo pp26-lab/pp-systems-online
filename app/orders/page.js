@@ -68,6 +68,15 @@ export default function OrdersPage() {
     fetchOrders();
   }
 
+  async function updateOrderTracking(orderId, tracking, carrier) {
+    await fetch('/api/orders', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: orderId, tracking_number: tracking, shipping_carrier: carrier }),
+    });
+    fetchOrders();
+  }
+
   function sendWhatsApp(order) {
     if (!order.customer_phone) {
       alert('ບໍ່ມີເບີໂທລູກຄ້າ');
@@ -93,6 +102,10 @@ export default function OrdersPage() {
     ];
     if (order.delivery_date) lines.push(`📅 ວັນຈັດສົ່ງ: ${order.delivery_date}`);
     if (order.customer_address) lines.push(`📍 ທີ່ຢູ່: ${order.customer_address}`);
+    if (order.tracking_number) {
+      lines.push('', `📮 ເລກຕິດຕາມພັດສະດຸ: ${order.tracking_number}`);
+      if (order.shipping_carrier) lines.push(`🚛 ຂົນສົ່ງ: ${order.shipping_carrier}`);
+    }
     lines.push('', 'ຂໍຂອບໃຈທີ່ໃຫ້ຄວາມໄວ້ວາງໃຈ 💖', `— ${shopSettings.shop_name || 'PP Systems'}`);
 
     const message = lines.join('\n');
@@ -236,6 +249,19 @@ export default function OrdersPage() {
                       {order.shipping_notes && (
                         <div className="sm:col-span-2"><strong className="text-gray-600">{t('shipping_notes', lang)}:</strong> {order.shipping_notes}</div>
                       )}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-purple-200">
+                      <p className="text-xs font-semibold text-gray-600 mb-1">📮 Tracking</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" placeholder="Carrier (Kerry, J&T, ...)"
+                          defaultValue={order.shipping_carrier || ''}
+                          onBlur={e => updateOrderTracking(order.id, order.tracking_number || '', e.target.value)}
+                          className="px-2 py-1 border rounded text-sm" />
+                        <input type="text" placeholder="Tracking number"
+                          defaultValue={order.tracking_number || ''}
+                          onBlur={e => updateOrderTracking(order.id, e.target.value, order.shipping_carrier || '')}
+                          className="px-2 py-1 border rounded text-sm font-mono" />
+                      </div>
                     </div>
                   </div>
                 )}

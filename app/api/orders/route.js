@@ -59,12 +59,30 @@ export async function POST(request) {
   const orderType = body.order_type || 'walk_in';
   const initialStatus = orderType === 'online' ? 'pending' : 'completed';
 
+  let customerId = null;
+  if (body.customer_phone) {
+    const existingCustomer = await queryOne('SELECT id FROM customers WHERE shop_id = ? AND phone = ?', [shopId, body.customer_phone]);
+    if (existingCustomer) {
+      customerId = existingCustomer.id;
+      await query(
+        'UPDATE customers SET name = COALESCE(NULLIF(?, \'\'), name), address = COALESCE(NULLIF(?, \'\'), address), total_spent = total_spent + ?, order_count = order_count + 1, last_order_at = NOW() WHERE id = ?',
+        [body.customer_name || '', body.customer_address || '', totalInLak, customerId]
+      );
+    } else {
+      const custResult = await query(
+        'INSERT INTO customers (shop_id, name, phone, address, total_spent, order_count, last_order_at) VALUES (?, ?, ?, ?, ?, 1, NOW())',
+        [shopId, body.customer_name || '', body.customer_phone, body.customer_address || '', totalInLak]
+      );
+      customerId = custResult.insertId;
+    }
+  }
+
   const orderResult = await query(
-    `INSERT INTO orders (shop_id, order_number, customer_name, customer_phone, customer_address,
+    `INSERT INTO orders (shop_id, customer_id, order_number, customer_name, customer_phone, customer_address,
       subtotal, discount, tax, total, currency, exchange_rate_used, total_in_lak,
       payment_method, order_type, delivery_date, shipping_notes, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [shopId, orderNumber, body.customer_name || '', body.customer_phone || '',
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [shopId, customerId, orderNumber, body.customer_name || '', body.customer_phone || '',
       body.customer_address || '',
       body.subtotal, body.discount || 0, body.tax || 0, body.total,
       body.currency || 'LAK', exchangeRate, totalInLak,
@@ -101,6 +119,17 @@ export async function PUT(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
+
+  if (body.tracking_number !== undefined || body.shipping_carrier !== undefined || body.internal_notes !== undefined) {
+    const fields = [], vals = [];
+    if (body.tracking_number !== undefined) { fields.push('tracking_number = ?'); vals.push(body.tracking_number); }
+    if (body.shipping_carrier !== undefined) { fields.push('shipping_carrier = ?'); vals.push(body.shipping_carrier); }
+    if (body.internal_notes !== undefined) { fields.push('internal_notes = ?'); vals.push(body.internal_notes); }
+    vals.push(body.id, shopId);
+    await query(`UPDATE orders SET ${fields.join(', ')} WHERE id = ? AND shop_id = ?`, vals);
+    if (!body.status) return NextResponse.json({ success: true });
+  }
+
   if (!body.status) return NextResponse.json({ success: true });
 
   const current = await queryOne('SELECT status FROM orders WHERE id = ? AND shop_id = ?', [body.id, shopId]);

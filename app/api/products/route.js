@@ -65,8 +65,8 @@ export async function POST(request) {
 
   const result = await query(
     `INSERT INTO products (shop_id, sku, name_lo, name_th, name_en, description, category, cost_price, cost_currency,
-      freight_cost, customs_duty, proxy_fee, transfer_fee, exchange_rate_used, landed_cost_lak, selling_price_lak, image_url, barcode, sale_end_date, has_variants, variant_label_1, variant_label_2)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      freight_cost, customs_duty, proxy_fee, transfer_fee, exchange_rate_used, landed_cost_lak, selling_price_lak, image_url, barcode, sale_end_date, has_variants, variant_label_1, variant_label_2, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [shopId, body.sku, body.name_lo || '', body.name_th || '', body.name_en || '',
       body.description || '', body.category || '',
       body.cost_price || 0, body.cost_currency || 'THB',
@@ -75,7 +75,8 @@ export async function POST(request) {
       exchangeRate, landedCostLak, body.selling_price_lak || 0,
       body.image_url || '', body.barcode || '',
       body.sale_end_date || null, body.has_variants || 0,
-      body.variant_label_1 || 'color', body.variant_label_2 || 'size']
+      body.variant_label_1 || 'color', body.variant_label_2 || 'size',
+      body.status || 'active']
   );
 
   const productId = result?.insertId;
@@ -111,7 +112,7 @@ export async function PUT(request) {
     `UPDATE products SET sku=?, name_lo=?, name_th=?, name_en=?, description=?, category=?,
       cost_price=?, cost_currency=?, freight_cost=?, customs_duty=?, proxy_fee=?, transfer_fee=?,
       exchange_rate_used=?, landed_cost_lak=?, selling_price_lak=?, image_url=?, barcode=?, sale_end_date=?, has_variants=?,
-      variant_label_1=?, variant_label_2=?
+      variant_label_1=?, variant_label_2=?, status=?
     WHERE id=? AND shop_id=?`,
     [body.sku, body.name_lo || '', body.name_th || '', body.name_en || '',
       body.description || '', body.category || '',
@@ -122,6 +123,7 @@ export async function PUT(request) {
       body.image_url || '', body.barcode || '',
       body.sale_end_date || null, body.has_variants || 0,
       body.variant_label_1 || 'color', body.variant_label_2 || 'size',
+      body.status || 'active',
       body.id, shopId]
   );
 

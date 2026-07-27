@@ -48,7 +48,10 @@ export default function POSPage() {
     const res = await fetch(`/api/products?${params}`);
     const data = await res.json();
     const now = new Date().toISOString().split('T')[0];
-    const filtered = data.filter(p => !p.sale_end_date || p.sale_end_date >= now);
+    const filtered = data.filter(p =>
+      (p.status === 'active' || p.status === 'pre_order' || !p.status) &&
+      (!p.sale_end_date || p.sale_end_date >= now)
+    );
     setProducts(filtered);
     const cats = [...new Set(data.map(p => p.category).filter(Boolean))];
     if (cats.length > 0 && categories.length === 0) setCategories(cats);

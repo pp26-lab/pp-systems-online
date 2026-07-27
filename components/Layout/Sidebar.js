@@ -9,6 +9,7 @@ const menuItems = [
   { key: 'pos', path: '/pos', icon: '🛒' },
   { key: 'products', path: '/products', icon: '📦' },
   { key: 'orders', path: '/orders', icon: '📋' },
+  { key: 'customers', path: '/customers', icon: '👥' },
   { key: 'handoffs', path: '/handoffs', icon: '💬', badge: true },
   { key: 'inventory', path: '/inventory', icon: '🏭' },
   { key: 'currencies', path: '/currencies', icon: '💱' },

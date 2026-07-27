@@ -10,6 +10,14 @@ const emptyProduct = {
   proxy_fee: 0, transfer_fee: 0, selling_price_lak: 0, initial_stock: 0,
   image_url: '', sale_end_date: '', has_variants: 0,
   variant_label_1: 'color', variant_label_2: 'size',
+  status: 'active',
+};
+
+const statusColors = {
+  active: 'bg-green-100 text-green-700',
+  hidden: 'bg-gray-200 text-gray-600',
+  pre_order: 'bg-yellow-100 text-yellow-700',
+  out_of_stock: 'bg-red-100 text-red-700',
 };
 
 export default function ProductsPage() {
@@ -197,6 +205,32 @@ export default function ProductsPage() {
     setVariants(prev => prev.filter((_, i) => i !== idx));
   }
 
+  async function duplicateProduct(id) {
+    if (!confirm(lang === 'th' ? 'ทำสำเนาสินค้านี้?' : lang === 'lo' ? 'ສຳເນົາສິນຄ້ານີ້?' : 'Duplicate this product?')) return;
+    const res = await fetch('/api/products/duplicate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) fetchProducts();
+  }
+
+  async function exportCsv() {
+    window.open('/api/products/export', '_blank');
+  }
+
+  async function importCsv(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/products/import', { method: 'POST', body: fd });
+    const data = await res.json();
+    alert(`Inserted: ${data.inserted}, Updated: ${data.updated}, Errors: ${data.errors?.length || 0}`);
+    fetchProducts();
+    e.target.value = '';
+  }
+
   function isExpired(p) {
     if (!p.sale_end_date) return false;
     return new Date(p.sale_end_date) < new Date();
@@ -213,10 +247,18 @@ export default function ProductsPage() {
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">{t('products', lang)}</h1>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto flex-wrap">
           <input type="text" placeholder={t('search', lang)} value={search}
             onChange={e => setSearch(e.target.value)}
             className="flex-1 sm:w-64 px-4 py-2 border border-gray-300 rounded-lg" />
+          <button onClick={exportCsv}
+            className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-200">
+            📥 Export CSV
+          </button>
+          <label className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 cursor-pointer">
+            📤 Import CSV
+            <input type="file" accept=".csv" onChange={importCsv} className="hidden" />
+          </label>
           <button onClick={openAddForm}
             className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark whitespace-nowrap">
             + {t('add_product', lang)}
@@ -278,8 +320,9 @@ export default function ProductsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
-                      <button onClick={() => editProduct(p)} className="text-primary hover:text-primary-dark p-1">✏️</button>
-                      <button onClick={() => deleteProduct(p.id)} className="text-red-400 hover:text-red-600 p-1">🗑️</button>
+                      <button onClick={() => editProduct(p)} className="text-primary hover:text-primary-dark p-1" title="Edit">✏️</button>
+                      <button onClick={() => duplicateProduct(p.id)} className="text-purple-500 hover:text-purple-700 p-1" title="Duplicate">📋</button>
+                      <button onClick={() => deleteProduct(p.id)} className="text-red-400 hover:text-red-600 p-1" title="Delete">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -380,14 +423,21 @@ export default function ProductsPage() {
                   className="w-full px-3 py-2 border rounded-lg" />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">{t('sale_end_date', lang)}</label>
                 <input type="date" value={form.sale_end_date || ''}
                   onChange={e => updateForm('sale_end_date', e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg" />
-                <p className="text-xs text-gray-400 mt-1">
-                  {lang === 'th' ? 'ไม่ใส่ = ไม่มีกำหนด' : lang === 'lo' ? 'ບໍ່ໃສ່ = ບໍ່ມີກຳນົດ' : 'Leave empty = no expiry'}
-                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
+                <select value={form.status || 'active'} onChange={e => updateForm('status', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg">
+                  <option value="active">✅ Active</option>
+                  <option value="hidden">👁️ Hidden</option>
+                  <option value="pre_order">📅 Pre-order</option>
+                  <option value="out_of_stock">❌ Out of Stock</option>
+                </select>
               </div>
 
               {/* Extra Images Section (only when editing) */}
