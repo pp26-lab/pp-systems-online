@@ -77,6 +77,20 @@ export default function OrdersPage() {
     fetchOrders();
   }
 
+  async function uploadSlip(orderId, file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const up = await fetch('/api/upload', { method: 'POST', body: fd });
+    if (!up.ok) return;
+    const { url } = await up.json();
+    await fetch('/api/orders', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: orderId, payment_slip_url: url }),
+    });
+    fetchOrders();
+  }
+
   function sendWhatsApp(order) {
     if (!order.customer_phone) {
       alert('ບໍ່ມີເບີໂທລູກຄ້າ');
@@ -288,6 +302,26 @@ export default function OrdersPage() {
                     ))}
                   </tbody>
                 </table>
+                <div className="mt-3 pt-3 border-t">
+                  <div className="flex items-center gap-2 flex-wrap text-sm">
+                    <strong className="text-gray-600">💳 Payment Slip:</strong>
+                    {order.payment_slip_url ? (
+                      <>
+                        <a href={order.payment_slip_url} target="_blank" rel="noopener" className="text-primary hover:underline">View slip</a>
+                        <label className="text-xs text-blue-600 hover:underline cursor-pointer">
+                          Replace
+                          <input type="file" accept="image/*" onChange={e => e.target.files[0] && uploadSlip(order.id, e.target.files[0])} className="hidden" />
+                        </label>
+                      </>
+                    ) : (
+                      <label className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 cursor-pointer">
+                        📎 Upload slip
+                        <input type="file" accept="image/*" onChange={e => e.target.files[0] && uploadSlip(order.id, e.target.files[0])} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-between items-center mt-3 pt-2 border-t text-sm">
                   <span className="text-gray-500">
                     {t('payment_method', lang)}: {t(order.payment_method, lang)} | {order.currency}

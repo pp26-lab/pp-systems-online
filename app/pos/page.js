@@ -27,6 +27,10 @@ export default function POSPage() {
   const [shippingNotes, setShippingNotes] = useState('');
   const [variantPicker, setVariantPicker] = useState(null);
   const [shopSettings, setShopSettings] = useState({ shop_name: 'PP Systems' });
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState('');
+  const [customerType, setCustomerType] = useState('retail');
 
   useEffect(() => {
     fetchProducts();
@@ -88,15 +92,16 @@ export default function POSPage() {
           i.cart_key === cartKey ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
+      const price = priceForCustomer(product);
       return [...prev, {
         cart_key: cartKey,
         product_id: product.id,
         variant_id: variant?.id || null,
         name: getProductName(product) + variantLabel,
         sku: product.sku + (variant?.sku_suffix || ''),
-        unit_price: product.selling_price_lak,
+        unit_price: price,
         quantity: 1,
-        total: product.selling_price_lak,
+        total: price,
         image_url: product.image_url,
       }];
     });
@@ -117,8 +122,31 @@ export default function POSPage() {
     setCart(prev => prev.filter(i => i.cart_key !== cartKey));
   }
 
+  function priceForCustomer(p) {
+    if (customerType === 'wholesale' && p.wholesale_price_lak > 0) return p.wholesale_price_lak;
+    if (customerType === 'member' && p.member_price_lak > 0) return p.member_price_lak;
+    return p.selling_price_lak;
+  }
+
   const subtotal = cart.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
-  const total = subtotal - discount;
+  const total = subtotal - discount - couponDiscount;
+
+  async function applyCoupon() {
+    setCouponError('');
+    if (!couponCode.trim()) return;
+    const res = await fetch('/api/coupons/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: couponCode, subtotal }),
+    });
+    const data = await res.json();
+    if (res.ok && data.valid) {
+      setCouponDiscount(data.discount);
+    } else {
+      setCouponError(data.error || 'Invalid');
+      setCouponDiscount(0);
+    }
+  }
 
   function getExchangeRate() {
     if (currency === 'LAK') return 1;
@@ -151,8 +179,10 @@ export default function POSPage() {
       customer_name: customerName,
       customer_phone: customerPhone,
       customer_address: customerAddress,
+      coupon_code: couponCode || '',
+      coupon_discount: couponDiscount || 0,
       subtotal: currency === 'LAK' ? subtotal : subtotal / rate,
-      discount: currency === 'LAK' ? discount : discount / rate,
+      discount: currency === 'LAK' ? (discount + couponDiscount) : (discount + couponDiscount) / rate,
       tax: 0,
       total: orderTotal,
       currency,
@@ -189,6 +219,9 @@ export default function POSPage() {
       setAmountReceived('');
       setDeliveryDate('');
       setShippingNotes('');
+      setCouponCode('');
+      setCouponDiscount(0);
+      setCouponError('');
       fetchProducts();
     }
   }

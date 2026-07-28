@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
+import { logStockMovement } from '../../../lib/stock-log';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +87,17 @@ export async function POST(request) {
       'INSERT INTO inventory (shop_id, product_id, quantity, status) VALUES (?, ?, ?, ?)',
       [shopId, productId, body.initial_stock, 'in_stock']
     );
+    await logStockMovement({
+      shopId, productId, change: +body.initial_stock, reason: 'initial',
+      note: 'Initial stock on product creation',
+    });
+  }
+
+  if (body.wholesale_price_lak !== undefined || body.member_price_lak !== undefined || body.category_id !== undefined) {
+    await query(
+      'UPDATE products SET wholesale_price_lak = ?, member_price_lak = ?, category_id = ? WHERE id = ? AND shop_id = ?',
+      [parseFloat(body.wholesale_price_lak) || 0, parseFloat(body.member_price_lak) || 0, body.category_id || null, productId, shopId]
+    );
   }
 
   return NextResponse.json({ id: productId }, { status: 201 });
@@ -125,6 +137,11 @@ export async function PUT(request) {
       body.variant_label_1 || 'color', body.variant_label_2 || 'size',
       body.status || 'active',
       body.id, shopId]
+  );
+
+  await query(
+    'UPDATE products SET wholesale_price_lak = ?, member_price_lak = ?, category_id = ? WHERE id = ? AND shop_id = ?',
+    [parseFloat(body.wholesale_price_lak) || 0, parseFloat(body.member_price_lak) || 0, body.category_id || null, body.id, shopId]
   );
 
   return NextResponse.json({ success: true });

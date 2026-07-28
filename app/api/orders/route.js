@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
+import { logStockMovement } from '../../../lib/stock-log';
+import { fireWebhooks } from '../../../lib/webhook';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,7 +104,19 @@ export async function POST(request) {
     } else {
       await query("UPDATE inventory SET quantity = quantity - ? WHERE product_id = ? AND status = 'in_stock' AND quantity >= ? AND shop_id = ?", [item.quantity, item.product_id, item.quantity, shopId]);
     }
+    await logStockMovement({
+      shopId, productId: item.product_id, variantId: item.variant_id,
+      change: -item.quantity, reason: 'sale',
+      referenceType: 'order', referenceId: orderId,
+    });
   }
+
+  if (body.coupon_code) {
+    await query('UPDATE coupons SET times_used = times_used + 1 WHERE code = ? AND shop_id = ?', [body.coupon_code.toUpperCase(), shopId]);
+    await query('UPDATE orders SET coupon_code = ?, coupon_discount = ? WHERE id = ?', [body.coupon_code.toUpperCase(), body.coupon_discount || 0, orderId]);
+  }
+
+  fireWebhooks(shopId, 'order.created', { order_id: orderId, order_number: orderNumber, total, customer_phone: body.customer_phone });
 
   const order = await queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
   order.items = await query(`
@@ -143,9 +157,15 @@ export async function PUT(request) {
       } else {
         await query("UPDATE inventory SET quantity = quantity + ? WHERE product_id = ? AND status = 'in_stock' AND shop_id = ? ORDER BY id LIMIT 1", [item.quantity, item.product_id, shopId]);
       }
+      await logStockMovement({
+        shopId, productId: item.product_id, variantId: item.variant_id,
+        change: +item.quantity, reason: 'cancel',
+        referenceType: 'order', referenceId: body.id,
+      });
     }
   }
 
   await query('UPDATE orders SET status = ? WHERE id = ? AND shop_id = ?', [body.status, body.id, shopId]);
+  fireWebhooks(shopId, 'order.status_changed', { order_id: body.id, old_status: current.status, new_status: body.status });
   return NextResponse.json({ success: true });
 }

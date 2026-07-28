@@ -8,6 +8,7 @@ const emptyProduct = {
   sku: '', name_lo: '', name_th: '', name_en: '', description: '', category: '',
   cost_price: 0, cost_currency: 'THB', freight_cost: 0, customs_duty: 0,
   proxy_fee: 0, transfer_fee: 0, selling_price_lak: 0, initial_stock: 0,
+  wholesale_price_lak: 0, member_price_lak: 0,
   image_url: '', sale_end_date: '', has_variants: 0,
   variant_label_1: 'color', variant_label_2: 'size',
   status: 'active',
@@ -588,6 +589,21 @@ export default function ProductsPage() {
                       {getMargin().toFixed(1)}%
                     </p>
                   </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">🛒 Wholesale Price</label>
+                  <input type="number" value={form.wholesale_price_lak || 0}
+                    onChange={e => updateForm('wholesale_price_lak', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">⭐ Member Price</label>
+                  <input type="number" value={form.member_price_lak || 0}
+                    onChange={e => updateForm('member_price_lak', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border rounded-lg" />
                 </div>
               </div>
 

@@ -12,7 +12,10 @@ const menuItems = [
   { key: 'customers', path: '/customers', icon: '👥' },
   { key: 'handoffs', path: '/handoffs', icon: '💬', badge: true },
   { key: 'inventory', path: '/inventory', icon: '🏭' },
+  { key: 'stock_log', path: '/stock-log', icon: '📜' },
+  { key: 'coupons', path: '/coupons', icon: '🎟️' },
   { key: 'currencies', path: '/currencies', icon: '💱' },
+  { key: 'webhooks', path: '/webhooks', icon: '🔔' },
   { key: 'settings', path: '/settings', icon: '⚙️' },
 ];
 
