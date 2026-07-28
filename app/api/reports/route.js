@@ -79,8 +79,7 @@ export async function GET(request) {
       SUM(oi.quantity) as total_qty, SUM(oi.total) as total_revenue
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
-    JOIN orders o ON oi.order_id = o.id
-    WHERE ${statusFilter} AND o.shop_id = ?
+    WHERE oi.shop_id = ?
     GROUP BY p.id ORDER BY total_qty DESC LIMIT 10
   `, [shopId]);
 
