@@ -18,6 +18,7 @@ export async function GET(request) {
   const monthStart = dateTo.substring(0, 7) + '-01';
 
   const statusFilter = "status IN ('completed','shipping')";
+  const statusFilterO = "o.status IN ('completed','shipping')";
 
   const daySales = await queryOne(`
     SELECT COUNT(*) as count, COALESCE(SUM(total_in_lak), 0) as total
@@ -35,7 +36,7 @@ export async function GET(request) {
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
     JOIN orders o ON oi.order_id = o.id
-    WHERE ${statusFilter} AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ? AND o.shop_id = ?
+    WHERE ${statusFilterO} AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ? AND o.shop_id = ?
     GROUP BY p.id ORDER BY total_qty DESC LIMIT 10
   `, [dateFrom, dateTo, shopId]);
 
@@ -66,7 +67,7 @@ export async function GET(request) {
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
     JOIN orders o ON oi.order_id = o.id
-    WHERE ${statusFilter} AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ? AND o.shop_id = ?
+    WHERE ${statusFilterO} AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ? AND o.shop_id = ?
   `, [dateFrom, dateTo, shopId]);
 
   const pendingOnline = await queryOne(
