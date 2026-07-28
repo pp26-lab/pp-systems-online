@@ -20,6 +20,14 @@ export default function RootLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        for (const r of regs) r.unregister();
+      }).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
     checkAuth();
   }, [pathname]);
 
