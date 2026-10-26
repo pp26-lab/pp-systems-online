@@ -11,6 +11,36 @@ export function useApp() {
   return useContext(AppContext);
 }
 
+// Runs before React hydrates: kills stale service workers / caches that could
+// serve old JS chunks, and auto-reloads once if a chunk fails to load so the
+// user never sees the "client-side exception" screen.
+const bootScript = `(function(){
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});
+    }
+    if (window.caches && caches.keys) {
+      caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});}).catch(function(){});
+    }
+  } catch(e){}
+  function isChunkErr(m){ m=m||''; return m.indexOf('ChunkLoadError')!==-1 || m.indexOf('Loading chunk')!==-1 || m.indexOf('Loading CSS chunk')!==-1; }
+  function reloadOnce(){
+    try {
+      if (!sessionStorage.getItem('pp_chunk_reload')) {
+        sessionStorage.setItem('pp_chunk_reload','1');
+        location.reload();
+      }
+    } catch(e){ location.reload(); }
+  }
+  window.addEventListener('error', function(e){ if (isChunkErr(e && e.message)) reloadOnce(); });
+  window.addEventListener('unhandledrejection', function(e){ if (e && e.reason && isChunkErr(''+e.reason)) reloadOnce(); });
+  window.addEventListener('load', function(){ setTimeout(function(){ try{ sessionStorage.removeItem('pp_chunk_reload'); }catch(e){} }, 4000); });
+})();`;
+
+function BootScript() {
+  return <script dangerouslySetInnerHTML={{ __html: bootScript }} />;
+}
+
 export default function RootLayout({ children }) {
   const [lang, setLang] = useState('lo');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -62,6 +92,7 @@ export default function RootLayout({ children }) {
     return (
       <html lang={lang}>
         <head>
+          <BootScript />
           <title>PP Systems Online - Login</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -81,6 +112,7 @@ export default function RootLayout({ children }) {
     return (
       <html lang={lang}>
         <head>
+          <BootScript />
           <title>PP Systems Online</title>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </head>
@@ -97,6 +129,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang={lang}>
       <head>
+        <BootScript />
         <title>PP Systems Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
