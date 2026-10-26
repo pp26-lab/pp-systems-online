@@ -30,6 +30,7 @@ export async function PUT(request) {
   const updates = [];
   const values = [];
   if (body.status) {
+    if (!['pending', 'in_progress', 'resolved'].includes(body.status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     updates.push('status = ?'); values.push(body.status);
     if (body.status === 'resolved') { updates.push('resolved_at = NOW()'); }
   }

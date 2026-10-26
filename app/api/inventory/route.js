@@ -31,7 +31,7 @@ export async function POST(request) {
   );
   await logStockMovement({
     shopId, productId: body.product_id, change: +body.quantity,
-    reason: 'stock_in', note: body.notes || `Status: ${body.status || 'in_stock'}, Batch: ${body.batch_number || ''}`,
+    reason: body.reason || 'stock_in', note: body.notes || [body.batch_number && `Batch ${body.batch_number}`, body.status !== 'in_stock' && body.status].filter(Boolean).join(', '),
     referenceType: 'inventory', referenceId: result.insertId,
   });
 
@@ -51,8 +51,8 @@ export async function PUT(request) {
   if (before && before.quantity !== body.quantity) {
     await logStockMovement({
       shopId, productId: before.product_id,
-      change: body.quantity - before.quantity, reason: 'adjustment',
-      note: body.notes || 'Manual inventory edit',
+      change: body.quantity - before.quantity, reason: body.reason || 'adjustment',
+      note: body.notes || '',
       referenceType: 'inventory', referenceId: body.id,
     });
   }
@@ -66,6 +66,13 @@ export async function DELETE(request) {
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+  const before = await queryOne('SELECT product_id, quantity FROM inventory WHERE id = ? AND shop_id = ?', [id, shopId]);
   await query('DELETE FROM inventory WHERE id = ? AND shop_id = ?', [id, shopId]);
+  if (before && before.quantity) {
+    await logStockMovement({
+      shopId, productId: before.product_id, change: -before.quantity, reason: 'adjustment',
+      note: 'Batch removed', referenceType: 'inventory', referenceId: Number(id),
+    });
+  }
   return NextResponse.json({ success: true });
 }

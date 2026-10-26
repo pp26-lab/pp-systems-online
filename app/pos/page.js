@@ -1,582 +1,654 @@
 'use client';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
 import { formatCurrency } from '../../lib/currency';
+import { printReceipt, printShippingLabel } from '../../lib/receipt';
+import { Icon, IconButton, Button, Segmented, Modal, Field, SearchInput, Chip, Pill, EmptyState, inputCls } from '../../components/ui';
+
+const COPY = {
+  lo: {
+    search: 'ຄົ້ນຫາ ຫຼື ຍິງບາໂຄ້ດ ແລ້ວກົດ Enter', all: 'ທັງໝົດ', cart: 'ກະຕ່າ', clear: 'ລ້າງກະຕ່າ',
+    retail: 'ລາຄາປົກກະຕິ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ',
+    emptyCart: 'ກະຕ່າຍັງວ່າງ', emptyCartText: 'ກົດທີ່ສິນຄ້າ ຫຼື ຍິງບາໂຄ້ດເພື່ອເພີ່ມ',
+    noMatch: 'ບໍ່ພົບສິນຄ້າ', noMatchText: 'ລອງຄຳອື່ນ ຫຼື ເລືອກໝວດ "ທັງໝົດ"',
+    out: 'ໝົດ', left: n => `ເຫຼືອ ${n}`, options: n => `${n} ຕົວເລືອກ`, preorder: 'ສັ່ງຈອງ',
+    subtotal: 'ລວມຍ່ອຍ', discount: 'ສ່ວນຫຼຸດ', total: 'ຍອດລວມ', charge: 'ຊຳລະເງິນ',
+    checkout: 'ຊຳລະເງິນ', who: 'ລູກຄ້າ', pay: 'ການຊຳລະ', received: 'ຮັບເງິນມາ', exact: 'ພໍດີ',
+    change: 'ເງິນທອນ', short: 'ຍັງຂາດ', coupon: 'ລະຫັດຄູປອງ', apply: 'ໃຊ້', couponOk: d => `ຫຼຸດ ${d}`,
+    complete: 'ຢືນຢັນການຂາຍ', saving: 'ກຳລັງບັນທຶກ…', failed: 'ບັນທຶກບໍ່ສຳເລັດ ກວດສອບອິນເຕີເນັດແລ້ວລອງໃໝ່',
+    done: 'ຂາຍສຳເລັດ', printReceipt: 'ພິມໃບບິນ', printLabel: 'ພິມໃບປະໜ້າ', newSale: 'ເລີ່ມການຂາຍໃໝ່',
+    rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `ຍອດເປັນ ${c}`, view: 'ເບິ່ງກະຕ່າ', pick: 'ເລືອກຕົວເລືອກ',
+    online: 'ສົ່ງອອນລາຍ', walkin: 'ໜ້າຮ້ານ', optional: 'ບໍ່ບັງຄັບ',
+  },
+  th: {
+    search: 'ค้นหา หรือยิงบาร์โค้ดแล้วกด Enter', all: 'ทั้งหมด', cart: 'ตะกร้า', clear: 'ล้างตะกร้า',
+    retail: 'ราคาปกติ', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก',
+    emptyCart: 'ตะกร้ายังว่าง', emptyCartText: 'แตะที่สินค้าหรือยิงบาร์โค้ดเพื่อเพิ่ม',
+    noMatch: 'ไม่พบสินค้า', noMatchText: 'ลองคำอื่น หรือเลือกหมวด "ทั้งหมด"',
+    out: 'หมด', left: n => `เหลือ ${n}`, options: n => `${n} ตัวเลือก`, preorder: 'พรีออเดอร์',
+    subtotal: 'รวมย่อย', discount: 'ส่วนลด', total: 'ยอดรวม', charge: 'ชำระเงิน',
+    checkout: 'ชำระเงิน', who: 'ลูกค้า', pay: 'การชำระเงิน', received: 'รับเงินมา', exact: 'พอดี',
+    change: 'เงินทอน', short: 'ยังขาด', coupon: 'โค้ดคูปอง', apply: 'ใช้', couponOk: d => `ลด ${d}`,
+    complete: 'ยืนยันการขาย', saving: 'กำลังบันทึก…', failed: 'บันทึกไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
+    done: 'ขายสำเร็จ', printReceipt: 'พิมพ์ใบเสร็จ', printLabel: 'พิมพ์ใบปะหน้า', newSale: 'เริ่มการขายใหม่',
+    rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `ยอดเป็น ${c}`, view: 'ดูตะกร้า', pick: 'เลือกตัวเลือก',
+    online: 'ส่งออนไลน์', walkin: 'หน้าร้าน', optional: 'ไม่บังคับ',
+  },
+  en: {
+    search: 'Search or scan a barcode, then press Enter', all: 'All', cart: 'Cart', clear: 'Clear cart',
+    retail: 'Retail', wholesale: 'Wholesale', member: 'Member',
+    emptyCart: 'Cart is empty', emptyCartText: 'Tap a product or scan a barcode to add it',
+    noMatch: 'No products found', noMatchText: 'Try another word or choose "All"',
+    out: 'Sold out', left: n => `${n} left`, options: n => `${n} options`, preorder: 'Pre-order',
+    subtotal: 'Subtotal', discount: 'Discount', total: 'Total', charge: 'Charge',
+    checkout: 'Checkout', who: 'Customer', pay: 'Payment', received: 'Cash received', exact: 'Exact',
+    change: 'Change', short: 'Still owed', coupon: 'Coupon code', apply: 'Apply', couponOk: d => `${d} off`,
+    complete: 'Complete sale', saving: 'Saving…', failed: "The sale wasn't saved. Check your connection and try again.",
+    done: 'Sale complete', printReceipt: 'Print receipt', printLabel: 'Print shipping label', newSale: 'New sale',
+    rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `Total in ${c}`, view: 'View cart', pick: 'Choose an option',
+    online: 'Online delivery', walkin: 'In store', optional: 'optional',
+  },
+};
+
+const STEPS = { LAK: [10000, 50000, 100000], THB: [100, 500, 1000], USD: [10, 50, 100], CNY: [10, 50, 100] };
+
+function sellable(p, today) {
+  const okStatus = !p.status || p.status === 'active' || p.status === 'pre_order';
+  const end = p.sale_end_date ? String(p.sale_end_date).slice(0, 10) : '';
+  return okStatus && (!end || end >= today);
+}
 
 export default function POSPage() {
   const { lang } = useContext(AppContext);
+  const c = COPY[lang] || COPY.en;
+  const searchRef = useRef(null);
+
   const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
+  const [shop, setShop] = useState({});
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
-  const [categories, setCategories] = useState([]);
-  const [currency, setCurrency] = useState('LAK');
-  const [currencies, setCurrencies] = useState([]);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
-  const [amountReceived, setAmountReceived] = useState('');
+  const [cart, setCart] = useState([]);
+  const [customerType, setCustomerType] = useState('retail');
   const [discount, setDiscount] = useState(0);
-  const [showReceipt, setShowReceipt] = useState(false);
-  const [lastOrder, setLastOrder] = useState(null);
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [variantPicker, setVariantPicker] = useState(null);
+  const [mobileCart, setMobileCart] = useState(false);
+
+  const [checkout, setCheckout] = useState(false);
   const [orderType, setOrderType] = useState('walk_in');
+  const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
   const [deliveryDate, setDeliveryDate] = useState('');
   const [shippingNotes, setShippingNotes] = useState('');
-  const [variantPicker, setVariantPicker] = useState(null);
-  const [shopSettings, setShopSettings] = useState({ shop_name: 'PP Systems' });
+  const [currency, setCurrency] = useState('LAK');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [received, setReceived] = useState('');
   const [couponCode, setCouponCode] = useState('');
-  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [coupon, setCoupon] = useState(null); // { code, discount }
   const [couponError, setCouponError] = useState('');
-  const [customerType, setCustomerType] = useState('retail');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [lastSale, setLastSale] = useState(null);
 
   useEffect(() => {
-    fetchProducts();
-    fetchCurrencies();
-    fetch('/api/shop-settings').then(r => r.json()).then(data => {
-      setShopSettings(data);
-      if (data.default_order_type) setOrderType(data.default_order_type);
+    loadProducts();
+    fetch('/api/currencies').then(r => r.json()).then(d => setCurrencies(d.currencies || [])).catch(() => {});
+    fetch('/api/shop-settings').then(r => r.json()).then(d => {
+      setShop(d);
+      if (d.default_order_type) setOrderType(d.default_order_type);
     }).catch(() => {});
+    if (window.matchMedia('(min-width: 1024px)').matches) searchRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [search, category]);
-
-  async function fetchProducts() {
-    const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (category) params.set('category', category);
-    const res = await fetch(`/api/products?${params}`);
-    const data = await res.json();
-    const now = new Date().toISOString().split('T')[0];
-    const filtered = data.filter(p =>
-      (p.status === 'active' || p.status === 'pre_order' || !p.status) &&
-      (!p.sale_end_date || p.sale_end_date >= now)
-    );
-    setProducts(filtered);
-    const cats = [...new Set(data.map(p => p.category).filter(Boolean))];
-    if (cats.length > 0 && categories.length === 0) setCategories(cats);
+  async function loadProducts() {
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      const today = new Date().toISOString().slice(0, 10);
+      setProducts(Array.isArray(data) ? data.filter(p => sellable(p, today)) : []);
+    } catch {}
   }
 
-  async function fetchCurrencies() {
-    const res = await fetch('/api/currencies');
-    const data = await res.json();
-    setCurrencies(data.currencies || []);
+  function nameOf(p) {
+    if (lang === 'lo') return p.name_lo || p.name_en || p.name_th;
+    if (lang === 'th') return p.name_th || p.name_en || p.name_lo;
+    return p.name_en || p.name_lo || p.name_th;
   }
 
-  function getProductName(p) {
-    if (lang === 'lo') return p.name_lo || p.name_en;
-    if (lang === 'th') return p.name_th || p.name_en;
-    return p.name_en;
+  const categories = useMemo(() => {
+    const counts = {};
+    for (const p of products) if (p.category) counts[p.category] = (counts[p.category] || 0) + 1;
+    return Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [products]);
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter(p => {
+      if (category && p.category !== category) return false;
+      if (!q) return true;
+      return [p.name_lo, p.name_th, p.name_en, p.sku, p.barcode].some(v => v && String(v).toLowerCase().includes(q));
+    });
+  }, [products, search, category]);
+
+  const qtyInCart = useMemo(() => {
+    const m = {};
+    for (const i of cart) m[i.product_id] = (m[i.product_id] || 0) + i.quantity;
+    return m;
+  }, [cart]);
+
+  function stockOf(p) {
+    return Number(p.stock_in_stock) || 0;
   }
 
-  function handleProductClick(product) {
-    if (product.has_variants && product.variants && product.variants.length > 0) {
-      setVariantPicker(product);
-    } else if (product.stock_in_stock > 0) {
-      addToCart(product, null);
-    }
+  function priceOf(prices, type = customerType) {
+    if (type === 'wholesale' && prices.wholesale > 0) return prices.wholesale;
+    if (type === 'member' && prices.member > 0) return prices.member;
+    return prices.retail;
   }
 
   function addToCart(product, variant) {
-    const cartKey = variant ? `${product.id}-v${variant.id}` : `${product.id}`;
-    const variantLabel = variant ? ` (${variant.color} ${variant.size})` : '';
-
+    const key = variant ? `${product.id}-v${variant.id}` : `${product.id}`;
+    const preorder = product.status === 'pre_order';
+    const max = preorder ? Infinity : variant ? Number(variant.quantity) || 0 : stockOf(product);
     setCart(prev => {
-      const existing = prev.find(i => i.cart_key === cartKey);
+      const existing = prev.find(i => i.key === key);
       if (existing) {
-        return prev.map(i =>
-          i.cart_key === cartKey ? { ...i, quantity: i.quantity + 1 } : i
-        );
+        return prev.map(i => (i.key === key ? { ...i, quantity: Math.min(i.quantity + 1, i.max) } : i));
       }
-      const price = priceForCustomer(product);
+      if (max <= 0) return prev;
       return [...prev, {
-        cart_key: cartKey,
+        key,
         product_id: product.id,
         variant_id: variant?.id || null,
-        name: getProductName(product) + variantLabel,
+        name: nameOf(product),
+        variant: variant ? [variant.color, variant.size].filter(Boolean).join(' / ') : '',
         sku: product.sku + (variant?.sku_suffix || ''),
-        unit_price: price,
+        prices: {
+          retail: Number(product.selling_price_lak) || 0,
+          wholesale: Number(product.wholesale_price_lak) || 0,
+          member: Number(product.member_price_lak) || 0,
+        },
         quantity: 1,
-        total: price,
-        image_url: product.image_url,
+        max,
       }];
     });
     setVariantPicker(null);
   }
 
-  function updateQty(cartKey, qty) {
-    if (qty <= 0) {
-      setCart(prev => prev.filter(i => i.cart_key !== cartKey));
-      return;
+  function pickProduct(p) {
+    if (p.has_variants && p.variants?.length) setVariantPicker(p);
+    else addToCart(p, null);
+  }
+
+  function setQty(key, qty) {
+    setCart(prev => (qty <= 0 ? prev.filter(i => i.key !== key) : prev.map(i => (i.key === key ? { ...i, quantity: Math.min(qty, i.max) } : i))));
+  }
+
+  // Enter in the search box: exact SKU / barcode adds straight to the cart (works with USB barcode scanners).
+  function onSearchKey(e) {
+    if (e.key !== 'Enter') return;
+    const q = search.trim().toLowerCase();
+    if (!q) return;
+    for (const p of products) {
+      for (const v of p.variants || []) {
+        if ((p.sku + (v.sku_suffix || '')).toLowerCase() === q) {
+          addToCart(p, v);
+          setSearch('');
+          return;
+        }
+      }
     }
-    setCart(prev => prev.map(i =>
-      i.cart_key === cartKey ? { ...i, quantity: qty, total: i.unit_price * qty } : i
-    ));
+    const exact = products.find(p => String(p.sku || '').toLowerCase() === q || String(p.barcode || '').toLowerCase() === q);
+    const target = exact || (visible.length === 1 ? visible[0] : null);
+    if (target) {
+      pickProduct(target);
+      setSearch('');
+    }
   }
 
-  function removeFromCart(cartKey) {
-    setCart(prev => prev.filter(i => i.cart_key !== cartKey));
-  }
+  const lines = cart.map(i => ({ ...i, unit: priceOf(i.prices) }));
+  const subtotal = lines.reduce((s, i) => s + i.unit * i.quantity, 0);
+  const couponOff = coupon ? coupon.discount : 0;
+  const total = Math.max(0, subtotal - (Number(discount) || 0) - couponOff);
+  const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
 
-  function priceForCustomer(p) {
-    if (customerType === 'wholesale' && p.wholesale_price_lak > 0) return p.wholesale_price_lak;
-    if (customerType === 'member' && p.member_price_lak > 0) return p.member_price_lak;
-    return p.selling_price_lak;
-  }
+  // A coupon validated against an old cart total is no longer trustworthy.
+  useEffect(() => { setCoupon(null); setCouponError(''); }, [subtotal]);
 
-  const subtotal = cart.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
-  const total = subtotal - discount - couponDiscount;
+  const currencyOptions = useMemo(() => {
+    const codes = currencies.map(x => x.code);
+    const list = ['LAK', ...codes.filter(x => x !== 'LAK')];
+    return list.map(code => ({ value: code, label: code }));
+  }, [currencies]);
+  const rate = currency === 'LAK' ? 1 : Number(currencies.find(x => x.code === currency)?.rate_to_lak) || 1;
+  const due = total / rate;
+  const receivedNum = parseFloat(received) || 0;
+  const changeDue = receivedNum - due;
+
+  const quickAmounts = useMemo(() => {
+    if (!(due > 0)) return [];
+    const exact = Math.round(due * 100) / 100;
+    const ups = (STEPS[currency] || STEPS.USD).map(step => Math.ceil(due / step) * step);
+    return [...new Set([exact, ...ups])].filter(v => v >= due).slice(0, 4);
+  }, [due, currency]);
 
   async function applyCoupon() {
     setCouponError('');
     if (!couponCode.trim()) return;
-    const res = await fetch('/api/coupons/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: couponCode, subtotal }),
-    });
-    const data = await res.json();
-    if (res.ok && data.valid) {
-      setCouponDiscount(data.discount);
-    } else {
-      setCouponError(data.error || 'Invalid');
-      setCouponDiscount(0);
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode, subtotal }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid) setCoupon({ code: couponCode.trim().toUpperCase(), discount: Number(data.discount) || 0 });
+      else { setCoupon(null); setCouponError(data.error || 'Invalid'); }
+    } catch {
+      setCouponError(c.failed);
     }
   }
 
-  function getExchangeRate() {
-    if (currency === 'LAK') return 1;
-    const cur = currencies.find(c => c.code === currency);
-    return cur?.rate_to_lak || 1;
-  }
-
-  function getTotalInCurrency() {
-    return total / getExchangeRate();
-  }
-
-  function getChangeAmount() {
-    const received = parseFloat(amountReceived) || 0;
-    if (currency === 'LAK') return received - total;
-    return received - getTotalInCurrency();
-  }
-
-  function getProductStock(product) {
-    if (product.has_variants && product.variants) {
-      return product.variant_total_qty;
-    }
-    return product.stock_in_stock;
+  function openCheckout() {
+    setSaveError('');
+    setReceived('');
+    setMobileCart(false);
+    setCheckout(true);
   }
 
   async function completeSale() {
-    const rate = getExchangeRate();
-    const orderTotal = currency === 'LAK' ? total : getTotalInCurrency();
-
-    const orderData = {
-      customer_name: customerName,
-      customer_phone: customerPhone,
-      customer_address: customerAddress,
-      coupon_code: couponCode || '',
-      coupon_discount: couponDiscount || 0,
-      subtotal: currency === 'LAK' ? subtotal : subtotal / rate,
-      discount: currency === 'LAK' ? (discount + couponDiscount) : (discount + couponDiscount) / rate,
+    if (saving || cart.length === 0) return;
+    setSaving(true);
+    setSaveError('');
+    const conv = v => (currency === 'LAK' ? v : v / rate);
+    const body = {
+      customer_name: customer.name.trim(),
+      customer_phone: customer.phone.trim(),
+      customer_address: orderType === 'online' ? customer.address.trim() : '',
+      coupon_code: coupon?.code || '',
+      coupon_discount: couponOff,
+      subtotal: conv(subtotal),
+      discount: conv((Number(discount) || 0) + couponOff),
       tax: 0,
-      total: orderTotal,
+      total: conv(total),
       currency,
       payment_method: paymentMethod,
       order_type: orderType,
-      delivery_date: deliveryDate || null,
-      shipping_notes: shippingNotes,
-      items: cart.map(item => ({
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-        quantity: item.quantity,
-        unit_price: currency === 'LAK' ? item.unit_price : item.unit_price / rate,
-        total: currency === 'LAK' ? item.unit_price * item.quantity : (item.unit_price * item.quantity) / rate,
+      delivery_date: orderType === 'online' ? deliveryDate || null : null,
+      shipping_notes: orderType === 'online' ? shippingNotes : '',
+      items: lines.map(i => ({
+        product_id: i.product_id,
+        variant_id: i.variant_id,
+        quantity: i.quantity,
+        unit_price: conv(i.unit),
+        total: conv(i.unit * i.quantity),
       })),
     };
-
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData),
-    });
-
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error('save failed');
       const order = await res.json();
-      order.items = order.items.map((oi, idx) => ({ ...oi, name: cart[idx]?.name }));
-      setLastOrder(order);
-      setShowReceipt(true);
-      setShowCheckout(false);
+      order.items = (order.items || []).map((oi, idx) => ({ ...oi, name: lines[idx]?.name, variant_color: lines[idx]?.variant }));
+      setLastSale({ order, received: paymentMethod === 'cash' && receivedNum > 0 ? receivedNum : null });
+      setCheckout(false);
       setCart([]);
       setDiscount(0);
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerAddress('');
-      setAmountReceived('');
+      setCustomer({ name: '', phone: '', address: '' });
       setDeliveryDate('');
       setShippingNotes('');
       setCouponCode('');
-      setCouponDiscount(0);
-      setCouponError('');
-      fetchProducts();
+      setCoupon(null);
+      setReceived('');
+      loadProducts();
+    } catch {
+      setSaveError(c.failed);
+    } finally {
+      setSaving(false);
     }
   }
 
-  function printReceipt() {
-    window.print();
+  function newSale() {
+    setLastSale(null);
+    setCurrency('LAK');
+    if (window.matchMedia('(min-width: 1024px)').matches) setTimeout(() => searchRef.current?.focus(), 50);
   }
 
-  return (
-    <div className="flex flex-col lg:flex-row gap-4 h-full -m-4 lg:-m-6">
-      {/* Product Grid */}
-      <div className="flex-1 flex flex-col p-4 lg:p-6 overflow-hidden">
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <input type="text" placeholder={t('search', lang)} value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" />
-          <select value={category} onChange={e => setCategory(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
-            <option value="">{t('all_categories', lang)}</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+  const ticket = (
+    <div className="flex flex-col h-full min-h-0">
+      <div className="px-5 pt-5 pb-4 border-b border-line space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-ink text-lg">
+            {c.cart} {itemCount > 0 && <span className="text-slate-400 font-semibold num">({itemCount})</span>}
+          </h2>
+          {cart.length > 0 && (
+            <button onClick={() => setCart([])} className="text-sm text-slate-500 hover:text-danger">{c.clear}</button>
+          )}
         </div>
+        <Segmented size="sm" value={customerType} onChange={setCustomerType}
+          options={[{ value: 'retail', label: c.retail }, { value: 'wholesale', label: c.wholesale }, { value: 'member', label: c.member }]} />
+      </div>
 
-        <div className="flex-1 overflow-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {products.map(product => {
-              const stock = getProductStock(product);
-              return (
-                <button
-                  key={product.id}
-                  onClick={() => stock > 0 && handleProductClick(product)}
-                  disabled={stock <= 0}
-                  className={`bg-white rounded-xl p-3 text-left border-2 transition-all hover:shadow-lg ${
-                    stock <= 0
-                      ? 'border-gray-200 opacity-50 cursor-not-allowed'
-                      : 'border-gray-200 hover:border-primary cursor-pointer'
-                  } ${cart.find(i => i.product_id === product.id) ? 'border-primary bg-blue-50' : ''}`}
-                >
-                  <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden relative">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-3xl">
-                        {product.category === 'Clothing' ? '👕' :
-                         product.category === 'Accessories' ? '👜' :
-                         product.category === 'Electronics' ? '📱' :
-                         product.category === 'Footwear' ? '👟' : '📦'}
-                      </span>
-                    )}
-                    {product.has_variants && (
-                      <span className="absolute top-1 right-1 bg-purple-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                        {product.variants?.length || 0} {t('variants', lang).split(' ')[0]}
-                      </span>
-                    )}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {lines.length === 0 ? (
+          <EmptyState icon="ticket" title={c.emptyCart} text={c.emptyCartText} />
+        ) : (
+          <ul className="divide-y divide-line">
+            {lines.map(i => (
+              <li key={i.key} className="px-5 py-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-ink text-[0.92rem] leading-snug">{i.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {i.variant && <span>{i.variant} </span>}
+                      <span className="num">{formatCurrency(i.unit, 'LAK')}</span>
+                    </p>
                   </div>
-                  <p className="font-semibold text-sm truncate">{getProductName(product)}</p>
-                  <p className="text-xs text-gray-500">{product.sku}</p>
-                  <p className="text-primary font-bold mt-1">{formatCurrency(product.selling_price_lak, 'LAK')}</p>
-                  <p className={`text-xs mt-1 ${stock <= 5 ? 'text-red-500' : 'text-green-600'}`}>
-                    {t('in_stock', lang)}: {stock}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+                  <p className="font-bold text-ink num text-[0.92rem] shrink-0">{formatCurrency(i.unit * i.quantity, 'LAK')}</p>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="inline-flex items-center rounded-lg border border-line">
+                    <button onClick={() => setQty(i.key, i.quantity - 1)} aria-label="−1" className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-canvas rounded-l-lg">
+                      <Icon name="minus" className="w-4 h-4" strokeWidth={2} />
+                    </button>
+                    <span className="w-9 text-center text-sm font-bold num">{i.quantity}</span>
+                    <button onClick={() => setQty(i.key, i.quantity + 1)} disabled={i.quantity >= i.max} aria-label="+1"
+                      className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-canvas rounded-r-lg disabled:opacity-30">
+                      <Icon name="plus" className="w-4 h-4" strokeWidth={2} />
+                    </button>
+                  </div>
+                  <IconButton icon="trash" label={t('delete', lang)} tone="danger" onClick={() => setQty(i.key, 0)} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="border-t border-line px-5 py-3.5 space-y-2 text-sm">
+        <div className="flex justify-between text-slate-600">
+          <span>{c.subtotal}</span>
+          <span className="num font-semibold text-ink">{formatCurrency(subtotal, 'LAK')}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3 text-slate-600">
+          <span>{c.discount}</span>
+          <input aria-label={c.discount} type="number" min="0" inputMode="numeric" value={discount || ''} placeholder="0"
+            onChange={e => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))}
+            className="w-36 px-3 py-1.5 border rounded-lg text-right num" />
         </div>
       </div>
 
-      {/* Cart */}
-      <div className="w-full lg:w-96 bg-white border-l border-gray-200 flex flex-col no-print">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold">{t('cart', lang)} ({cart.length})</h2>
-        </div>
+      <div className="bg-ink text-white px-5 py-4 flex items-end justify-between gap-3">
+        <span className="text-sm text-slate-400 pb-1">{c.total}</span>
+        <span className="text-[1.9rem] leading-none font-extrabold text-gold num tracking-tight">{formatCurrency(total, 'LAK')}</span>
+      </div>
+      <div className="p-4 bg-ink">
+        <Button tone="gold" size="lg" className="w-full" onClick={openCheckout} disabled={cart.length === 0}>
+          {c.charge}
+        </Button>
+      </div>
+    </div>
+  );
 
-        <div className="flex-1 overflow-auto p-4">
-          {cart.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">{t('no_items', lang)}</p>
+  return (
+    <div className="-m-4 lg:-m-6 lg:h-[calc(100%+3rem)] flex">
+      <section className="flex-1 min-w-0 flex flex-col p-4 lg:p-6 pb-28 lg:pb-6">
+        <SearchInput inputRef={searchRef} value={search} onChange={setSearch} onKeyDown={onSearchKey} placeholder={c.search} />
+
+        {categories.length > 0 && (
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            <Chip active={!category} onClick={() => setCategory('')} count={products.length}>{c.all}</Chip>
+            {categories.map(([name, count]) => (
+              <Chip key={name} active={category === name} onClick={() => setCategory(name)} count={count}>{name}</Chip>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4 flex-1 lg:overflow-y-auto min-h-0">
+          {visible.length === 0 ? (
+            <EmptyState icon="search" title={c.noMatch} text={c.noMatchText} />
           ) : (
-            <div className="space-y-3">
-              {cart.map(item => (
-                <div key={item.cart_key} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{item.name}</p>
-                    <p className="text-xs text-gray-500">{formatCurrency(item.unit_price, 'LAK')}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => updateQty(item.cart_key, item.quantity - 1)}
-                      className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-sm font-bold">-</button>
-                    <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.cart_key, item.quantity + 1)}
-                      className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-sm font-bold">+</button>
-                  </div>
-                  <p className="text-sm font-bold w-24 text-right">{formatCurrency(item.unit_price * item.quantity, 'LAK')}</p>
-                  <button onClick={() => removeFromCart(item.cart_key)}
-                    className="text-red-400 hover:text-red-600 text-lg">&times;</button>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+              {visible.map(p => {
+                const stock = stockOf(p);
+                const preorder = p.status === 'pre_order';
+                const soldOut = !preorder && stock <= 0;
+                const inCart = qtyInCart[p.id] || 0;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => !soldOut && pickProduct(p)}
+                    disabled={soldOut}
+                    className={`group text-left bg-white rounded-2xl border overflow-hidden transition-colors ${
+                      inCart ? 'border-gold ring-1 ring-gold' : 'border-line hover:border-slate-300'
+                    } ${soldOut ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <div className="relative aspect-[4/5] bg-canvas">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt="" loading="lazy" className="w-full h-full object-cover"
+                          onError={e => { e.currentTarget.style.display = 'none'; }} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <Icon name="image" className="w-9 h-9" strokeWidth={1.3} />
+                        </div>
+                      )}
+                      {inCart > 0 && (
+                        <span className="absolute top-2 left-2 min-w-7 h-7 px-2 rounded-full bg-gold text-ink text-sm font-extrabold flex items-center justify-center num shadow-sm">
+                          {inCart}
+                        </span>
+                      )}
+                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        {preorder && <Pill tone="gold">{c.preorder}</Pill>}
+                        {p.has_variants && p.variants?.length > 0 && <Pill tone="navy">{c.options(p.variants.length)}</Pill>}
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-[0.88rem] font-semibold text-ink leading-snug line-clamp-2 min-h-[2.5em]">{nameOf(p)}</p>
+                      <div className="mt-2 flex items-baseline justify-between gap-2">
+                        <span className="font-extrabold text-primary num">{formatCurrency(priceOf({
+                          retail: Number(p.selling_price_lak) || 0,
+                          wholesale: Number(p.wholesale_price_lak) || 0,
+                          member: Number(p.member_price_lak) || 0,
+                        }), 'LAK')}</span>
+                        {!preorder && (
+                          <span className={`text-xs num shrink-0 ${soldOut ? 'text-danger font-semibold' : stock <= 5 ? 'text-warning font-semibold' : 'text-slate-400'}`}>
+                            {soldOut ? c.out : c.left(stock)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
+      </section>
 
-        {cart.length > 0 && !showCheckout && (
-          <div className="p-4 border-t border-gray-200 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>{t('subtotal', lang)}</span>
-              <span className="font-semibold">{formatCurrency(subtotal, 'LAK')}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span>{t('discount', lang)}</span>
-              <input type="number" value={discount || ''} onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
-                className="flex-1 px-2 py-1 border rounded text-right" placeholder="0" />
-            </div>
-            <div className="flex justify-between text-lg font-bold border-t pt-2">
-              <span>{t('total', lang)}</span>
-              <span className="text-primary">{formatCurrency(total, 'LAK')}</span>
-            </div>
-            <button onClick={() => setShowCheckout(true)}
-              className="w-full bg-primary text-white py-3 rounded-xl font-bold text-lg hover:bg-primary-dark transition-colors">
-              {t('checkout', lang)}
-            </button>
+      <aside className="hidden lg:flex w-[390px] shrink-0 bg-white border-l border-line flex-col no-print">{ticket}</aside>
+
+      {/* Phones and tablets: cart lives in a bottom bar that opens a sheet. */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-20 bg-ink text-white px-4 py-3 flex items-center gap-3 no-print">
+        <button onClick={() => setMobileCart(true)} className="flex-1 text-left min-w-0">
+          <span className="block text-xs text-slate-400">{c.view} <span className="num">({itemCount})</span></span>
+          <span className="block text-xl font-extrabold text-gold num truncate">{formatCurrency(total, 'LAK')}</span>
+        </button>
+        <Button tone="gold" onClick={openCheckout} disabled={cart.length === 0}>{c.charge}</Button>
+      </div>
+      {mobileCart && (
+        <div className="lg:hidden fixed inset-0 z-40 no-print">
+          <div className="absolute inset-0 bg-ink/55" onClick={() => setMobileCart(false)} aria-hidden="true" />
+          <div className="absolute inset-x-0 bottom-0 top-16 bg-white rounded-t-2xl overflow-hidden">
+            <IconButton icon="close" label="Close" onClick={() => setMobileCart(false)} className="absolute top-4 right-3 z-10" />
+            {ticket}
           </div>
-        )}
+        </div>
+      )}
 
-        {showCheckout && (
-          <div className="p-4 border-t border-gray-200 space-y-3 overflow-auto max-h-[60vh]">
-            <div className="flex justify-between text-lg font-bold">
-              <span>{t('total', lang)}</span>
-              <span className="text-primary">{formatCurrency(total, 'LAK')}</span>
+      <Modal open={!!variantPicker} onClose={() => setVariantPicker(null)} title={variantPicker ? nameOf(variantPicker) : ''} description={c.pick}>
+        {variantPicker && (() => {
+          const label1 = variantPicker.variant_label_1 || t('color', lang);
+          const label2 = variantPicker.variant_label_2 || t('size', lang);
+          const groups = {};
+          for (const v of variantPicker.variants || []) (groups[v.color || '-'] ||= []).push(v);
+          return (
+            <div className="space-y-5">
+              {Object.entries(groups).map(([color, vs]) => (
+                <div key={color}>
+                  <p className="text-sm text-slate-500 mb-2">{label1}: <span className="font-semibold text-ink">{color}</span></p>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {vs.map(v => {
+                      const none = variantPicker.status !== 'pre_order' && (Number(v.quantity) || 0) <= 0;
+                      return (
+                        <button key={v.id} disabled={none} onClick={() => addToCart(variantPicker, v)}
+                          aria-label={`${label2} ${v.size || '-'}`}
+                          className={`rounded-xl border px-2 py-3 text-center transition-colors ${
+                            none ? 'border-line bg-canvas opacity-50 cursor-not-allowed' : 'border-line hover:border-gold hover:bg-gold-soft'
+                          }`}>
+                          <span className="block font-bold text-ink">{v.size || '-'}</span>
+                          <span className={`block text-xs mt-0.5 num ${none ? 'text-danger' : 'text-slate-500'}`}>
+                            {none ? c.out : c.left(v.quantity)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">{t('order_type', lang)}</label>
-              <div className="flex gap-2 mt-1">
-                {['walk_in', 'online'].map(ot => (
-                  <button key={ot} onClick={() => setOrderType(ot)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
-                      orderType === ot ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}>{t(ot, lang)}</button>
-                ))}
-              </div>
+          );
+        })()}
+      </Modal>
+
+      <Modal open={checkout} onClose={() => !saving && setCheckout(false)} title={c.checkout} size="xl"
+        footer={
+          <div className="w-full flex flex-col-reverse sm:flex-row sm:items-center gap-3">
+            {saveError ? <p role="alert" className="text-sm text-danger flex-1">{saveError}</p> : <span className="flex-1" />}
+            <Button tone="ghost" onClick={() => setCheckout(false)} disabled={saving}>{t('cancel', lang)}</Button>
+            <Button tone="gold" size="lg" onClick={completeSale} disabled={saving || cart.length === 0}>
+              {saving ? c.saving : <>{c.complete}<span className="num font-extrabold">{formatCurrency(due, currency)}</span></>}
+            </Button>
+          </div>
+        }>
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="space-y-4">
+            <h3 className="font-bold text-ink">{c.who}</h3>
+            <Segmented value={orderType} onChange={setOrderType}
+              options={[{ value: 'walk_in', label: c.walkin }, { value: 'online', label: c.online }]} />
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t('customer_name', lang)}>
+                <input value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} className={inputCls} />
+              </Field>
+              <Field label={t('customer_phone', lang)}>
+                <input type="tel" inputMode="tel" value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })} className={`${inputCls} num`} />
+              </Field>
             </div>
-            <input type="text" placeholder={t('customer_name', lang)} value={customerName}
-              onChange={e => setCustomerName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
-            <input type="text" placeholder={t('customer_phone', lang)} value={customerPhone}
-              onChange={e => setCustomerPhone(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
             {orderType === 'online' && (
               <>
-                <textarea placeholder={t('customer_address', lang)} value={customerAddress}
-                  onChange={e => setCustomerAddress(e.target.value)} className="w-full px-3 py-2 border rounded-lg" rows={2} />
-                <div>
-                  <label className="text-sm font-medium text-gray-600">{t('delivery_date', lang)}</label>
-                  <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg mt-1" />
+                <Field label={t('customer_address', lang)}>
+                  <textarea rows={2} value={customer.address} onChange={e => setCustomer({ ...customer, address: e.target.value })} className={inputCls} />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label={t('delivery_date', lang)}>
+                    <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={inputCls} />
+                  </Field>
+                  <Field label={t('shipping_notes', lang)}>
+                    <input value={shippingNotes} onChange={e => setShippingNotes(e.target.value)} className={inputCls} />
+                  </Field>
                 </div>
-                <input type="text" placeholder={t('shipping_notes', lang)} value={shippingNotes}
-                  onChange={e => setShippingNotes(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
               </>
             )}
             <div>
-              <label className="text-sm font-medium text-gray-600">{t('payment_currency', lang)}</label>
-              <div className="flex gap-2 mt-1">
-                {['LAK', 'THB', 'USD'].map(c => (
-                  <button key={c} onClick={() => setCurrency(c)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
-                      currency === c ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}>{c}</button>
-                ))}
-              </div>
+              <Field label={c.coupon}>
+                <div className="flex gap-2">
+                  <input value={couponCode} onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCoupon(null); setCouponError(''); }}
+                    onKeyDown={e => e.key === 'Enter' && applyCoupon()} className={`${inputCls} uppercase`} />
+                  <Button tone="ghost" onClick={applyCoupon} disabled={!couponCode.trim()}>{c.apply}</Button>
+                </div>
+              </Field>
+              {coupon && <p className="mt-1.5 text-sm text-success font-semibold">{c.couponOk(formatCurrency(coupon.discount, 'LAK'))}</p>}
+              {couponError && <p className="mt-1.5 text-sm text-danger">{couponError}</p>}
             </div>
-            {currency !== 'LAK' && (
-              <div className="bg-blue-50 p-2 rounded-lg text-sm text-center">
-                {t('total', lang)}: <strong>{formatCurrency(getTotalInCurrency(), currency)}</strong>
-                <span className="text-gray-500 text-xs block">
-                  ({t('exchange_rate', lang)}: 1 {currency} = {formatCurrency(getExchangeRate(), 'LAK')})
-                </span>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-bold text-ink">{c.pay}</h3>
+            <Segmented value={currency} onChange={v => { setCurrency(v); setReceived(''); }} options={currencyOptions} />
+            <Segmented value={paymentMethod} onChange={setPaymentMethod}
+              options={[{ value: 'cash', label: t('cash', lang) }, { value: 'transfer', label: t('transfer', lang) }]} />
+
+            <div className="rounded-2xl bg-ink text-white p-5">
+              <div className="flex items-end justify-between gap-3">
+                <span className="text-sm text-slate-400">{currency === 'LAK' ? c.total : c.inCurrency(currency)}</span>
+                <span className="text-3xl font-extrabold text-gold num leading-none">{formatCurrency(due, currency)}</span>
               </div>
-            )}
-            <div>
-              <label className="text-sm font-medium text-gray-600">{t('payment_method', lang)}</label>
-              <div className="flex gap-2 mt-1">
-                {['cash', 'transfer'].map(m => (
-                  <button key={m} onClick={() => setPaymentMethod(m)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
-                      paymentMethod === m ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}>{t(m, lang)}</button>
-                ))}
-              </div>
+              {currency !== 'LAK' && (
+                <p className="mt-2 text-right text-xs text-slate-400 num">
+                  {formatCurrency(total, 'LAK')} ({c.rate(currency, formatCurrency(rate, 'LAK'))})
+                </p>
+              )}
+              {(subtotal !== total) && (
+                <p className="mt-1 text-right text-xs text-slate-400 num">
+                  {c.subtotal} {formatCurrency(subtotal, 'LAK')} − {formatCurrency(subtotal - total, 'LAK')}
+                </p>
+              )}
             </div>
+
             {paymentMethod === 'cash' && (
               <div>
-                <label className="text-sm font-medium text-gray-600">{t('amount_received', lang)}</label>
-                <input type="number" value={amountReceived} onChange={e => setAmountReceived(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg mt-1 text-lg font-bold text-right" placeholder="0" />
-                {amountReceived && getChangeAmount() >= 0 && (
-                  <p className="text-right text-green-600 font-bold mt-1">
-                    {t('change', lang)}: {formatCurrency(getChangeAmount(), currency)}
-                  </p>
+                <Field label={c.received}>
+                  <input type="number" min="0" inputMode="decimal" value={received} onChange={e => setReceived(e.target.value)}
+                    placeholder="0" className={`${inputCls} text-right text-xl font-bold num`} />
+                </Field>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {quickAmounts.map((v, i) => (
+                    <button key={v} type="button" onClick={() => setReceived(String(v))}
+                      className="px-3 py-1.5 rounded-lg border border-line text-sm font-semibold text-ink hover:border-gold hover:bg-gold-soft num">
+                      {i === 0 ? `${c.exact} ` : ''}{formatCurrency(v, currency)}
+                    </button>
+                  ))}
+                </div>
+                {received !== '' && (
+                  <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${changeDue >= 0 ? 'bg-[#E3F2EF] text-[#1E6B60]' : 'bg-red-50 text-danger'}`}>
+                    <span className="font-semibold">{changeDue >= 0 ? c.change : c.short}</span>
+                    <span className="text-xl font-extrabold num">{formatCurrency(Math.abs(changeDue), currency)}</span>
+                  </div>
                 )}
               </div>
             )}
-            <div className="flex gap-2">
-              <button onClick={() => setShowCheckout(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300">{t('cancel', lang)}</button>
-              <button onClick={completeSale}
-                className="flex-1 bg-success text-white py-3 rounded-xl font-bold hover:opacity-90">{t('complete_sale', lang)}</button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!lastSale} onClose={newSale} size="sm">
+        {lastSale && (
+          <div className="text-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-[#E3F2EF] text-success flex items-center justify-center">
+              <Icon name="check" className="w-7 h-7" strokeWidth={2.4} />
+            </div>
+            <p className="mt-4 text-lg font-bold text-ink">{c.done}</p>
+            <p className="text-sm text-slate-500 num">{lastSale.order.order_number}</p>
+            <p className="mt-3 text-3xl font-extrabold text-ink num">{formatCurrency(lastSale.order.total, lastSale.order.currency)}</p>
+            {lastSale.received != null && (
+              <p className="mt-1 text-sm text-slate-600 num">
+                {c.change} <strong>{formatCurrency(Math.max(0, lastSale.received - lastSale.order.total), lastSale.order.currency)}</strong>
+              </p>
+            )}
+            <div className="mt-6 grid gap-2">
+              <Button tone="primary" icon="print" onClick={() => printReceipt(lastSale.order, shop, lang, { received: lastSale.received })}>
+                {c.printReceipt}
+              </Button>
+              {lastSale.order.order_type === 'online' && (
+                <Button tone="ghost" icon="truck" onClick={() => printShippingLabel(lastSale.order, shop, lang)}>{c.printLabel}</Button>
+              )}
+              <Button tone="gold" onClick={newSale}>{c.newSale}</Button>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Variant Picker Modal */}
-      {variantPicker && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-auto p-6">
-            <h3 className="text-lg font-bold mb-1">{getProductName(variantPicker)}</h3>
-            <p className="text-sm text-gray-500 mb-4">{t('select_variant', lang)}</p>
-
-            {(() => {
-              const grouped = {};
-              for (const v of variantPicker.variants || []) {
-                const key = v.color || '-';
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push(v);
-              }
-              return Object.entries(grouped).map(([color, variants]) => (
-                <div key={color} className="mb-3">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">{t('color', lang)}: {color}</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {variants.map(v => (
-                      <button
-                        key={v.id}
-                        disabled={v.quantity <= 0}
-                        onClick={() => addToCart(variantPicker, v)}
-                        className={`p-3 rounded-lg border-2 text-center transition-all ${
-                          v.quantity <= 0
-                            ? 'border-gray-200 opacity-40 cursor-not-allowed bg-gray-50'
-                            : 'border-gray-200 hover:border-purple-500 hover:bg-purple-50 cursor-pointer'
-                        }`}
-                      >
-                        <p className="font-bold text-sm">{v.size || '-'}</p>
-                        <p className={`text-xs mt-1 ${v.quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                          {v.quantity > 0 ? `${v.quantity} ${t('in_stock', lang)}` : t('no_variant_stock', lang)}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ));
-            })()}
-
-            <button onClick={() => setVariantPicker(null)}
-              className="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-xl font-bold hover:bg-gray-300">
-              {t('cancel', lang)}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Receipt Modal */}
-      {showReceipt && lastOrder && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full max-h-[90vh] overflow-auto">
-            <div className="receipt-container p-6">
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold">{shopSettings.shop_name}</h2>
-                <p className="text-xs text-gray-500">
-                  {lastOrder.order_type === 'online' ? t('shipping', lang) + ' - ' : ''}{t('receipt', lang)}
-                </p>
-              </div>
-              <div className="border-t border-dashed border-gray-300 py-2 text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span>{t('order_number', lang)}</span>
-                  <span className="font-bold">{lastOrder.order_number}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t('date', lang)}</span>
-                  <span>{new Date(lastOrder.created_at).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t('order_type', lang)}</span>
-                  <span className="font-bold">{t(lastOrder.order_type, lang)}</span>
-                </div>
-                {lastOrder.customer_name && (
-                  <div className="flex justify-between">
-                    <span>{t('customer_name', lang)}</span>
-                    <span>{lastOrder.customer_name}</span>
-                  </div>
-                )}
-                {lastOrder.customer_phone && (
-                  <div className="flex justify-between">
-                    <span>{t('customer_phone', lang)}</span>
-                    <span>{lastOrder.customer_phone}</span>
-                  </div>
-                )}
-                {lastOrder.customer_address && (
-                  <div className="mt-1">
-                    <span className="font-semibold">{t('customer_address', lang)}:</span>
-                    <p className="mt-0.5">{lastOrder.customer_address}</p>
-                  </div>
-                )}
-                {lastOrder.delivery_date && (
-                  <div className="flex justify-between">
-                    <span>{t('delivery_date', lang)}</span>
-                    <span className="font-bold">{lastOrder.delivery_date}</span>
-                  </div>
-                )}
-                {lastOrder.shipping_notes && (
-                  <div className="mt-1">
-                    <span className="font-semibold">{t('shipping_notes', lang)}:</span>
-                    <p className="mt-0.5">{lastOrder.shipping_notes}</p>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span>{t('payment_method', lang)}</span>
-                  <span>{t(lastOrder.payment_method, lang)}</span>
-                </div>
-              </div>
-              <div className="border-t border-dashed border-gray-300 py-2">
-                {lastOrder.items?.map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-xs py-1">
-                    <div>
-                      <span>{item.name || item.name_en}</span>
-                      {item.variant_color && <span className="text-gray-400 ml-1">({item.variant_color} {item.variant_size})</span>}
-                      <span className="text-gray-400 ml-1">x{item.quantity}</span>
-                    </div>
-                    <span>{formatCurrency(item.total, lastOrder.currency)}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-dashed border-gray-300 py-2 text-sm space-y-1">
-                <div className="flex justify-between font-bold text-lg">
-                  <span>{t('total', lang)}</span>
-                  <span>{formatCurrency(lastOrder.total, lastOrder.currency)}</span>
-                </div>
-                {lastOrder.currency !== 'LAK' && (
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>({t('total', lang)} LAK)</span>
-                    <span>{formatCurrency(lastOrder.total_in_lak, 'LAK')}</span>
-                  </div>
-                )}
-              </div>
-              <p className="text-center text-xs text-gray-400 mt-4">Thank you! / ຂອບໃຈ!</p>
-            </div>
-            <div className="flex gap-2 p-4 border-t no-print">
-              <button onClick={printReceipt}
-                className="flex-1 bg-primary text-white py-2 rounded-lg font-bold text-sm">{t('print_receipt', lang)}</button>
-              {lastOrder.order_type === 'online' && (
-                <button onClick={printReceipt}
-                  className="flex-1 bg-secondary text-white py-2 rounded-lg font-bold text-sm">{t('print_shipping', lang)}</button>
-              )}
-              <button onClick={() => setShowReceipt(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold text-sm">{t('new_sale', lang)}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }

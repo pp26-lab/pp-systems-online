@@ -18,20 +18,15 @@ export async function PUT(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
+  const rate = Number(body.rate_to_lak);
+  if (!body.code || body.code === 'LAK') return NextResponse.json({ error: 'Invalid currency' }, { status: 400 });
+  if (!Number.isFinite(rate) || rate <= 0) return NextResponse.json({ error: 'Rate must be greater than 0' }, { status: 400 });
 
-  await query('UPDATE currencies SET rate_to_lak = ? WHERE code = ? AND shop_id = ?',
-    [body.rate_to_lak, body.code, shopId]);
-
+  await query('UPDATE currencies SET rate_to_lak = ? WHERE code = ? AND shop_id = ?', [rate, body.code, shopId]);
   await query('INSERT INTO exchange_rate_history (shop_id, from_currency, to_currency, rate) VALUES (?, ?, ?, ?)',
-    [shopId, body.code, 'LAK', body.rate_to_lak]);
+    [shopId, body.code, 'LAK', rate]);
 
-  const products = await query('SELECT * FROM products WHERE cost_currency = ? AND shop_id = ?', [body.code, shopId]);
-
-  for (const p of products) {
-    const totalCost = p.cost_price + p.freight_cost + p.customs_duty + p.proxy_fee + p.transfer_fee;
-    const newLandedCost = totalCost * body.rate_to_lak;
-    await query('UPDATE products SET landed_cost_lak = ? WHERE id = ? AND shop_id = ?', [newLandedCost, p.id, shopId]);
-  }
-
+  // Existing products keep the rate they were costed at (products.exchange_rate_used);
+  // only products added or re-costed from now on use the new rate.
   return NextResponse.json({ success: true });
 }

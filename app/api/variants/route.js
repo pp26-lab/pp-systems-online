@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
+import { logStockMovement } from '../../../lib/stock-log';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,12 +22,22 @@ export async function POST(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
+  const product = await queryOne('SELECT id FROM products WHERE id = ? AND shop_id = ?', [body.product_id, shopId]);
+  if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+
+  const quantity = Math.max(0, parseInt(body.quantity) || 0);
   const result = await query(
     'INSERT INTO product_variants (shop_id, product_id, color, size, sku_suffix, quantity) VALUES (?, ?, ?, ?, ?, ?)',
-    [shopId, body.product_id, body.color || '', body.size || '', body.sku_suffix || '', body.quantity || 0]
+    [shopId, body.product_id, body.color || '', body.size || '', body.sku_suffix || '', quantity]
   );
-
   await query('UPDATE products SET has_variants = 1 WHERE id = ? AND shop_id = ?', [body.product_id, shopId]);
+  if (quantity > 0) {
+    await logStockMovement({
+      shopId, productId: body.product_id, variantId: result.insertId,
+      change: quantity, reason: 'initial', note: 'New option',
+      referenceType: 'variant', referenceId: result.insertId,
+    });
+  }
   return NextResponse.json({ id: result.insertId }, { status: 201 });
 }
 
@@ -35,10 +46,21 @@ export async function PUT(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
+  const before = await queryOne('SELECT product_id, quantity FROM product_variants WHERE id = ? AND shop_id = ?', [body.id, shopId]);
+  if (!before) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const quantity = Math.max(0, parseInt(body.quantity) || 0);
   await query(
     'UPDATE product_variants SET color = ?, size = ?, sku_suffix = ?, quantity = ? WHERE id = ? AND shop_id = ?',
-    [body.color || '', body.size || '', body.sku_suffix || '', body.quantity || 0, body.id, shopId]
+    [body.color || '', body.size || '', body.sku_suffix || '', quantity, body.id, shopId]
   );
+  if (before.quantity !== quantity) {
+    await logStockMovement({
+      shopId, productId: before.product_id, variantId: body.id,
+      change: quantity - before.quantity, reason: body.reason || 'adjustment', note: body.note || '',
+      referenceType: 'variant', referenceId: body.id,
+    });
+  }
   return NextResponse.json({ success: true });
 }
 

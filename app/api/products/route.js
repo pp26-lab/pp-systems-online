@@ -53,11 +53,24 @@ export async function GET(request) {
   return NextResponse.json(products);
 }
 
+// SKU is unique per shop; blank SKUs would collide, so generate one.
+async function normalizeProduct(body, shopId, id = null) {
+  body.sku = String(body.sku || '').trim() || 'P' + Date.now().toString(36).toUpperCase();
+  body.sale_end_date = body.sale_end_date ? String(body.sale_end_date).slice(0, 10) : null;
+  const dup = await queryOne(
+    'SELECT id FROM products WHERE shop_id = ? AND sku = ? AND id <> ?',
+    [shopId, body.sku, id || 0]
+  );
+  return dup ? NextResponse.json({ error: 'duplicate_sku' }, { status: 409 }) : null;
+}
+
 export async function POST(request) {
   let shopId;
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
+  const invalid = await normalizeProduct(body, shopId);
+  if (invalid) return invalid;
 
   const rate = await queryOne('SELECT rate_to_lak FROM currencies WHERE code = ? AND shop_id = ?', [body.cost_currency || 'THB', shopId]);
   const exchangeRate = rate?.rate_to_lak || 1;
@@ -108,6 +121,8 @@ export async function PUT(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
+  const invalid = await normalizeProduct(body, shopId, body.id);
+  if (invalid) return invalid;
 
   const existing = await queryOne('SELECT cost_currency, exchange_rate_used FROM products WHERE id = ? AND shop_id = ?', [body.id, shopId]);
   let exchangeRate;
@@ -153,6 +168,15 @@ export async function DELETE(request) {
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+
+  // Products that appear on past orders can't be deleted without breaking order history,
+  // so they are hidden instead.
+  const sold = await queryOne('SELECT COUNT(*) as c FROM order_items WHERE product_id = ? AND shop_id = ?', [id, shopId]);
+  if (sold && sold.c > 0) {
+    await query("UPDATE products SET status = 'hidden' WHERE id = ? AND shop_id = ?", [id, shopId]);
+    return NextResponse.json({ success: true, archived: true });
+  }
+
   await query('DELETE FROM products WHERE id = ? AND shop_id = ?', [id, shopId]);
   return NextResponse.json({ success: true });
 }

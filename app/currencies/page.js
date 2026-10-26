@@ -1,119 +1,142 @@
 'use client';
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../layout';
-import { t } from '../../lib/i18n';
 import { formatCurrency } from '../../lib/currency';
+import { Button, EmptyState, inputCls, card } from '../../components/ui';
+
+const COPY = {
+  lo: {
+    intro: 'ອັດຕາແລກປ່ຽນໃຊ້ຄຳນວນຕົ້ນທຶນສິນຄ້າໃໝ່ ແລະ ຮັບເງິນຕ່າງປະເທດໜ້າຮ້ານ ສິນຄ້າທີ່ເພີ່ມແລ້ວຈະໃຊ້ອັດຕາຕອນທີ່ເພີ່ມ',
+    base: 'ສະກຸນເງິນຫຼັກ', updated: d => `ອັບເດດ ${d}`, change: 'ປ່ຽນອັດຕາ', save: 'ບັນທຶກ', cancel: 'ຍົກເລີກ',
+    history: 'ປະຫວັດອັດຕາແລກປ່ຽນ', noHistory: 'ຍັງບໍ່ເຄີຍປ່ຽນອັດຕາ', invalid: 'ໃສ່ອັດຕາທີ່ຫຼາຍກວ່າ 0',
+    failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ', saved: c => `ບັນທຶກອັດຕາ ${c} ແລ້ວ`,
+  },
+  th: {
+    intro: 'อัตราแลกเปลี่ยนใช้คำนวณต้นทุนสินค้าใหม่และรับเงินต่างประเทศหน้าร้าน สินค้าที่เพิ่มแล้วจะใช้อัตรา ณ วันที่เพิ่ม',
+    base: 'สกุลเงินหลัก', updated: d => `อัปเดต ${d}`, change: 'เปลี่ยนอัตรา', save: 'บันทึก', cancel: 'ยกเลิก',
+    history: 'ประวัติอัตราแลกเปลี่ยน', noHistory: 'ยังไม่เคยเปลี่ยนอัตรา', invalid: 'ใส่อัตราที่มากกว่า 0',
+    failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', saved: c => `บันทึกอัตรา ${c} แล้ว`,
+  },
+  en: {
+    intro: 'Rates are used to cost new products and to accept foreign cash at checkout. Products you already added keep the rate from the day they were added.',
+    base: 'Base currency', updated: d => `Updated ${d}`, change: 'Change rate', save: 'Save', cancel: 'Cancel',
+    history: 'Rate history', noHistory: 'No rate changes yet', invalid: 'Enter a rate above 0',
+    failed: "Couldn't save. Try again.", saved: c => `${c} rate saved`,
+  },
+};
 
 export default function CurrenciesPage() {
   const { lang } = useContext(AppContext);
+  const c = COPY[lang] || COPY.en;
   const [currencies, setCurrencies] = useState([]);
   const [history, setHistory] = useState([]);
-  const [editingCode, setEditingCode] = useState(null);
-  const [newRate, setNewRate] = useState('');
+  const [editing, setEditing] = useState(null);
+  const [value, setValue] = useState('');
+  const [error, setError] = useState('');
+  const [flash, setFlash] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { load(); }, []);
 
-  async function fetchData() {
-    const res = await fetch('/api/currencies');
-    const data = await res.json();
+  async function load() {
+    const data = await fetch('/api/currencies').then(r => r.json()).catch(() => ({}));
     setCurrencies(data.currencies || []);
     setHistory(data.history || []);
   }
 
-  async function updateRate(code) {
-    await fetch('/api/currencies', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, rate_to_lak: parseFloat(newRate) }),
-    });
-    setEditingCode(null);
-    setNewRate('');
-    fetchData();
+  function start(cur) {
+    setEditing(cur.code);
+    setValue(String(cur.rate_to_lak));
+    setError('');
   }
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">{t('currencies', lang)}</h1>
+  async function save(code) {
+    const rate = parseFloat(value);
+    if (!(rate > 0)) { setError(c.invalid); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/currencies', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, rate_to_lak: rate }),
+      });
+      if (!res.ok) throw new Error();
+      setEditing(null);
+      setFlash(c.saved(code));
+      setTimeout(() => setFlash(''), 3000);
+      load();
+    } catch {
+      setError(c.failed);
+    } finally {
+      setSaving(false);
+    }
+  }
 
-      {/* Currency Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {currencies.map(cur => (
-          <div key={cur.code} className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-2xl font-bold">{cur.symbol} {cur.code}</h3>
-                <p className="text-sm text-gray-500">{cur.name}</p>
+  const sorted = [...currencies].sort((a, b) => (a.code === 'LAK' ? -1 : b.code === 'LAK' ? 1 : a.code.localeCompare(b.code)));
+
+  return (
+    <div className="max-w-5xl">
+      <p className="text-sm text-slate-600 max-w-2xl mb-5">{c.intro}</p>
+      {flash && <p role="status" className="mb-4 rounded-xl px-4 py-3 text-sm font-medium bg-[#E3F2EF] text-[#1E6B60]">{flash}</p>}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {sorted.map(cur => {
+          const base = cur.code === 'LAK';
+          const open = editing === cur.code;
+          return (
+            <section key={cur.code} className={`${base ? 'bg-ink text-white border-ink' : 'bg-white border-line'} rounded-2xl border p-5 flex flex-col`}>
+              <div className="flex items-baseline justify-between">
+                <p className={`text-2xl font-extrabold ${base ? 'text-gold' : 'text-ink'}`}>{cur.code}</p>
+                <span className={`text-lg ${base ? 'text-slate-400' : 'text-slate-400'}`}>{cur.symbol}</span>
               </div>
-              {cur.code !== 'LAK' && (
-                <button
-                  onClick={() => { setEditingCode(cur.code); setNewRate(cur.rate_to_lak.toString()); }}
-                  className="text-primary hover:text-primary-dark text-sm"
-                >✏️</button>
-              )}
-            </div>
-            {cur.code !== 'LAK' ? (
-              <div>
-                <p className="text-sm text-gray-500">{t('exchange_rate', lang)}</p>
-                {editingCode === cur.code ? (
-                  <div className="flex gap-2 mt-1">
-                    <input
-                      type="number"
-                      value={newRate}
-                      onChange={e => setNewRate(e.target.value)}
-                      className="flex-1 px-2 py-1 border rounded text-right font-bold"
-                    />
-                    <button onClick={() => updateRate(cur.code)}
-                      className="bg-primary text-white px-3 py-1 rounded text-sm font-bold">
-                      {t('save', lang)}
-                    </button>
-                    <button onClick={() => setEditingCode(null)}
-                      className="bg-gray-200 px-3 py-1 rounded text-sm">
-                      {t('cancel', lang)}
-                    </button>
+              <p className={`text-sm ${base ? 'text-slate-400' : 'text-slate-500'}`}>{cur.name}</p>
+
+              <div className="mt-5 flex-1">
+                {base ? (
+                  <p className="text-sm text-slate-300">{c.base}</p>
+                ) : open ? (
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">1 {cur.code} = ? LAK</label>
+                    <input autoFocus type="number" min="0" step="any" value={value}
+                      onChange={e => setValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && save(cur.code)}
+                      className={`${inputCls} text-right font-bold num`} />
+                    {error && <p role="alert" className="mt-1.5 text-xs text-danger">{error}</p>}
+                    <div className="mt-3 flex gap-2">
+                      <Button size="sm" onClick={() => save(cur.code)} disabled={saving}>{c.save}</Button>
+                      <Button size="sm" tone="subtle" onClick={() => setEditing(null)}>{c.cancel}</Button>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-xl font-bold text-primary">
-                    1 {cur.code} = {formatCurrency(cur.rate_to_lak, 'LAK')}
-                  </p>
+                  <>
+                    <p className="text-xs text-slate-500">1 {cur.code} =</p>
+                    <p className="text-xl font-extrabold text-ink num">{formatCurrency(cur.rate_to_lak, 'LAK')}</p>
+                    <p className="mt-1 text-xs text-slate-400">{c.updated(new Date(cur.updated_at).toLocaleDateString())}</p>
+                  </>
                 )}
-                <p className="text-xs text-gray-400 mt-1">
-                  {t('date', lang)}: {new Date(cur.updated_at).toLocaleDateString()}
-                </p>
               </div>
-            ) : (
-              <p className="text-lg font-bold text-green-600">{t('selling_price', lang)}</p>
-            )}
-          </div>
-        ))}
+
+              {!base && !open && (
+                <button onClick={() => start(cur)} className="mt-4 self-start text-sm font-semibold text-primary hover:text-gold-dark">{c.change}</button>
+              )}
+            </section>
+          );
+        })}
       </div>
 
-      {/* Rate History */}
-      <h2 className="text-xl font-bold mb-4">{t('rate_history', lang)}</h2>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="text-left px-4 py-3">{t('date', lang)}</th>
-              <th className="text-left px-4 py-3">From</th>
-              <th className="text-left px-4 py-3">To</th>
-              <th className="text-right px-4 py-3">{t('exchange_rate', lang)}</th>
-            </tr>
-          </thead>
-          <tbody>
+      <section className={`${card} mt-8`}>
+        <h2 className="px-6 pt-5 font-bold text-ink text-lg">{c.history}</h2>
+        {history.length === 0 ? (
+          <EmptyState icon="history" title={c.noHistory} />
+        ) : (
+          <ul className="mt-3 divide-y divide-line">
             {history.map(h => (
-              <tr key={h.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-2">{new Date(h.recorded_at).toLocaleString()}</td>
-                <td className="px-4 py-2 font-bold">{h.from_currency}</td>
-                <td className="px-4 py-2">{h.to_currency}</td>
-                <td className="px-4 py-2 text-right font-mono">{formatCurrency(h.rate, 'LAK')}</td>
-              </tr>
+              <li key={h.id} className="px-6 py-3 flex items-center justify-between gap-4 text-sm">
+                <span className="text-slate-500 num">{new Date(h.recorded_at).toLocaleString()}</span>
+                <span className="font-semibold text-ink num">1 {h.from_currency} = {formatCurrency(h.rate, 'LAK')}</span>
+              </li>
             ))}
-            {history.length === 0 && (
-              <tr><td colSpan="4" className="text-center py-8 text-gray-400">{t('no_items', lang)}</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

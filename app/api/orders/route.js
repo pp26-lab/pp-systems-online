@@ -147,10 +147,28 @@ export async function PUT(request) {
 
   if (!body.status) return NextResponse.json({ success: true });
 
-  const current = await queryOne('SELECT status FROM orders WHERE id = ? AND shop_id = ?', [body.id, shopId]);
+  if (!['pending', 'shipping', 'completed', 'cancelled'].includes(body.status)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
+
+  const current = await queryOne('SELECT status, customer_id, total_in_lak, coupon_code FROM orders WHERE id = ? AND shop_id = ?', [body.id, shopId]);
   if (!current) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+  // Stock was already returned when the order was cancelled; reopening it would leave stock wrong.
+  if (current.status === 'cancelled' && body.status !== 'cancelled') {
+    return NextResponse.json({ error: 'A cancelled order cannot be reopened' }, { status: 400 });
+  }
+
   if (body.status === 'cancelled' && current.status !== 'cancelled') {
+    if (current.customer_id) {
+      await query(
+        'UPDATE customers SET total_spent = GREATEST(0, total_spent - ?), order_count = GREATEST(0, order_count - 1) WHERE id = ? AND shop_id = ?',
+        [Number(current.total_in_lak) || 0, current.customer_id, shopId]
+      );
+    }
+    if (current.coupon_code) {
+      await query('UPDATE coupons SET times_used = GREATEST(0, times_used - 1) WHERE code = ? AND shop_id = ?', [current.coupon_code, shopId]);
+    }
     const items = await query('SELECT product_id, variant_id, quantity FROM order_items WHERE order_id = ?', [body.id]);
     for (const item of items) {
       if (item.variant_id) {
