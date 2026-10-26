@@ -1,16 +1,36 @@
 @import "tailwindcss";
 
+/*
+  PP Systems palette — taken from the brand logo:
+  deep ink navy frame, gold ring, jade "P".
+  Gold is the one accent: active nav, key figures, focus. Everything else stays quiet.
+*/
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: #3b82f6;
-  --color-secondary: #0891b2;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
-  --color-sidebar: #1e293b;
-  --color-sidebar-hover: #334155;
-  --color-sidebar-active: #2563eb;
+  --color-ink: #0E1A33;
+  --color-ink-soft: #172647;
+  --color-ink-line: #24365C;
+
+  --color-primary: #1C3260;
+  --color-primary-dark: #14264A;
+  --color-primary-light: #2B4A85;
+
+  --color-gold: #C8A04A;
+  --color-gold-dark: #A9832F;
+  --color-gold-soft: #F5EDD8;
+
+  --color-secondary: #2A8C7E;
+  --color-success: #2A8C7E;
+  --color-warning: #B7791F;
+  --color-danger: #C2413A;
+
+  --color-canvas: #F3F5F8;
+  --color-line: #E1E5EC;
+
+  --color-sidebar: #0E1A33;
+  --color-sidebar-hover: #172647;
+  --color-sidebar-active: #172647;
+
+  --font-sans: 'Manrope', 'Noto Sans Lao', 'IBM Plex Sans Thai', 'Segoe UI', sans-serif;
 }
 
 * {
@@ -18,7 +38,54 @@
 }
 
 body {
-  font-family: 'Noto Sans Lao', 'Noto Sans Thai', 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
+  color: #1A2338;
+  background: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Money and counts line up in columns. */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Visible keyboard focus everywhere, in the brand gold. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Inputs: quieter borders, gold focus ring instead of browser blue. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  border-color: var(--color-line);
+  background-color: #fff;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgb(200 160 74 / 0.18);
+}
+
+/* Tables read as data, not decoration. */
+table thead {
+  background: #F7F8FB;
+}
+table th {
+  font-weight: 600;
+  color: #5A6478;
+  font-size: 0.8125rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media print {
@@ -40,16 +107,17 @@ body {
 }
 
 .status-badge {
-  padding: 2px 8px;
+  padding: 2px 10px;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.status-in_stock { background: #dcfce7; color: #166534; }
-.status-in_transit { background: #dbeafe; color: #1e40af; }
-.status-pre_order { background: #fef3c7; color: #92400e; }
-.status-ready_to_ship { background: #e0e7ff; color: #3730a3; }
+.status-in_stock { background: #E3F2EF; color: #1E6B60; }
+.status-in_transit { background: #E6ECF6; color: #1C3260; }
+.status-pre_order { background: #F5EDD8; color: #8A6A22; }
+.status-ready_to_ship { background: #EAE8F5; color: #3F3A7A; }
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

@@ -116,7 +116,7 @@ export async function POST(request) {
     await query('UPDATE orders SET coupon_code = ?, coupon_discount = ? WHERE id = ?', [body.coupon_code.toUpperCase(), body.coupon_discount || 0, orderId]);
   }
 
-  fireWebhooks(shopId, 'order.created', { order_id: orderId, order_number: orderNumber, total, customer_phone: body.customer_phone });
+  fireWebhooks(shopId, 'order.created', { order_id: orderId, order_number: orderNumber, total: body.total, currency: body.currency || 'LAK', customer_phone: body.customer_phone });
 
   const order = await queryOne('SELECT * FROM orders WHERE id = ?', [orderId]);
   order.items = await query(`
@@ -134,11 +134,12 @@ export async function PUT(request) {
 
   const body = await request.json();
 
-  if (body.tracking_number !== undefined || body.shipping_carrier !== undefined || body.internal_notes !== undefined) {
+  const editable = ['tracking_number', 'shipping_carrier', 'internal_notes', 'payment_slip_url'];
+  if (editable.some(f => body[f] !== undefined)) {
     const fields = [], vals = [];
-    if (body.tracking_number !== undefined) { fields.push('tracking_number = ?'); vals.push(body.tracking_number); }
-    if (body.shipping_carrier !== undefined) { fields.push('shipping_carrier = ?'); vals.push(body.shipping_carrier); }
-    if (body.internal_notes !== undefined) { fields.push('internal_notes = ?'); vals.push(body.internal_notes); }
+    for (const f of editable) {
+      if (body[f] !== undefined) { fields.push(`${f} = ?`); vals.push(body[f]); }
+    }
     vals.push(body.id, shopId);
     await query(`UPDATE orders SET ${fields.join(', ')} WHERE id = ? AND shop_id = ?`, vals);
     if (!body.status) return NextResponse.json({ success: true });

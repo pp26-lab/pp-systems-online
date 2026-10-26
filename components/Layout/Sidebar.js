@@ -1,29 +1,61 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { t } from '../../lib/i18n';
 import { useState, useEffect } from 'react';
+import { t } from '../../lib/i18n';
 
-const menuItems = [
-  { key: 'dashboard', path: '/', icon: '📊' },
-  { key: 'pos', path: '/pos', icon: '🛒' },
-  { key: 'products', path: '/products', icon: '📦' },
-  { key: 'orders', path: '/orders', icon: '📋' },
-  { key: 'customers', path: '/customers', icon: '👥' },
-  { key: 'handoffs', path: '/handoffs', icon: '💬', badge: true },
-  { key: 'inventory', path: '/inventory', icon: '🏭' },
-  { key: 'stock_log', path: '/stock-log', icon: '📜' },
-  { key: 'coupons', path: '/coupons', icon: '🎟️' },
-  { key: 'currencies', path: '/currencies', icon: '💱' },
-  { key: 'webhooks', path: '/webhooks', icon: '🔔' },
-  { key: 'settings', path: '/settings', icon: '⚙️' },
+const ICONS = {
+  dashboard: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',
+  pos: 'M5 8h14l-1.2 11.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8L5 8zM9 8V6a3 3 0 0 1 6 0v2',
+  orders: 'M9 3.5h6v3H9zM7 5H5.5A1.5 1.5 0 0 0 4 6.5v13A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 18.5 5H17M8 11.5h8M8 15.5h5',
+  products: 'M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5 12 12l8.5-4.5M12 12v9',
+  inventory: 'M3 10.5 12 5l9 5.5V20H3zM8 20v-6h8v6M8 17h8',
+  stock_log: 'M12 7.5V12l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4',
+  customers: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.2a6.5 6.5 0 0 1 3.5 5.8',
+  handoffs: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-5 4V5.5zM8 9h8M8 12h5',
+  coupons: 'M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V14a2 2 0 0 0 0-4zM14.5 6v12',
+  currencies: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM14.5 8.5h-3.75a1.75 1.75 0 0 0 0 3.5h2.5a1.75 1.75 0 0 1 0 3.5H9.5M12 7v1.5M12 15.5V17',
+  webhooks: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+  settings: 'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
+};
+
+const GROUPS = [
+  { label: { lo: 'ການຂາຍ', th: 'การขาย', en: 'Sales' }, items: [
+    { key: 'dashboard', path: '/' },
+    { key: 'pos', path: '/pos' },
+    { key: 'orders', path: '/orders', badge: 'pending_orders' },
+  ] },
+  { label: { lo: 'ສິນຄ້າ', th: 'สินค้า', en: 'Catalog' }, items: [
+    { key: 'products', path: '/products' },
+    { key: 'inventory', path: '/inventory' },
+    { key: 'stock_log', path: '/stock-log' },
+  ] },
+  { label: { lo: 'ລູກຄ້າ', th: 'ลูกค้า', en: 'Customers' }, items: [
+    { key: 'customers', path: '/customers' },
+    { key: 'handoffs', path: '/handoffs', badge: 'handoffs' },
+    { key: 'coupons', path: '/coupons' },
+  ] },
+  { label: { lo: 'ລະບົບ', th: 'ระบบ', en: 'System' }, items: [
+    { key: 'currencies', path: '/currencies' },
+    { key: 'webhooks', path: '/webhooks' },
+    { key: 'settings', path: '/settings' },
+  ] },
 ];
 
-export default function Sidebar({ isOpen, onToggle, lang }) {
+function Icon({ name, className }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
+      strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
+}
+
+export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
   const pathname = usePathname();
   const [shopName, setShopName] = useState('PP Systems');
   const [shopLogo, setShopLogo] = useState('');
-  const [pendingHandoffs, setPendingHandoffs] = useState(0);
+  const [badges, setBadges] = useState({ handoffs: 0, pending_orders: 0 });
 
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
@@ -33,64 +65,104 @@ export default function Sidebar({ isOpen, onToggle, lang }) {
   }, []);
 
   useEffect(() => {
-    async function fetchCount() {
+    let alive = true;
+    async function load() {
       try {
-        const res = await fetch('/api/handoffs/count');
-        if (res.ok) {
-          const data = await res.json();
-          setPendingHandoffs(data.pending || 0);
-        }
+        const res = await fetch('/api/badges');
+        if (res.ok && alive) setBadges(await res.json());
       } catch {}
     }
-    fetchCount();
-    const interval = setInterval(fetchCount, 30000);
-    return () => clearInterval(interval);
+    load();
+    const id = setInterval(load, 30000);
+    return () => { alive = false; clearInterval(id); };
   }, [pathname]);
+
+  function handleNavigate() {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose?.();
+  }
+
+  const collapsed = !isOpen;
 
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={onToggle} />
+        <div className="fixed inset-0 bg-ink/50 z-20 lg:hidden" onClick={onToggle} aria-hidden="true" />
       )}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-sidebar text-white transform transition-transform duration-200 ease-in-out flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'
+        className={`fixed lg:static inset-y-0 left-0 z-30 bg-ink text-white flex flex-col no-print transition-[width,transform] duration-200 ease-out ${
+          isOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0 lg:w-[76px]'
         }`}
       >
-        <div className="p-4 border-b border-white/10 flex items-center gap-2 justify-center lg:justify-start">
-          <img src={shopLogo || '/logo.png'} alt="" onError={(e) => { e.target.src = '/logo.png'; }} className="w-9 h-9 object-contain rounded bg-white/10 flex-shrink-0" />
-          <h1 className={`font-bold text-xl ${!isOpen && 'lg:hidden'}`}>
-            {shopName}
-          </h1>
+        <div className={`h-16 flex items-center gap-3 border-b border-ink-line shrink-0 ${collapsed ? 'lg:justify-center px-5 lg:px-0' : 'px-5'}`}>
+          <img
+            src={shopLogo || '/logo.png'}
+            alt=""
+            onError={e => { e.currentTarget.src = '/logo.png'; }}
+            className="w-9 h-9 rounded-lg object-cover ring-1 ring-gold/60 shrink-0"
+          />
+          <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
+            <p className="font-bold text-[0.95rem] leading-tight truncate">{shopName}</p>
+            <p className="text-[0.7rem] text-slate-400 leading-tight">PP Systems</p>
+          </div>
         </div>
-        <nav className="flex-1 py-4 overflow-y-auto">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.path;
-            return (
-              <Link
-                key={item.key}
-                href={item.path}
-                className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-colors relative ${
-                  isActive
-                    ? 'bg-sidebar-active text-white'
-                    : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
-                } ${!isOpen && 'lg:justify-center lg:px-2'}`}
-              >
-                <span className="text-xl relative">
-                  {item.icon}
-                  {item.badge && pendingHandoffs > 0 && (
-                    <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-                      {pendingHandoffs > 9 ? '9+' : pendingHandoffs}
-                    </span>
-                  )}
-                </span>
-                <span className={!isOpen ? 'lg:hidden' : ''}>{t(item.key, lang)}</span>
-              </Link>
-            );
-          })}
+
+        <nav className="flex-1 overflow-y-auto py-3" aria-label="Main">
+          {GROUPS.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
+              <p className={`px-6 pb-1.5 text-[0.72rem] font-medium text-slate-500 ${collapsed ? 'lg:hidden' : ''}`}>
+                {group.label[lang] || group.label.en}
+              </p>
+              {collapsed && gi > 0 && <div className="hidden lg:block mx-5 mb-2 border-t border-ink-line" />}
+              <ul className="space-y-0.5">
+                {group.items.map(item => {
+                  const active = pathname === item.path;
+                  const count = item.badge ? badges[item.badge] || 0 : 0;
+                  const label = t(item.key, lang);
+                  return (
+                    <li key={item.key} className="relative">
+                      {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-gold" aria-hidden="true" />}
+                      <Link
+                        href={item.path}
+                        onClick={handleNavigate}
+                        title={collapsed ? label : undefined}
+                        aria-current={active ? 'page' : undefined}
+                        className={`group flex items-center gap-3 mx-3 px-3 py-2.5 rounded-lg text-[0.9rem] transition-colors ${
+                          active ? 'bg-ink-soft text-white font-semibold' : 'text-slate-300 hover:bg-ink-soft hover:text-white'
+                        } ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
+                      >
+                        <span className="relative shrink-0">
+                          <Icon name={item.key} className={`w-5 h-5 ${active ? 'text-gold' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                          {count > 0 && collapsed && (
+                            <span className="hidden lg:block absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gold ring-2 ring-ink" />
+                          )}
+                        </span>
+                        <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
+                        {count > 0 && (
+                          <span className={`ml-auto min-w-[1.375rem] h-[1.375rem] px-1.5 rounded-full bg-gold text-ink text-[0.72rem] font-bold flex items-center justify-center num ${collapsed ? 'lg:hidden' : ''}`}>
+                            {count > 99 ? '99+' : count}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
-        <div className="p-4 border-t border-white/10 text-xs text-gray-400 text-center">
-          PP Systems v1.0.0
+
+        <div className="border-t border-ink-line p-3 shrink-0 hidden lg:block">
+          <button
+            onClick={onToggle}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-ink-soft hover:text-white transition-colors ${collapsed ? 'justify-center px-0' : ''}`}
+            aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+              className={`w-5 h-5 shrink-0 transition-transform ${collapsed ? 'rotate-180' : ''}`} aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+            {!collapsed && <span>{lang === 'th' ? 'ย่อเมนู' : lang === 'lo' ? 'ຫຍໍ້ເມນູ' : 'Collapse'}</span>}
+          </button>
         </div>
       </aside>
     </>

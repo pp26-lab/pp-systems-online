@@ -14,13 +14,18 @@ export default function SettingsPage() {
     default_order_type: 'walk_in',
     variant_label_1: 'color',
     variant_label_2: 'size',
+    low_stock_threshold: 5,
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
+      // Keep every stored field (staff_pin, low_stock_threshold, …) so saving
+      // this form never silently resets settings that aren't shown here.
       setForm({
+        ...data,
+        low_stock_threshold: data.low_stock_threshold ?? 5,
         shop_name: data.shop_name || '',
         shop_phone: data.shop_phone || '',
         shop_address: data.shop_address || '',
@@ -131,7 +136,17 @@ export default function SettingsPage() {
               </div>
             </div>
 
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {lang === 'th' ? 'แจ้งเตือนเมื่อสต็อกเหลือไม่เกิน' : lang === 'lo' ? 'ແຈ້ງເຕືອນເມື່ອສະຕ໋ອກເຫຼືອບໍ່ເກີນ' : 'Low stock alert at'}
+              </label>
+              <div className="flex items-center gap-2">
+                <input type="number" min="0" value={form.low_stock_threshold}
+                  onChange={e => setForm({ ...form, low_stock_threshold: parseInt(e.target.value) || 0 })}
+                  className="w-28 px-4 py-2 border border-gray-300 rounded-lg" />
+                <span className="text-sm text-gray-500">{lang === 'th' ? 'ชิ้น' : lang === 'lo' ? 'ຊິ້ນ' : 'units'}</span>
+              </div>
+            </div>
 
             <button
               type="submit"

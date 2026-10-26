@@ -2,10 +2,41 @@
 import { useState, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppContext } from '../layout';
-import { t } from '../../lib/i18n';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+
+const COPY = {
+  lo: {
+    welcome: 'ເຂົ້າສູ່ລະບົບຮ້ານຂອງທ່ານ', hint: 'ໃສ່ License Key ທີ່ໄດ້ຮັບຕອນສະໝັກ',
+    label: 'License Key', submit: 'ເຂົ້າສູ່ລະບົບ', busy: 'ກຳລັງກວດສອບ…', ok: 'ຍິນດີຕ້ອນຮັບ',
+    offline: 'ເຊື່ອມຕໍ່ເຊີບເວີບໍ່ໄດ້ ກວດສອບອິນເຕີເນັດແລ້ວລອງໃໝ່',
+    tagline: 'ລະບົບຂາຍໜ້າຮ້ານ ແລະ ອອນລາຍ', shared: 'ໃຊ້ License Key ດຽວກັນ ເຫັນຂໍ້ມູນຮ້ານດຽວກັນທຸກອຸປະກອນ',
+  },
+  th: {
+    welcome: 'เข้าสู่ระบบร้านของคุณ', hint: 'ใส่ License Key ที่ได้รับตอนสมัคร',
+    label: 'License Key', submit: 'เข้าสู่ระบบ', busy: 'กำลังตรวจสอบ…', ok: 'ยินดีต้อนรับ',
+    offline: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
+    tagline: 'ระบบขายหน้าร้านและออนไลน์', shared: 'ใช้ License Key เดียวกัน เห็นข้อมูลร้านเดียวกันทุกอุปกรณ์',
+  },
+  en: {
+    welcome: 'Sign in to your shop', hint: 'Enter the License Key you received when you signed up',
+    label: 'License Key', submit: 'Sign in', busy: 'Checking…', ok: 'Welcome',
+    offline: "Can't reach the server. Check your internet connection and try again.",
+    tagline: 'Point of sale for your shop and online orders', shared: 'One License Key shows the same shop on every device',
+  },
+};
+
+// Formats input as PP-XXXXXXXX-XXXXXXXX-XXXXXXXX while typing.
+function formatKey(raw) {
+  const clean = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if ('PP'.startsWith(clean)) return clean; // "", "P", "PP" while typing the prefix
+  const body = clean.startsWith('PP') ? clean.slice(2) : clean;
+  const parts = [body.slice(0, 8), body.slice(8, 16), body.slice(16, 24)].filter(Boolean);
+  return 'PP-' + parts.join('-');
+}
 
 export default function LoginPage() {
   const { lang, setLang } = useContext(AppContext);
+  const c = COPY[lang] || COPY.en;
   const router = useRouter();
   const [key, setKey] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +48,6 @@ export default function LoginPage() {
     if (!key.trim()) return;
     setLoading(true);
     setError('');
-
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -25,84 +55,91 @@ export default function LoginPage() {
         body: JSON.stringify({ license_key: key.trim() }),
       });
       const data = await res.json();
-
       if (!res.ok) {
-        setError(data.error || 'Login failed');
+        setError(data.error || c.offline);
         return;
       }
-
       setSuccess(data);
-      setTimeout(() => router.push('/'), 1500);
-    } catch (err) {
-      setError('ບໍ່ສາມາດເຊື່ອມຕໍ່ Server ໄດ້');
+      setTimeout(() => router.push('/'), 600);
+    } catch {
+      setError(c.offline);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
-        <div className="text-center mb-8">
-          <img src="/logo.png" alt="PP Systems" className="w-24 h-24 rounded-2xl mx-auto mb-4 object-contain" />
-          <h1 className="text-2xl font-bold text-gray-800">PP Systems Online</h1>
-          <p className="text-gray-500 mt-2">{t('enter_license_key', lang)}</p>
+    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
+      <aside className="hidden lg:flex flex-col justify-between bg-ink text-white p-12 relative overflow-hidden">
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="" className="w-11 h-11 rounded-xl ring-1 ring-gold/60" />
+          <span className="font-bold text-lg tracking-tight">PP Systems</span>
+        </div>
+        <div className="max-w-md">
+          <p className="text-[2.4rem] leading-[1.2] font-extrabold tracking-tight text-balance">
+            {c.tagline}
+          </p>
+          <div className="mt-8 h-px w-24 bg-gold" aria-hidden="true" />
+          <p className="mt-6 text-slate-400 leading-relaxed">{c.shared}</p>
+        </div>
+        <p className="text-xs text-slate-500">ppsystems-shop.com</p>
+        <img src="/logo.png" alt="" aria-hidden="true"
+          className="absolute -right-24 -bottom-24 w-[26rem] opacity-[0.06] pointer-events-none select-none" />
+      </aside>
+
+      <main className="flex flex-col p-6 sm:p-10">
+        <div className="flex justify-end">
+          <LanguageSwitcher lang={lang} setLang={setLang} />
         </div>
 
-        <div className="flex justify-center gap-2 mb-6">
-          {[{ code: 'lo', flag: '🇱🇦' }, { code: 'th', flag: '🇹🇭' }, { code: 'en', flag: '🇺🇸' }].map(l => (
-            <button key={l.code} onClick={() => setLang(l.code)}
-              className={`px-3 py-1 rounded-lg text-sm ${lang === l.code ? 'bg-primary text-white' : 'bg-gray-100'}`}>
-              {l.flag}
-            </button>
-          ))}
-        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-full max-w-sm">
+            <img src="/logo.png" alt="PP Systems" className="lg:hidden w-16 h-16 rounded-2xl ring-1 ring-gold/60 mb-6" />
 
-        {success ? (
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">✅</span>
-            </div>
-            <h2 className="text-xl font-bold text-green-600 mb-2">{t('login', lang)} !</h2>
-            <p className="text-gray-600 mb-1">{success.customer_name || success.shop_name}</p>
-            <p className="text-sm text-gray-400">Plan: <span className="font-semibold text-primary">{success.plan?.toUpperCase()}</span></p>
-          </div>
-        ) : (
-          <form onSubmit={handleLogin}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">License Key</label>
-            <input
-              type="text"
-              value={key}
-              onChange={e => setKey(e.target.value.toUpperCase())}
-              placeholder="PP-XXXXXXXX-XXXXXXXX-XXXXXXXX"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-center text-lg font-mono tracking-wider focus:border-primary focus:outline-none"
-              disabled={loading}
-            />
-
-            {error && (
-              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm text-center">{error}</p>
+            {success ? (
+              <div role="status">
+                <p className="text-sm font-semibold text-success">{c.ok}</p>
+                <p className="mt-1 text-2xl font-extrabold text-ink">{success.customer_name || success.shop_name}</p>
+                {success.plan && <p className="mt-2 text-sm text-slate-500">Plan {success.plan}</p>}
               </div>
+            ) : (
+              <form onSubmit={handleLogin} noValidate>
+                <h1 className="text-2xl font-extrabold text-ink tracking-tight">{c.welcome}</h1>
+                <p className="mt-1.5 text-sm text-slate-500">{c.hint}</p>
+
+                <label htmlFor="license" className="block mt-8 text-sm font-semibold text-ink">{c.label}</label>
+                <input
+                  id="license"
+                  type="text"
+                  inputMode="text"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  value={key}
+                  onChange={e => setKey(formatKey(e.target.value))}
+                  placeholder="PP-XXXXXXXX-XXXXXXXX-XXXXXXXX"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? 'login-error' : undefined}
+                  disabled={loading}
+                  className="mt-2 w-full px-4 py-3.5 border rounded-xl text-[0.95rem] font-semibold tracking-wider num text-ink placeholder:text-slate-300 placeholder:font-normal"
+                />
+
+                {error && (
+                  <p id="login-error" role="alert" className="mt-3 text-sm text-danger">{error}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading || !key.trim()}
+                  className="mt-6 w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {loading ? c.busy : c.submit}
+                </button>
+              </form>
             )}
-
-            <button
-              type="submit"
-              disabled={loading || !key.trim()}
-              className="w-full mt-6 bg-primary text-white py-3 rounded-xl font-semibold text-lg hover:bg-primary-dark disabled:opacity-50 transition-colors"
-            >
-              {loading ? t('logging_in', lang) : t('login', lang)}
-            </button>
-
-            <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-              <p className="text-xs text-gray-500 text-center">
-                {lang === 'lo' ? 'ໃສ່ License Key ດຽວກັນເພື່ອເຂົ້າເຖິງຂໍ້ມູນຮ້ານດຽວກັນ ຈາກຫຼາຍອຸປະກອນ' :
-                 lang === 'th' ? 'ใส่ License Key เดียวกันเพื่อเข้าถึงข้อมูลร้านเดียวกัน จากหลายอุปกรณ์' :
-                 'Use the same License Key to access the same shop data from multiple devices'}
-              </p>
-            </div>
-          </form>
-        )}
-      </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

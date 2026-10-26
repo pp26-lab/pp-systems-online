@@ -49,12 +49,13 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Sidebar starts open on desktop, closed on phones/tablets so it never covers the page on load.
   useEffect(() => {
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        for (const r of regs) r.unregister();
-      }).catch(() => {});
-    }
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    setSidebarOpen(desktop.matches);
+    const onChange = e => setSidebarOpen(e.matches);
+    desktop.addEventListener('change', onChange);
+    return () => desktop.removeEventListener('change', onChange);
   }, []);
 
   useEffect(() => {
@@ -97,7 +98,7 @@ export default function RootLayout({ children }) {
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
         </head>
         <body className="bg-gray-50 min-h-screen">
           <AppContext.Provider value={{ lang, setLang, user }}>
@@ -134,14 +135,14 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-gray-50 min-h-screen">
+      <body className="bg-canvas min-h-screen">
         <AppContext.Provider value={{ lang, setLang, user, handleLogout }}>
           <div className="flex h-screen overflow-hidden">
-            <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} lang={lang} />
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <Header lang={lang} setLang={setLang} onMenuToggle={() => setSidebarOpen(!sidebarOpen)} onLogout={handleLogout} />
+            <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onClose={() => setSidebarOpen(false)} lang={lang} />
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+              <Header lang={lang} setLang={setLang} onMenuToggle={() => setSidebarOpen(!sidebarOpen)} onLogout={handleLogout} user={user} />
               <main className="flex-1 overflow-auto p-4 lg:p-6">
                 {children}
               </main>

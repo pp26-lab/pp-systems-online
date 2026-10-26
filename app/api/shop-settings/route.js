@@ -28,7 +28,8 @@ export async function PUT(request) {
   const whatsappTemplate = body.whatsapp_template || '';
   const whatsappCountryCode = (body.whatsapp_country_code || '856').replace(/\D/g, '') || '856';
   const staffPin = (body.staff_pin || '').replace(/\D/g, '').slice(0, 20);
-  const lowStockThreshold = parseInt(body.low_stock_threshold) || 5;
+  const parsedThreshold = parseInt(body.low_stock_threshold);
+  const lowStockThreshold = Number.isFinite(parsedThreshold) && parsedThreshold >= 0 ? parsedThreshold : 5;
 
   const existing = await queryOne('SELECT id FROM shop_settings WHERE shop_id = ?', [shopId]);
   if (existing) {
