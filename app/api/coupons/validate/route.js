@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { queryOne, query } from '../../../../lib/db';
+import { queryOne, query, shopToday } from '../../../../lib/db';
 import { requireShopId } from '../../../../lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export async function POST(request) {
 
   if (!coupon) return NextResponse.json({ error: 'Invalid coupon' }, { status: 404 });
   // The expiry date is inclusive: a coupon ending on the 31st still works all day on the 31st.
-  if (coupon.expires_at && new Date(coupon.expires_at).getTime() + 86400000 <= Date.now()) {
+  if (coupon.expires_at && String(coupon.expires_at).slice(0, 10) < shopToday()) {
     return NextResponse.json({ error: 'Coupon expired' }, { status: 400 });
   }
   if (coupon.usage_limit > 0 && coupon.times_used >= coupon.usage_limit) {

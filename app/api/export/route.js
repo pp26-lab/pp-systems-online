@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { query } from '../../../lib/db';
+import { query, getPool, shopDay } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -25,10 +25,11 @@ export async function GET(request) {
       break;
 
     case 'orders': {
+      await getPool(); // shopDay() needs the detected DB timezone
       let sql = "SELECT * FROM orders WHERE status = 'completed' AND shop_id = ?";
       const params = [shopId];
-      if (from) { sql += ' AND DATE(created_at) >= ?'; params.push(from); }
-      if (to) { sql += ' AND DATE(created_at) <= ?'; params.push(to); }
+      if (from) { sql += ` AND ${shopDay('created_at')} >= ?`; params.push(from); }
+      if (to) { sql += ` AND ${shopDay('created_at')} <= ?`; params.push(to); }
       sql += ' ORDER BY created_at DESC';
       data = await query(sql, params);
       for (const order of data) {

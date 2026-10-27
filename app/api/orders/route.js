@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
-import { query, queryOne } from '../../../lib/db';
+import { query, queryOne, getPool, shopDay } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
 import { logStockMovement } from '../../../lib/stock-log';
 import { fireWebhooks } from '../../../lib/webhook';
 
 export const dynamic = 'force-dynamic';
+
+// Accepts "YYYY-MM-DD HH:MM:SS" (UTC) or any ISO string.
+function parseUtc(v) {
+  if (!v) return null;
+  const s = String(v).trim();
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? s : s.replace(' ', 'T') + 'Z');
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 export async function GET(request) {
   let shopId;
@@ -21,9 +29,13 @@ export async function GET(request) {
   const params = [shopId];
 
   if (status) { sql += ' AND status = ?'; params.push(status); }
-  if (date) { sql += ' AND DATE(created_at) = ?'; params.push(date); }
-  if (from) { sql += ' AND created_at >= ?'; params.push(from); }
-  if (to) { sql += ' AND created_at <= ?'; params.push(to); }
+  await getPool(); // shopDay() needs the detected DB timezone
+  if (date) { sql += ` AND ${shopDay('created_at')} = ?`; params.push(date); }
+  // from/to are UTC instants; passing Date objects lets mysql2 convert them to the DB's timezone.
+  const fromDate = parseUtc(from);
+  const toDate = parseUtc(to);
+  if (fromDate) { sql += ' AND created_at >= ?'; params.push(fromDate); }
+  if (toDate) { sql += ' AND created_at <= ?'; params.push(toDate); }
   if (orderType) { sql += ' AND order_type = ?'; params.push(orderType); }
 
   sql += ' ORDER BY created_at DESC';

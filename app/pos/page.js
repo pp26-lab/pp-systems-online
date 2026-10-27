@@ -2,7 +2,7 @@
 import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
-import { formatCurrency } from '../../lib/currency';
+import { formatCurrency, localToday } from '../../lib/currency';
 import { printReceipt, printShippingLabel } from '../../lib/receipt';
 import { Icon, IconButton, Button, Segmented, Modal, Field, SearchInput, Chip, Pill, EmptyState, inputCls } from '../../components/ui';
 
@@ -104,7 +104,7 @@ export default function POSPage() {
     try {
       const res = await fetch('/api/products');
       const data = await res.json();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localToday();
       setProducts(Array.isArray(data) ? data.filter(p => sellable(p, today)) : []);
     } catch {}
   }

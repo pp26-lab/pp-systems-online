@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { query, queryOne } from '../../../lib/db';
+import { query, queryOne, getPool, shopDay, shopToday } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,10 @@ export async function GET(request) {
   const fromDate = searchParams.get('from');
   const toDate = searchParams.get('to');
 
-  const today = new Date().toISOString().split('T')[0];
+  await getPool(); // shopDay() needs the detected DB timezone
+  const day = shopDay('created_at');
+  const dayO = shopDay('o.created_at');
+  const today = shopToday();
   const dateFrom = fromDate || today;
   const dateTo = toDate || today;
   const monthStart = dateTo.substring(0, 7) + '-01';
@@ -22,12 +25,12 @@ export async function GET(request) {
 
   const daySales = await queryOne(`
     SELECT COUNT(*) as count, COALESCE(SUM(total_in_lak), 0) as total
-    FROM orders WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND ${statusFilter} AND shop_id = ?
+    FROM orders WHERE ${day} >= ? AND ${day} <= ? AND ${statusFilter} AND shop_id = ?
   `, [dateFrom, dateTo, shopId]) || { count: 0, total: 0 };
 
   const monthSales = await queryOne(`
     SELECT COUNT(*) as count, COALESCE(SUM(total_in_lak), 0) as total
-    FROM orders WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND ${statusFilter} AND shop_id = ?
+    FROM orders WHERE ${day} >= ? AND ${day} <= ? AND ${statusFilter} AND shop_id = ?
   `, [monthStart, dateTo, shopId]) || { count: 0, total: 0 };
 
   const topProducts = await query(`
@@ -36,26 +39,26 @@ export async function GET(request) {
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
     JOIN orders o ON oi.order_id = o.id
-    WHERE ${statusFilterO} AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ? AND o.shop_id = ?
+    WHERE ${statusFilterO} AND ${dayO} >= ? AND ${dayO} <= ? AND o.shop_id = ?
     GROUP BY p.id ORDER BY total_qty DESC LIMIT 10
   `, [dateFrom, dateTo, shopId]);
 
   const salesByCurrency = await query(`
     SELECT currency, COUNT(*) as count, SUM(total) as total
-    FROM orders WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND ${statusFilter} AND shop_id = ?
+    FROM orders WHERE ${day} >= ? AND ${day} <= ? AND ${statusFilter} AND shop_id = ?
     GROUP BY currency
   `, [dateFrom, dateTo, shopId]);
 
   const salesByType = await query(`
     SELECT order_type, COUNT(*) as count, SUM(total_in_lak) as total
-    FROM orders WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND ${statusFilter} AND shop_id = ?
+    FROM orders WHERE ${day} >= ? AND ${day} <= ? AND ${statusFilter} AND shop_id = ?
     GROUP BY order_type
   `, [dateFrom, dateTo, shopId]);
 
   const dailyData = await query(`
-    SELECT DATE(created_at) as date, COUNT(*) as count, SUM(total_in_lak) as total
-    FROM orders WHERE DATE(created_at) >= ? AND DATE(created_at) <= ? AND ${statusFilter} AND shop_id = ?
-    GROUP BY DATE(created_at) ORDER BY date
+    SELECT ${day} as date, COUNT(*) as count, SUM(total_in_lak) as total
+    FROM orders WHERE ${day} >= ? AND ${day} <= ? AND ${statusFilter} AND shop_id = ?
+    GROUP BY ${day} ORDER BY date
   `, [dateFrom, dateTo, shopId]);
 
   const profitReport = await queryOne(`
@@ -67,7 +70,7 @@ export async function GET(request) {
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
     JOIN orders o ON oi.order_id = o.id
-    WHERE ${statusFilterO} AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ? AND o.shop_id = ?
+    WHERE ${statusFilterO} AND ${dayO} >= ? AND ${dayO} <= ? AND o.shop_id = ?
   `, [dateFrom, dateTo, shopId]);
 
   const pendingOnline = await queryOne(

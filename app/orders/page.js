@@ -94,7 +94,19 @@ export default function OrdersPage() {
     const q = new URLSearchParams(window.location.search).get('q');
     if (q) { setSearch(q); setPreset('all'); setLinked(q); }
   }, []);
-  useEffect(() => { load(); }, [preset, channel]);
+  useEffect(() => {
+    load();
+    // New sales from the POS (or the bot) show up without a manual refresh.
+    const refresh = () => { if (document.visibilityState === 'visible') load(true); };
+    const id = setInterval(refresh, 30000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [preset, channel]);
   useEffect(() => {
     if (!linked) return;
     const hit = orders.find(o => o.order_number === linked);
@@ -102,9 +114,9 @@ export default function OrdersPage() {
   }, [orders, linked]);
 
   const loadSeq = useRef(0);
-  async function load() {
+  async function load(quiet = false) {
     const seq = ++loadSeq.current;
-    setLoading(true);
+    if (!quiet) setLoading(true);
     const params = new URLSearchParams();
     if (channel) params.set('order_type', channel);
     const [from, to] = rangeFor(preset);
@@ -115,7 +127,7 @@ export default function OrdersPage() {
       const data = await res.json();
       if (seq === loadSeq.current) setOrders(Array.isArray(data) ? data : []);
     } catch {
-      if (seq === loadSeq.current) setOrders([]);
+      if (seq === loadSeq.current && !quiet) setOrders([]);
     } finally {
       if (seq === loadSeq.current) setLoading(false);
     }

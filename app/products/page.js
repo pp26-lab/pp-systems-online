@@ -2,7 +2,7 @@
 import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
-import { formatCurrency, calculateMargin } from '../../lib/currency';
+import { formatCurrency, calculateMargin, localToday } from '../../lib/currency';
 import { Icon, IconButton, Button, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
 
 const EMPTY = {
@@ -111,7 +111,7 @@ export default function ProductsPage() {
   }
 
   const stockOf = p => Number(p.stock_in_stock) || 0;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   const isExpired = p => p.sale_end_date && String(p.sale_end_date).slice(0, 10) < today;
 
   const counts = useMemo(() => {
