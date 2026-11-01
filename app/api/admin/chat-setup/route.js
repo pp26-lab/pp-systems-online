@@ -7,7 +7,10 @@ export const dynamic = 'force-dynamic';
 // Tells the back office whether the server is ready for chat (secrets present), without revealing them.
 export async function GET(request) {
   if (!(await verifyAdminSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const origin = process.env.PUBLIC_BASE_URL || new URL(request.url).origin;
+  // The webhook lives on the shops' site, never on the back-office host.
+  const reqOrigin = new URL(request.url).origin;
+  const onAdminHost = process.env.ADMIN_HOST && new URL(request.url).hostname === process.env.ADMIN_HOST.toLowerCase();
+  const origin = process.env.PUBLIC_BASE_URL || (onAdminHost ? 'https://ppsystems-shop.com' : reqOrigin);
   return NextResponse.json({
     webhook_url: `${origin.replace(/\/$/, '')}/api/channels/meta/webhook`,
     app_secret: !!process.env.META_APP_SECRET,
