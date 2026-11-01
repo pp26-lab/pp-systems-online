@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../../lib/db';
 import { requireShopId } from '../../../../lib/auth';
+import { shopWithFeature } from '../../../../lib/features';
 import { generateApiKey } from '../../../../lib/bot-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('bot_api'); if (g.response) return g.response; shopId = g.shopId; }
   const keys = await query(
     'SELECT id, name, key_preview, created_at, last_used_at FROM bot_api_keys WHERE shop_id = ? ORDER BY created_at DESC',
     [shopId]
@@ -17,7 +18,7 @@ export async function GET() {
 
 export async function POST(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('bot_api'); if (g.response) return g.response; shopId = g.shopId; }
 
   const body = await request.json();
   const name = (body.name || '').slice(0, 100);
@@ -39,7 +40,7 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('bot_api'); if (g.response) return g.response; shopId = g.shopId; }
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   await query('DELETE FROM bot_api_keys WHERE id = ? AND shop_id = ?', [id, shopId]);

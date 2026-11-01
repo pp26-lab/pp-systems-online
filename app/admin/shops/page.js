@@ -35,7 +35,8 @@ export default function AdminShops() {
                 <td className="px-3 py-2 text-center">{s.key_count}</td>
                 <td className="px-3 py-2 text-xs">{new Date(s.created_at).toLocaleDateString()}</td>
                 <td className="px-3 py-2 text-right">
-                  <Link href={`/admin/keys?shop_id=${s.id}`} className="text-blue-600 hover:underline text-sm">Manage Keys →</Link>
+                  <Link href={`/admin/shops/${s.id}`} className="text-blue-600 hover:underline text-sm font-semibold mr-3">จัดการร้าน</Link>
+                  <Link href={`/admin/keys?shop_id=${s.id}`} className="text-blue-600 hover:underline text-sm">API keys</Link>
                 </td>
               </tr>
             ))}

@@ -6,7 +6,7 @@ import { t } from '../../lib/i18n';
 const TITLE_KEYS = {
   '/': 'dashboard', '/pos': 'pos', '/orders': 'orders', '/products': 'products',
   '/inventory': 'inventory', '/stock-log': 'stock_log', '/customers': 'customers',
-  '/handoffs': 'handoffs', '/coupons': 'coupons', '/currencies': 'currencies',
+  '/handoffs': 'handoffs', '/chat': 'chat', '/coupons': 'coupons', '/currencies': 'currencies',
   '/webhooks': 'webhooks', '/settings': 'settings',
 };
 

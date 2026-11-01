@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { queryOne, query, shopToday } from '../../../../lib/db';
 import { requireShopId } from '../../../../lib/auth';
+import { shopWithFeature } from '../../../../lib/features';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('coupons'); if (g.response) return g.response; shopId = g.shopId; }
 
   const { code, subtotal } = await request.json();
   if (!code) return NextResponse.json({ error: 'Code required' }, { status: 400 });

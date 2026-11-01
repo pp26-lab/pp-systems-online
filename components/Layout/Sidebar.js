@@ -12,6 +12,7 @@ const ICONS = {
   inventory: 'M3 10.5 12 5l9 5.5V20H3zM8 20v-6h8v6M8 17h8',
   stock_log: 'M12 7.5V12l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4',
   customers: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.2a6.5 6.5 0 0 1 3.5 5.8',
+  chat: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h9A1.5 1.5 0 0 1 16 5.5V12a1.5 1.5 0 0 1-1.5 1.5H8L4 17V5.5zM16 8h2.5A1.5 1.5 0 0 1 20 9.5V20l-3.5-3H10a1.5 1.5 0 0 1-1.5-1.5v-2',
   handoffs: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-5 4V5.5zM8 9h8M8 12h5',
   coupons: 'M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V14a2 2 0 0 0 0-4zM14.5 6v12',
   currencies: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM14.5 8.5h-3.75a1.75 1.75 0 0 0 0 3.5h2.5a1.75 1.75 0 0 1 0 3.5H9.5M12 7v1.5M12 15.5V17',
@@ -24,6 +25,7 @@ const GROUPS = [
     { key: 'dashboard', path: '/' },
     { key: 'pos', path: '/pos' },
     { key: 'orders', path: '/orders', badge: 'pending_orders' },
+    { key: 'chat', path: '/chat', badge: 'chat_unread', feature: 'chat' },
   ] },
   { label: { lo: 'ສິນຄ້າ', th: 'สินค้า', en: 'Catalog' }, items: [
     { key: 'products', path: '/products' },
@@ -32,12 +34,12 @@ const GROUPS = [
   ] },
   { label: { lo: 'ລູກຄ້າ', th: 'ลูกค้า', en: 'Customers' }, items: [
     { key: 'customers', path: '/customers' },
-    { key: 'handoffs', path: '/handoffs', badge: 'handoffs' },
-    { key: 'coupons', path: '/coupons' },
+    { key: 'handoffs', path: '/handoffs', badge: 'handoffs', feature: 'bot_api' },
+    { key: 'coupons', path: '/coupons', feature: 'coupons' },
   ] },
   { label: { lo: 'ລະບົບ', th: 'ระบบ', en: 'System' }, items: [
     { key: 'currencies', path: '/currencies' },
-    { key: 'webhooks', path: '/webhooks' },
+    { key: 'webhooks', path: '/webhooks', feature: 'webhooks' },
     { key: 'settings', path: '/settings' },
   ] },
 ];
@@ -55,7 +57,12 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
   const pathname = usePathname();
   const [shopName, setShopName] = useState('PP Systems');
   const [shopLogo, setShopLogo] = useState('');
-  const [badges, setBadges] = useState({ handoffs: 0, pending_orders: 0 });
+  const [badges, setBadges] = useState({ handoffs: 0, pending_orders: 0, chat_unread: 0 });
+  const [features, setFeatures] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/features').then(r => (r.ok ? r.json() : null)).then(f => f && setFeatures(f)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
@@ -114,8 +121,8 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
               </p>
               {collapsed && gi > 0 && <div className="hidden lg:block mx-5 mb-2 border-t border-ink-line" />}
               <ul className="space-y-0.5">
-                {group.items.map(item => {
-                  const active = pathname === item.path;
+                {group.items.filter(item => !item.feature || features?.[item.feature]).map(item => {
+                  const active = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path + '/'));
                   const count = item.badge ? badges[item.badge] || 0 : 0;
                   const label = t(item.key, lang);
                   return (

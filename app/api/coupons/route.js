@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
+import { shopWithFeature } from '../../../lib/features';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('coupons'); if (g.response) return g.response; shopId = g.shopId; }
   const coupons = await query('SELECT * FROM coupons WHERE shop_id = ? ORDER BY created_at DESC', [shopId]);
   return NextResponse.json(coupons);
 }
@@ -37,7 +38,7 @@ async function normalize(b, shopId, id = null) {
 
 export async function POST(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('coupons'); if (g.response) return g.response; shopId = g.shopId; }
   const n = await normalize(await request.json(), shopId);
   if (n.error) return NextResponse.json({ error: n.error }, { status: n.status });
   const result = await query(
@@ -49,7 +50,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('coupons'); if (g.response) return g.response; shopId = g.shopId; }
   const b = await request.json();
   if (!b.id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
@@ -70,7 +71,7 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('coupons'); if (g.response) return g.response; shopId = g.shopId; }
   const { searchParams } = new URL(request.url);
   await query('DELETE FROM coupons WHERE id = ? AND shop_id = ?', [searchParams.get('id'), shopId]);
   return NextResponse.json({ success: true });

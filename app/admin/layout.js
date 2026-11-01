@@ -41,7 +41,7 @@ export default function AdminLayout({ children }) {
           <div className="flex gap-2 flex-wrap">
             {links.map(l => (
               <Link key={l.href} href={l.href}
-                className={`px-3 py-1.5 rounded text-sm ${pathname === l.href ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>
+                className={`px-3 py-1.5 rounded text-sm ${(l.href === '/admin' ? pathname === l.href : pathname.startsWith(l.href)) ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>
                 {l.label}
               </Link>
             ))}

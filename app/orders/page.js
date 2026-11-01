@@ -357,6 +357,8 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
         </div>
       )}
 
+      {!cancelled && <OrderChatSend key={order.id} order={order} lang={lang} />}
+
       {(error || flash) && (
         <p role={error ? 'alert' : 'status'} className={`mt-3 text-sm ${error ? 'text-danger' : 'text-success font-semibold'}`}>{error || flash}</p>
       )}
@@ -486,5 +488,101 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
         </div>
       )}
     </div>
+  );
+}
+
+const CHAT_COPY = {
+  lo: {
+    title: 'ສົ່ງໃຫ້ລູກຄ້າທາງແຊັດ', photo: 'ເລືອກຮູບບິນ ຫຼື ຮູບພັດສະດຸ', change: 'ປ່ຽນຮູບ', send: 'ສົ່ງ', sent: 'ສົ່ງໃຫ້ລູກຄ້າແລ້ວ',
+    closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງ ລໍຖ້າລູກຄ້າທັກມາກ່ອນ', failed: 'ສົ່ງບໍ່ສຳເລັດ', openChat: 'ເປີດແຊັດ',
+    text: o => `ອໍເດີ້ ${o.order_number}${o.tracking_number ? `\nເລກພັດສະດຸ: ${o.tracking_number}${o.shipping_carrier ? ` (${o.shipping_carrier})` : ''}` : ''}\nຂໍຂອບໃຈທີ່ອຸດໜູນ`,
+  },
+  th: {
+    title: 'ส่งให้ลูกค้าทางแชท', photo: 'เลือกรูปบิลหรือรูปพัสดุ', change: 'เปลี่ยนรูป', send: 'ส่ง', sent: 'ส่งให้ลูกค้าแล้ว',
+    closed: 'หมดเวลาตอบ 24 ชั่วโมง รอลูกค้าทักมาก่อน', failed: 'ส่งไม่สำเร็จ', openChat: 'เปิดแชท',
+    text: o => `ອໍເດີ້ ${o.order_number}${o.tracking_number ? `\nເລກພັດສະດຸ: ${o.tracking_number}${o.shipping_carrier ? ` (${o.shipping_carrier})` : ''}` : ''}\nຂໍຂອບໃຈທີ່ອຸດໜູນ`,
+  },
+  en: {
+    title: 'Send to customer by chat', photo: 'Choose bill or parcel photo', change: 'Change photo', send: 'Send', sent: 'Sent to the customer',
+    closed: 'The 24-hour window has closed. Wait for the customer to write first.', failed: "Couldn't send", openChat: 'Open chat',
+    text: o => `ອໍເດີ້ ${o.order_number}${o.tracking_number ? `\nເລກພັດສະດຸ: ${o.tracking_number}${o.shipping_carrier ? ` (${o.shipping_carrier})` : ''}` : ''}\nຂໍຂອບໃຈທີ່ອຸດໜູນ`,
+  },
+};
+
+// Send a bill / parcel photo to this order's customer through their Messenger or WhatsApp chat.
+function OrderChatSend({ order, lang }) {
+  const c = CHAT_COPY[lang] || CHAT_COPY.en;
+  const [chats, setChats] = useState(null);
+  const [convId, setConvId] = useState(null);
+  const [file, setFile] = useState(null);
+  const [text, setText] = useState(() => c.text(order));
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`/api/chat/for-order?order_id=${order.id}`).then(r => r.json()).then(d => {
+      if (d.enabled && d.conversations?.length) { setChats(d.conversations); setConvId(d.conversations[0].id); }
+      else setChats([]);
+    }).catch(() => setChats([]));
+  }, [order.id]);
+
+  if (!chats || !chats.length) return null;
+  const conv = chats.find(x => x.id === convId) || chats[0];
+  const open = conv.window?.open;
+
+  async function send() {
+    setBusy(true);
+    setMsg(null);
+    const form = new FormData();
+    form.append('text', text);
+    form.append('order_id', order.id);
+    if (file) form.append('file', file);
+    try {
+      const res = await fetch(`/api/chat/conversations/${conv.id}/send`, { method: 'POST', body: form });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || d.status === 'failed') throw new Error();
+      setMsg({ ok: true, text: c.sent });
+      setFile(null);
+    } catch {
+      setMsg({ ok: false, text: c.failed });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="mt-5 rounded-2xl border border-line p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-bold text-ink text-sm">{c.title}</h3>
+        <div className="flex items-center gap-2">
+          {chats.length > 1 && (
+            <select value={conv.id} onChange={e => setConvId(Number(e.target.value))} className={`${inputCls} py-1.5 text-sm w-auto`}>
+              {chats.map(x => <option key={x.id} value={x.id}>{x.platform === 'whatsapp' ? 'WhatsApp' : 'Messenger'} {x.name}</option>)}
+            </select>
+          )}
+          {chats.length === 1 && <Pill tone={conv.platform === 'whatsapp' ? 'green' : 'navy'}>{conv.platform === 'whatsapp' ? 'WhatsApp' : 'Messenger'}</Pill>}
+          <a href="/chat" className="text-sm font-semibold text-primary hover:text-gold-dark">{c.openChat}</a>
+        </div>
+      </div>
+      {!open ? (
+        <p className="mt-2 text-sm text-danger">{c.closed}</p>
+      ) : (
+        <div className="mt-3 flex flex-col sm:flex-row gap-3">
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
+          <button type="button" onClick={() => fileRef.current?.click()}
+            className="w-full sm:w-28 h-28 shrink-0 rounded-xl border-2 border-dashed border-line hover:border-gold flex items-center justify-center overflow-hidden text-xs text-slate-500 text-center px-2">
+            {file ? <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" /> : c.photo}
+          </button>
+          <div className="flex-1 flex flex-col gap-2">
+            <textarea rows={3} value={text} onChange={e => setText(e.target.value)} className={`${inputCls} text-sm`} />
+            <div className="flex items-center justify-between gap-2">
+              {msg ? <span role="status" className={`text-sm ${msg.ok ? 'text-success font-semibold' : 'text-danger'}`}>{msg.text}</span> : <span />}
+              <Button icon="chat" onClick={send} disabled={busy || (!file && !text.trim())}>{c.send}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

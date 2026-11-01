@@ -1,0 +1,674 @@
+'use client';
+import { useState, useEffect, useContext, useRef, useMemo, useCallback } from 'react';
+import { AppContext } from '../layout';
+import { formatCurrency } from '../../lib/currency';
+import { Button, IconButton, Modal, Chip, Pill, EmptyState, Icon, SearchInput, Segmented, inputCls } from '../../components/ui';
+import CustomerForm from '../../components/CustomerForm';
+
+const COPY = {
+  lo: {
+    search: 'ຄົ້ນຫາຊື່, ເບີໂທ, ຂໍ້ຄວາມ', unread: 'ຍັງບໍ່ອ່ານ', open: 'ຕ້ອງຈັດການ', done: 'ແລ້ວໆ', all: 'ທັງໝົດ', allCh: 'ທຸກຊ່ອງທາງ',
+    off: 'ຟັງຊັນແຊັດຍັງບໍ່ໄດ້ເປີດໃຊ້ສຳລັບຮ້ານນີ້', offText: 'ຕິດຕໍ່ PP Systems ເພື່ອເປີດໃຊ້ແຊັດ Facebook ແລະ WhatsApp',
+    none: 'ຍັງບໍ່ມີແຊັດ', noneText: 'ເມື່ອລູກຄ້າທັກມາທາງເພຈ ຫຼື WhatsApp ຈະຂຶ້ນຢູ່ນີ້ທັນທີ', noMatch: 'ບໍ່ພົບແຊັດ',
+    pick: 'ເລືອກແຊັດທາງຊ້າຍເພື່ອເລີ່ມຕອບ', placeholder: 'ພິມຂໍ້ຄວາມ… (Enter ສົ່ງ, Shift+Enter ຂຶ້ນແຖວໃໝ່)', send: 'ສົ່ງ', attach: 'ແນບຮູບ ຫຼື ໄຟລ໌',
+    markDone: 'ແລ້ວໆ', reopen: 'ເປີດຄືນ', older: 'ໂຫຼດຂໍ້ຄວາມເກົ່າ', today: 'ມື້ນີ້', yesterday: 'ມື້ວານ',
+    sending: 'ກຳລັງສົ່ງ', sent: 'ສົ່ງແລ້ວ', delivered: 'ຮອດແລ້ວ', read: 'ອ່ານແລ້ວ', failed: 'ສົ່ງບໍ່ສຳເລັດ', retry: 'ສົ່ງໃໝ່',
+    windowLeft: t => `ຕອບໄດ້ອີກ ${t}`, windowClosed: 'ໝົດເວລາຕອບຟຣີ 24 ຊົ່ວໂມງ', windowClosedText: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ ຈຶ່ງຈະສົ່ງຂໍ້ຄວາມໄດ້ອີກ',
+    humanAgent: 'ສົ່ງແບບພະນັກງານຕອບ (ໄດ້ພາຍໃນ 7 ມື້)', mediaMissing: 'ໂຫຼດໄຟລ໌ບໍ່ໄດ້', useSlip: 'ໃຊ້ເປັນສະລິບ', slipFor: 'ແນບສະລິບກັບອໍເດີ້',
+    slipSaved: n => `ແນບສະລິບກັບ ${n} ແລ້ວ`, slipUsed: n => `ຮູບນີ້ເປັນສະລິບຂອງ ${n} ແລ້ວ`, needCustomer: 'ຜູກແຊັດກັບລູກຄ້າກ່ອນ ຈຶ່ງຈະເຫັນອໍເດີ້', noOrders: 'ລູກຄ້ານີ້ຍັງບໍ່ມີອໍເດີ້',
+    customer: 'ລູກຄ້າ', link: 'ຜູກກັບລູກຄ້າທີ່ມີຢູ່', create: 'ບັນທຶກເປັນລູກຄ້າໃໝ່', unlink: 'ຍົກເລີກການຜູກ', suggest: 'ລູກຄ້າທີ່ເບີໂທກົງກັນ', pickCustomer: 'ເລືອກລູກຄ້າ',
+    spent: 'ຍອດຊື້ລວມ', orders: 'ບິນ', avg: 'ສະເລ່ຍ', bought: 'ສິນຄ້າທີ່ເຄີຍຊື້', sendProduct: 'ກົດເພື່ອສົ່ງສິນຄ້ານີ້ໃຫ້ລູກຄ້າ', recent: 'ອໍເດີ້ຫຼ້າສຸດ',
+    openProfile: 'ເປີດໜ້າລູກຄ້າ', blacklisted: 'ລູກຄ້ານີ້ຢູ່ໃນບັນຊີດຳ', vip: 'VIP', regular: 'ລູກຄ້າປະຈຳ', newC: 'ລູກຄ້າໃໝ່',
+    errors: { window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ' },
+    status: { pending: 'ລໍຖ້າຈັດສົ່ງ', shipping: 'ກຳລັງຈັດສົ່ງ', completed: 'ສຳເລັດ', cancelled: 'ຍົກເລີກ' }, details: 'ຂໍ້ມູນລູກຄ້າ', back: 'ກັບ',
+  },
+  th: {
+    search: 'ค้นหาชื่อ, เบอร์, ข้อความ', unread: 'ยังไม่อ่าน', open: 'ต้องจัดการ', done: 'เสร็จแล้ว', all: 'ทั้งหมด', allCh: 'ทุกช่องทาง',
+    off: 'ฟังก์ชันแชทยังไม่ได้เปิดใช้สำหรับร้านนี้', offText: 'ติดต่อ PP Systems เพื่อเปิดใช้แชท Facebook และ WhatsApp',
+    none: 'ยังไม่มีแชท', noneText: 'เมื่อลูกค้าทักมาทางเพจหรือ WhatsApp จะขึ้นที่นี่ทันที', noMatch: 'ไม่พบแชท',
+    pick: 'เลือกแชททางซ้ายเพื่อเริ่มตอบ', placeholder: 'พิมพ์ข้อความ… (Enter ส่ง, Shift+Enter ขึ้นบรรทัดใหม่)', send: 'ส่ง', attach: 'แนบรูปหรือไฟล์',
+    markDone: 'เสร็จแล้ว', reopen: 'เปิดใหม่', older: 'โหลดข้อความเก่า', today: 'วันนี้', yesterday: 'เมื่อวาน',
+    sending: 'กำลังส่ง', sent: 'ส่งแล้ว', delivered: 'ถึงแล้ว', read: 'อ่านแล้ว', failed: 'ส่งไม่สำเร็จ', retry: 'ส่งใหม่',
+    windowLeft: t => `ตอบได้อีก ${t}`, windowClosed: 'หมดเวลาตอบฟรี 24 ชั่วโมง', windowClosedText: 'รอลูกค้าทักมาก่อน จึงจะส่งข้อความได้อีก',
+    humanAgent: 'ส่งแบบพนักงานตอบ (ได้ภายใน 7 วัน)', mediaMissing: 'โหลดไฟล์ไม่ได้', useSlip: 'ใช้เป็นสลิป', slipFor: 'แนบสลิปกับออเดอร์',
+    slipSaved: n => `แนบสลิปกับ ${n} แล้ว`, slipUsed: n => `รูปนี้เป็นสลิปของ ${n} แล้ว`, needCustomer: 'ผูกแชทกับลูกค้าก่อน จึงจะเห็นออเดอร์', noOrders: 'ลูกค้านี้ยังไม่มีออเดอร์',
+    customer: 'ลูกค้า', link: 'ผูกกับลูกค้าที่มีอยู่', create: 'บันทึกเป็นลูกค้าใหม่', unlink: 'ยกเลิกการผูก', suggest: 'ลูกค้าที่เบอร์ตรงกัน', pickCustomer: 'เลือกลูกค้า',
+    spent: 'ยอดซื้อรวม', orders: 'บิล', avg: 'เฉลี่ย', bought: 'สินค้าที่เคยซื้อ', sendProduct: 'กดเพื่อส่งสินค้านี้ให้ลูกค้า', recent: 'ออเดอร์ล่าสุด',
+    openProfile: 'เปิดหน้าลูกค้า', blacklisted: 'ลูกค้านี้อยู่ในบัญชีดำ', vip: 'VIP', regular: 'ลูกค้าประจำ', newC: 'ลูกค้าใหม่',
+    errors: { window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ' },
+    status: { pending: 'รอจัดส่ง', shipping: 'กำลังจัดส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' }, details: 'ข้อมูลลูกค้า', back: 'กลับ',
+  },
+  en: {
+    search: 'Search name, phone, message', unread: 'Unread', open: 'To do', done: 'Done', all: 'All', allCh: 'All channels',
+    off: 'Chat is not enabled for this shop', offText: 'Contact PP Systems to turn on Facebook and WhatsApp chat.',
+    none: 'No chats yet', noneText: 'Messages to your page or WhatsApp number appear here as they arrive.', noMatch: 'No matching chats',
+    pick: 'Pick a chat on the left to reply', placeholder: 'Type a message… (Enter to send, Shift+Enter for a new line)', send: 'Send', attach: 'Attach photo or file',
+    markDone: 'Done', reopen: 'Reopen', older: 'Load older messages', today: 'Today', yesterday: 'Yesterday',
+    sending: 'Sending', sent: 'Sent', delivered: 'Delivered', read: 'Read', failed: 'Not sent', retry: 'Retry',
+    windowLeft: t => `${t} left to reply`, windowClosed: 'The 24-hour reply window has closed', windowClosedText: 'You can message again once the customer writes to you.',
+    humanAgent: 'Send as human agent (allowed within 7 days)', mediaMissing: "File couldn't be loaded", useSlip: 'Use as slip', slipFor: 'Attach slip to order',
+    slipSaved: n => `Slip attached to ${n}`, slipUsed: n => `This photo is already the slip of ${n}`, needCustomer: 'Link this chat to a customer to see their orders', noOrders: 'No orders from this customer yet',
+    customer: 'Customer', link: 'Link to existing customer', create: 'Save as new customer', unlink: 'Unlink', suggest: 'Customers with this phone', pickCustomer: 'Choose customer',
+    spent: 'Lifetime', orders: 'Orders', avg: 'Average', bought: 'Bought before', sendProduct: 'Tap to send this product', recent: 'Recent orders',
+    openProfile: 'Open customer page', blacklisted: 'This customer is blacklisted', vip: 'VIP', regular: 'Regular', newC: 'New customer',
+    errors: { window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send" },
+    status: { pending: 'To ship', shipping: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' }, details: 'Customer details', back: 'Back',
+  },
+};
+
+const PLATFORM = {
+  messenger: { label: 'Messenger', dot: 'bg-[#2B4A85]' },
+  whatsapp: { label: 'WhatsApp', dot: 'bg-[#2A8C7E]' },
+};
+const ORDER_TONE = { pending: 'gold', shipping: 'navy', completed: 'green', cancelled: 'gray' };
+
+function initials(s) {
+  return (s || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+}
+
+function Avatar({ conv, size = 'w-10 h-10' }) {
+  return (
+    <span className={`relative ${size} shrink-0`}>
+      {conv.avatar_url
+        ? <img src={conv.avatar_url} alt="" className={`${size} rounded-full object-cover bg-canvas`} referrerPolicy="no-referrer" />
+        : <span className={`${size} rounded-full bg-gold-soft text-[#8A6A22] flex items-center justify-center text-sm font-bold`}>{initials(conv.customer_name || conv.name || conv.phone)}</span>}
+      <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-white ${PLATFORM[conv.platform]?.dot}`} title={PLATFORM[conv.platform]?.label} />
+    </span>
+  );
+}
+
+function shortTime(v, c, locale) {
+  const d = new Date(v);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return c.yesterday;
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+}
+
+function remaining(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+export default function ChatPage() {
+  const { lang } = useContext(AppContext);
+  const c = COPY[lang] || COPY.en;
+  const locale = lang === 'lo' ? 'lo-LA' : lang === 'th' ? 'th-TH' : 'en-GB';
+
+  const [state, setState] = useState('loading'); // loading | ready | off
+  const [list, setList] = useState([]);
+  const [counts, setCounts] = useState({});
+  const [platforms, setPlatforms] = useState([]);
+  const [filter, setFilter] = useState('open');
+  const [platform, setPlatform] = useState('');
+  const [search, setSearch] = useState('');
+  const [activeId, setActiveId] = useState(null);
+  const [view, setView] = useState('list'); // mobile: list | thread | profile
+
+  const loadList = useCallback(async () => {
+    const p = new URLSearchParams({ filter });
+    if (platform) p.set('platform', platform);
+    if (search.trim()) p.set('q', search.trim());
+    const res = await fetch(`/api/chat/conversations?${p}`);
+    if (res.status === 403) { setState('off'); return; }
+    if (!res.ok) return;
+    const d = await res.json();
+    setList(d.conversations || []);
+    setCounts(d.counts || {});
+    setPlatforms(d.platforms || []);
+    setState('ready');
+  }, [filter, platform, search]);
+
+  useEffect(() => {
+    const t = setTimeout(loadList, search ? 250 : 0);
+    const id = setInterval(() => document.visibilityState === 'visible' && loadList(), 4000);
+    return () => { clearTimeout(t); clearInterval(id); };
+  }, [loadList]);
+
+  function openChat(id) {
+    setActiveId(id);
+    setView('thread');
+    setList(prev => prev.map(x => (x.id === id ? { ...x, unread_count: 0 } : x)));
+  }
+
+  if (state === 'off') {
+    return <div className="max-w-xl mx-auto mt-10 bg-white rounded-2xl border border-line"><EmptyState icon="chat" title={c.off} text={c.offText} /></div>;
+  }
+
+  const active = list.find(x => x.id === activeId);
+
+  return (
+    <div className="relative -m-4 lg:-m-6 h-[calc(100dvh-4rem)] flex bg-white overflow-hidden">
+      {/* Conversation list */}
+      <aside className={`${view === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 xl:w-96 shrink-0 flex-col border-r border-line`}>
+        <div className="p-3 space-y-2 border-b border-line">
+          <SearchInput value={search} onChange={setSearch} placeholder={c.search} />
+          <div className="flex flex-wrap gap-1.5">
+            {['open', 'unread', 'done', 'all'].map(f => (
+              <Chip key={f} active={filter === f} onClick={() => setFilter(f)} count={f === 'all' ? counts.all : counts[f]}>{c[f]}</Chip>
+            ))}
+          </div>
+          {platforms.length > 1 && (
+            <Segmented size="sm" value={platform} onChange={setPlatform}
+              options={[{ value: '', label: c.allCh }, ...platforms.map(p => ({ value: p, label: PLATFORM[p].label }))]} />
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {state === 'loading' ? (
+            <div className="p-3 space-y-2" aria-busy="true">{[0, 1, 2, 3, 4].map(i => <div key={i} className="h-16 rounded-xl bg-canvas animate-pulse" />)}</div>
+          ) : list.length === 0 ? (
+            <EmptyState icon="chat" title={search ? c.noMatch : c.none} text={search ? undefined : c.noneText} />
+          ) : (
+            <ul>
+              {list.map(conv => {
+                const unread = conv.unread_count > 0;
+                const selected = conv.id === activeId;
+                return (
+                  <li key={conv.id}>
+                    <button onClick={() => openChat(conv.id)} aria-current={selected}
+                      className={`w-full text-left flex gap-3 px-3.5 py-3 border-b border-line/70 ${selected ? 'bg-gold-soft/60 shadow-[inset_3px_0_0_#C8A04A]' : 'hover:bg-canvas/70'}`}>
+                      <Avatar conv={conv} />
+                      <span className="flex-1 min-w-0">
+                        <span className="flex items-baseline justify-between gap-2">
+                          <span className={`truncate ${unread ? 'font-bold text-ink' : 'font-semibold text-ink'}`}>{conv.customer_name || conv.name || conv.phone || PLATFORM[conv.platform].label}</span>
+                          <span className={`text-xs shrink-0 num ${unread ? 'text-gold-dark font-semibold' : 'text-slate-400'}`}>{conv.last_message_at && shortTime(conv.last_message_at, c, locale)}</span>
+                        </span>
+                        <span className="flex items-center justify-between gap-2 mt-0.5">
+                          <span className={`text-sm truncate ${unread ? 'text-ink' : 'text-slate-500'}`}>{conv.last_message_preview}</span>
+                          {unread && <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gold text-ink text-[0.7rem] font-bold flex items-center justify-center num">{conv.unread_count}</span>}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </aside>
+
+      {/* Thread + profile */}
+      {activeId ? (
+        <Thread key={activeId} id={activeId} summary={active} c={c} lang={lang} locale={locale} view={view} setView={setView} onChanged={loadList} />
+      ) : (
+        <div className="hidden md:flex flex-1 items-center justify-center bg-canvas/50">
+          <EmptyState icon="chat" title={c.pick} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
+  const [conv, setConv] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [text, setText] = useState('');
+  const [file, setFile] = useState(null);
+  const [humanAgent, setHumanAgent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const [profileKey, setProfileKey] = useState(0);
+  const [slipFor, setSlipFor] = useState(null); // message
+  const [preview, setPreview] = useState(null); // image url
+  const [now, setNow] = useState(Date.now());
+  const scroller = useRef(null);
+  const fileRef = useRef(null);
+  const atBottom = useRef(true);
+
+  const merge = useCallback((rows, replaceTail) => {
+    setMessages(prev => {
+      const map = new Map(prev.map(m => [m.id, m]));
+      for (const m of rows) map.set(m.id, m);
+      // Drop optimistic temp rows once the server copy arrives.
+      return [...map.values()].filter(m => !(replaceTail && String(m.id).startsWith('tmp'))).sort((a, b) => Number(a.id) - Number(b.id));
+    });
+  }, []);
+
+  const load = useCallback(async () => {
+    const res = await fetch(`/api/chat/conversations/${id}`);
+    if (!res.ok) return;
+    const d = await res.json();
+    setConv(d.conversation);
+    merge(d.messages, true);
+    setHasMore(h => h || d.hasMore);
+  }, [id, merge]);
+
+  useEffect(() => {
+    load();
+    const t = setInterval(() => document.visibilityState === 'visible' && load(), 3000);
+    const n = setInterval(() => setNow(Date.now()), 30000);
+    return () => { clearInterval(t); clearInterval(n); };
+  }, [load]);
+
+  // Stay pinned to the newest message unless the user has scrolled up to read.
+  useEffect(() => {
+    const el = scroller.current;
+    if (el && atBottom.current) el.scrollTop = el.scrollHeight;
+  }, [messages]);
+
+  function onScroll() {
+    const el = scroller.current;
+    atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  }
+
+  async function loadOlder() {
+    const first = messages.find(m => !String(m.id).startsWith('tmp'));
+    if (!first) return;
+    const el = scroller.current;
+    const before = el.scrollHeight;
+    const res = await fetch(`/api/chat/conversations/${id}?before=${first.id}`);
+    if (!res.ok) return;
+    const d = await res.json();
+    atBottom.current = false;
+    merge(d.messages);
+    setHasMore(d.hasMore);
+    requestAnimationFrame(() => { el.scrollTop = el.scrollHeight - before; });
+  }
+
+  const win = conv?.window || {};
+  const winOpen = win.open && (!win.closesAt || win.closesAt > now);
+  const canSend = winOpen || (win.humanAgent && humanAgent);
+
+  async function send(extra = {}) {
+    if (sending) return;
+    if (!extra.product_id && !text.trim() && !file) return;
+    setSending(true);
+    setError('');
+    const form = new FormData();
+    if (!extra.product_id) {
+      form.append('text', text);
+      if (file) form.append('file', file);
+    }
+    if (extra.product_id) form.append('product_id', extra.product_id);
+    if (!winOpen && humanAgent) form.append('human_agent', '1');
+    const temp = { id: `tmp${Date.now()}`, direction: 'out', type: file ? 'image' : 'text', text: extra.product_id ? '…' : text, status: 'sending', created_at: new Date().toISOString() };
+    atBottom.current = true;
+    setMessages(prev => [...prev, temp]);
+    if (!extra.product_id) { setText(''); setFile(null); }
+    try {
+      const res = await fetch(`/api/chat/conversations/${id}/send`, { method: 'POST', body: form });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok && d.error) setError(c.errors[d.error] || c.errors.send_failed);
+    } finally {
+      setSending(false);
+      await load();
+      onChanged();
+    }
+  }
+
+  async function retry(m) {
+    setMessages(prev => prev.map(x => (x.id === m.id ? { ...x, status: 'sending' } : x)));
+    const res = await fetch(`/api/chat/messages/${m.id}`, { method: 'POST' });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok && d.error) setError(c.errors[d.error] || c.errors.send_failed);
+    load();
+  }
+
+  async function setStatus(status) {
+    await fetch(`/api/chat/conversations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+    load();
+    onChanged();
+  }
+
+  function onKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      if (canSend) send();
+    }
+  }
+
+  function onPaste(e) {
+    const f = [...(e.clipboardData?.files || [])].find(x => x.type.startsWith('image/'));
+    if (f) { e.preventDefault(); setFile(f); }
+  }
+
+  const name = conv?.name || summary?.customer_name || summary?.name || conv?.phone || '';
+
+  // Group messages under day headings.
+  const grouped = useMemo(() => {
+    const out = [];
+    let day = '';
+    for (const m of messages) {
+      const d = new Date(m.created_at).toDateString();
+      if (d !== day) { day = d; out.push({ day: m.created_at }); }
+      out.push(m);
+    }
+    return out;
+  }, [messages]);
+
+  function dayLabel(v) {
+    const d = new Date(v);
+    const n = new Date();
+    if (d.toDateString() === n.toDateString()) return c.today;
+    const y = new Date(n); y.setDate(n.getDate() - 1);
+    if (d.toDateString() === y.toDateString()) return c.yesterday;
+    return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  return (
+    <>
+      <section className={`${view === 'thread' ? 'flex' : 'hidden'} md:flex flex-1 min-w-0 flex-col bg-canvas/60`}>
+        {/* Header */}
+        <header className="h-16 shrink-0 bg-white border-b border-line px-3 sm:px-4 flex items-center gap-3">
+          <IconButton icon="back" label={c.back} onClick={() => setView('list')} className="md:hidden -ml-1" />
+          {conv && <Avatar conv={{ ...conv, customer_name: summary?.customer_name }} size="w-9 h-9" />}
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-ink truncate">{name}</p>
+            <p className="text-xs text-slate-500 truncate">
+              {conv && PLATFORM[conv.platform].label}{conv?.channel_name && <span>, {conv.channel_name}</span>}
+              {conv?.phone && <span className="num ml-1">({conv.phone})</span>}
+            </p>
+          </div>
+          {conv && (winOpen
+            ? <span className="hidden sm:inline-flex"><Pill tone="green">{c.windowLeft(remaining(win.closesAt - now))}</Pill></span>
+            : <span className="hidden sm:inline-flex"><Pill tone="red">{c.windowClosed}</Pill></span>)}
+          {conv && (conv.status === 'done'
+            ? <Button size="sm" tone="ghost" icon="refresh" onClick={() => setStatus('open')}>{c.reopen}</Button>
+            : <Button size="sm" tone="gold" icon="check" onClick={() => setStatus('done')}>{c.markDone}</Button>)}
+          <IconButton icon="user" label={c.details} onClick={() => setView(view === 'profile' ? 'thread' : 'profile')} className="xl:hidden" />
+        </header>
+
+        {/* Messages */}
+        <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 space-y-1.5">
+          {hasMore && (
+            <div className="text-center mb-2"><button onClick={loadOlder} className="text-xs font-semibold text-primary hover:text-gold-dark">{c.older}</button></div>
+          )}
+          {grouped.map((m, i) => m.day ? (
+            <div key={`d${i}`} className="flex justify-center py-2"><span className="text-[0.7rem] font-semibold text-slate-500 bg-white border border-line rounded-full px-3 py-0.5">{dayLabel(m.day)}</span></div>
+          ) : (
+            <Bubble key={m.id} m={m} c={c} locale={locale} onRetry={retry} onPreview={setPreview} onSlip={setSlipFor} />
+          ))}
+        </div>
+
+        {/* Composer */}
+        <div className="shrink-0 bg-white border-t border-line p-3">
+          {conv && !winOpen && (
+            <div className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-danger">
+              <p className="font-semibold">{c.windowClosed}</p>
+              <p className="text-xs">{c.windowClosedText}</p>
+              {win.humanAgent && (
+                <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
+                  <input type="checkbox" checked={humanAgent} onChange={e => setHumanAgent(e.target.checked)} className="accent-[#1C3260]" />{c.humanAgent}
+                </label>
+              )}
+            </div>
+          )}
+          {error && <p role="alert" className="mb-2 text-sm text-danger">{error}</p>}
+          {file && (
+            <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-canvas pl-2 pr-1 py-1">
+              {file.type.startsWith('image/') ? <img src={URL.createObjectURL(file)} alt="" className="w-10 h-10 rounded-lg object-cover" /> : <Icon name="box" className="w-5 h-5 text-slate-400" />}
+              <span className="text-xs text-slate-600 max-w-[12rem] truncate">{file.name}</span>
+              <IconButton icon="close" label="Remove" onClick={() => setFile(null)} />
+            </div>
+          )}
+          <div className="flex items-end gap-2">
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" className="hidden"
+              onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
+            <IconButton icon="image" label={c.attach} onClick={() => fileRef.current?.click()} disabled={!canSend} />
+            <textarea rows={1} value={text} onChange={e => setText(e.target.value)} onKeyDown={onKey} onPaste={onPaste} disabled={!canSend}
+              placeholder={canSend ? c.placeholder : c.windowClosed} aria-label={c.placeholder}
+              className={`${inputCls} resize-none max-h-40 min-h-[2.75rem] disabled:bg-canvas`} style={{ fieldSizing: 'content' }} />
+            <Button onClick={() => send()} disabled={!canSend || sending || (!text.trim() && !file)} className="h-11">{c.send}</Button>
+          </div>
+        </div>
+      </section>
+
+      <Profile key={`${id}-${profileKey}`} id={id} conv={conv} c={c} lang={lang} locale={locale}
+        visible={view === 'profile'} onBack={() => setView('thread')}
+        onLinked={() => { setProfileKey(k => k + 1); load(); onChanged(); }}
+        onSendProduct={pid => { setView('thread'); send({ product_id: pid }); }} canSend={canSend} />
+
+      <Modal open={!!preview} onClose={() => setPreview(null)} size="xl">
+        {preview && <img src={preview} alt="" className="w-full max-h-[75vh] object-contain" />}
+      </Modal>
+
+      {slipFor && <SlipPicker message={slipFor} convId={id} c={c} onClose={() => setSlipFor(null)} onDone={() => { setSlipFor(null); setProfileKey(k => k + 1); load(); }} />}
+    </>
+  );
+}
+
+const TICKS = { sending: '…', sent: '✓', delivered: '✓✓', read: '✓✓' };
+
+function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
+  const out = m.direction === 'out';
+  const media = m.has_media ? `/api/chat/messages/${m.id}` : null;
+  const isImg = media && String(m.media_mime).startsWith('image/');
+  const time = new Date(m.created_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  return (
+    <div className={`flex ${out ? 'justify-end' : 'justify-start'}`}>
+      <div className={`group max-w-[85%] sm:max-w-[70%] flex flex-col ${out ? 'items-end' : 'items-start'}`}>
+        <div className={`rounded-2xl overflow-hidden ${out ? 'bg-primary text-white rounded-br-md' : 'bg-white text-ink border border-line rounded-bl-md'}`}>
+          {isImg && (
+            <button onClick={() => onPreview(media)} className="block">
+              <img src={media} alt="" loading="lazy" className="max-h-72 w-auto object-cover" />
+            </button>
+          )}
+          {media && !isImg && String(m.media_mime).startsWith('audio/') && <audio controls src={media} className="m-2 max-w-[16rem]" />}
+          {media && !isImg && String(m.media_mime).startsWith('video/') && <video controls src={media} className="max-h-72" />}
+          {media && !isImg && !/^(audio|video)\//.test(String(m.media_mime)) && (
+            <a href={`${media}?download=1`} className={`flex items-center gap-2 px-3.5 py-2.5 text-sm font-semibold ${out ? 'text-white' : 'text-primary'}`}>
+              <Icon name="download" className="w-4 h-4" />{m.text || 'file'}
+            </a>
+          )}
+          {!m.has_media && m.type !== 'text' && m.type !== 'location' && !m.text && (
+            <p className="px-3.5 py-2 text-sm italic opacity-70">{m.error ? c.mediaMissing : `[${m.type}]`}</p>
+          )}
+          {m.text && !(media && !isImg && !/^(audio|video)\//.test(String(m.media_mime))) && (
+            <p className="px-3.5 py-2 text-[0.95rem] whitespace-pre-wrap break-words">{m.text}</p>
+          )}
+        </div>
+        <div className="mt-0.5 flex items-center gap-2 px-1 text-[0.7rem] text-slate-400">
+          <span className="num">{time}</span>
+          {out && m.status !== 'failed' && <span title={c[m.status]} className={m.status === 'read' ? 'text-success font-bold' : ''}>{TICKS[m.status]}</span>}
+          {out && m.status === 'failed' && (
+            <span className="text-danger font-semibold" title={m.error || ''}>
+              {c.failed} <button onClick={() => onRetry(m)} className="underline ml-1">{c.retry}</button>
+            </span>
+          )}
+          {!out && isImg && (
+            <button onClick={() => onSlip(m)} className={`font-semibold ${m.order_id ? 'text-success' : 'text-primary opacity-0 group-hover:opacity-100 focus:opacity-100'}`}>
+              {m.order_id ? '✓ ' : ''}{c.useSlip}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Profile({ id, conv, c, lang, locale, visible, onBack, onLinked, onSendProduct, canSend }) {
+  const [data, setData] = useState(null);
+  const [mode, setMode] = useState(''); // '' | link | create
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    fetch(`/api/chat/conversations/${id}/profile`).then(r => r.json()).then(setData).catch(() => {});
+  }, [id]);
+
+  useEffect(() => {
+    if (mode !== 'link') return;
+    const t = setTimeout(async () => {
+      const d = await fetch(`/api/customers?search=${encodeURIComponent(q)}`).then(r => r.json()).catch(() => []);
+      setResults(Array.isArray(d) ? d.slice(0, 20) : []);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q, mode]);
+
+  async function link(customerId) {
+    await fetch(`/api/chat/conversations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customer_id: customerId }) });
+    setMode('');
+    onLinked();
+  }
+
+  const cu = data?.customer;
+  const count = Number(cu?.order_count) || 0;
+  const spent = Number(cu?.total_spent) || 0;
+  const tier = !cu ? null : cu.is_blacklisted ? { tone: 'red', label: c.blacklisted } : spent >= 5000000 ? { tone: 'gold', label: c.vip } : count > 1 ? { tone: 'navy', label: c.regular } : { tone: 'gray', label: c.newC };
+  const nameOf = p => (lang === 'lo' ? p.name_lo : lang === 'th' ? p.name_th : p.name_en) || p.name_lo || p.name_th || p.name_en || p.sku;
+
+  return (
+    <aside className={`${visible ? 'flex' : 'hidden'} xl:flex w-full md:w-80 xl:w-80 shrink-0 flex-col border-l border-line bg-white overflow-y-auto ${visible ? 'md:absolute md:right-0 md:inset-y-0 md:z-10 md:shadow-xl xl:static xl:shadow-none' : ''}`}>
+      <div className="h-16 shrink-0 px-4 flex items-center gap-2 border-b border-line">
+        <IconButton icon="back" label={c.back} onClick={onBack} className="xl:hidden -ml-1" />
+        <h2 className="font-bold text-ink">{c.customer}</h2>
+      </div>
+
+      {!data ? (
+        <div className="p-4 space-y-3" aria-busy="true"><div className="h-24 rounded-xl bg-canvas animate-pulse" /><div className="h-40 rounded-xl bg-canvas animate-pulse" /></div>
+      ) : !cu ? (
+        <div className="p-4 space-y-4">
+          {data.suggestions?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-1.5">{c.suggest}</p>
+              <ul className="space-y-1.5">
+                {data.suggestions.map(s => (
+                  <li key={s.id}>
+                    <button onClick={() => link(s.id)} className="w-full text-left rounded-xl border border-gold/50 bg-gold-soft/40 px-3 py-2 hover:bg-gold-soft">
+                      <span className="block font-semibold text-ink">{s.name || s.phone}</span>
+                      <span className="block text-xs text-slate-500 num">{s.phone}, {formatCurrency(s.total_spent, 'LAK')}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {mode === '' && (
+            <div className="space-y-2">
+              <Button className="w-full" icon="plus" onClick={() => setMode('create')}>{c.create}</Button>
+              <Button className="w-full" tone="ghost" icon="link" onClick={() => setMode('link')}>{c.link}</Button>
+            </div>
+          )}
+          {mode === 'link' && (
+            <div>
+              <SearchInput value={q} onChange={setQ} placeholder={c.pickCustomer} />
+              <ul className="mt-2 max-h-80 overflow-y-auto divide-y divide-line">
+                {results.map(r => (
+                  <li key={r.id}>
+                    <button onClick={() => link(r.id)} className="w-full text-left px-2 py-2 hover:bg-canvas rounded-lg">
+                      <span className="block font-semibold text-ink text-sm">{r.name || r.phone}</span>
+                      <span className="block text-xs text-slate-500 num">{r.phone}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => setMode('')} className="mt-2 text-sm text-slate-500">{c.back}</button>
+            </div>
+          )}
+          {mode === 'create' && (
+            <CustomerForm lang={lang} initial={{ name: conv?.name || '', phone: conv?.phone || '' }} onCancel={() => setMode('')}
+              onSaved={newId => link(newId)} />
+          )}
+        </div>
+      ) : (
+        <div className="p-4 space-y-5">
+          {/* The one bold element of the page: who this person is to the shop */}
+          <section className="rounded-2xl bg-ink text-white p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-bold truncate">{cu.name || cu.phone}</p>
+                {cu.phone && <p className="text-xs text-slate-400 num">{cu.phone}</p>}
+              </div>
+              {tier && <Pill tone={tier.tone}>{tier.label}</Pill>}
+            </div>
+            <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-ink-line pt-3">
+              <div><dt className="text-[0.7rem] text-slate-400">{c.spent}</dt><dd className="text-sm font-extrabold text-gold num truncate">{formatCurrency(spent, 'LAK')}</dd></div>
+              <div><dt className="text-[0.7rem] text-slate-400">{c.orders}</dt><dd className="text-sm font-extrabold num">{count}</dd></div>
+              <div><dt className="text-[0.7rem] text-slate-400">{c.avg}</dt><dd className="text-sm font-extrabold num truncate">{formatCurrency(count ? spent / count : 0, 'LAK')}</dd></div>
+            </dl>
+            {cu.address && <p className="mt-3 text-xs text-slate-300 whitespace-pre-wrap">{cu.address}</p>}
+            {cu.note && <p className="mt-2 text-xs text-gold-soft whitespace-pre-wrap">{cu.note}</p>}
+          </section>
+
+          {data.products?.length > 0 && (
+            <section>
+              <h3 className="text-sm font-bold text-ink">{c.bought}</h3>
+              <p className="text-xs text-slate-500">{c.sendProduct}</p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {data.products.map(p => (
+                  <button key={p.id} onClick={() => canSend && onSendProduct(p.id)} disabled={!canSend} title={nameOf(p)}
+                    className="text-left rounded-xl border border-line overflow-hidden hover:border-gold disabled:opacity-50">
+                    <span className="block aspect-square bg-canvas">
+                      {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-slate-300"><Icon name="image" /></span>}
+                    </span>
+                    <span className="block px-1.5 py-1 text-[0.7rem] font-semibold text-ink truncate">{nameOf(p)}</span>
+                    <span className="block px-1.5 pb-1 text-[0.65rem] text-slate-500 num">x{Number(p.qty)}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section>
+            <h3 className="text-sm font-bold text-ink">{c.recent}</h3>
+            {data.orders.length === 0 ? <p className="mt-1 text-sm text-slate-500">{c.noOrders}</p> : (
+              <ul className="mt-2 divide-y divide-line border-y border-line">
+                {data.orders.slice(0, 8).map(o => (
+                  <li key={o.id}>
+                    <a href={`/orders?q=${encodeURIComponent(o.order_number)}`} className="flex items-center gap-2 py-2 hover:bg-canvas/60">
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-semibold text-ink num truncate">{o.order_number}</span>
+                        <span className="block text-[0.7rem] text-slate-500">{new Date(o.created_at).toLocaleDateString(locale)}</span>
+                      </span>
+                      <Pill tone={ORDER_TONE[o.status]}>{c.status[o.status] || o.status}</Pill>
+                      <span className="text-sm font-bold text-ink num">{formatCurrency(o.total, o.currency)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <div className="flex items-center justify-between text-sm">
+            <a href={`/customers/${cu.id}`} className="font-semibold text-primary hover:text-gold-dark">{c.openProfile}</a>
+            <button onClick={() => link(null)} className="text-slate-400 hover:text-danger">{c.unlink}</button>
+          </div>
+        </div>
+      )}
+    </aside>
+  );
+}
+
+function SlipPicker({ message, convId, c, onClose, onDone }) {
+  const [orders, setOrders] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  useEffect(() => {
+    fetch(`/api/chat/conversations/${convId}/profile`).then(r => r.json()).then(d => setOrders(d.customer ? d.orders.filter(o => o.status !== 'cancelled') : false));
+  }, [convId]);
+
+  async function pick(o) {
+    const res = await fetch('/api/chat/slip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message_id: message.id, order_id: o.id }) });
+    const d = await res.json().catch(() => ({}));
+    if (res.status === 409) { setMsg(c.slipUsed(d.order_number)); return; }
+    if (!res.ok) { setMsg(c.errors.send_failed); return; }
+    onDone();
+  }
+
+  return (
+    <Modal open onClose={onClose} title={c.slipFor} size="md">
+      <img src={`/api/chat/messages/${message.id}`} alt="" className="max-h-56 mx-auto rounded-xl" />
+      {msg && <p role="alert" className="mt-3 text-sm text-danger">{msg}</p>}
+      {orders === null ? <div className="mt-4 h-20 rounded-xl bg-canvas animate-pulse" />
+        : orders === false ? <p className="mt-4 text-sm text-slate-600">{c.needCustomer}</p>
+        : orders.length === 0 ? <p className="mt-4 text-sm text-slate-600">{c.noOrders}</p>
+        : (
+          <ul className="mt-4 divide-y divide-line border-y border-line">
+            {orders.map(o => (
+              <li key={o.id}>
+                <button onClick={() => pick(o)} className="w-full flex items-center gap-3 py-2.5 px-1 text-left hover:bg-canvas">
+                  <span className="flex-1 font-semibold text-ink num">{o.order_number}</span>
+                  {o.payment_slip_url && <Pill tone="green">✓</Pill>}
+                  <Pill tone={ORDER_TONE[o.status]}>{c.status[o.status]}</Pill>
+                  <span className="font-bold num">{formatCurrency(o.total, o.currency)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+    </Modal>
+  );
+}

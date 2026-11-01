@@ -1,0 +1,67 @@
+import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+import { queryOne } from '../../../../../../lib/db';
+import { formatCurrency } from '../../../../../../lib/currency';
+import { chatGuard, ERROR_STATUS } from '../../../../../../lib/chat/guard';
+import { sendMessage, SendError } from '../../../../../../lib/chat/send';
+import { MAX_MEDIA_BYTES } from '../../../../../../lib/chat/media';
+
+export const dynamic = 'force-dynamic';
+
+const UPLOAD_MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif' };
+
+// Product photos already live in the public uploads folder; read them from disk.
+function productPhoto(url) {
+  const m = /^\/api\/uploads\/([^/?#]+)$/.exec(String(url || ''));
+  if (!m) return null;
+  const name = path.basename(m[1]);
+  const file = path.join(process.cwd(), 'uploads', name);
+  const mime = UPLOAD_MIME[path.extname(name).toLowerCase()];
+  if (!mime || !fs.existsSync(file)) return null;
+  return { buffer: fs.readFileSync(file), mime, name };
+}
+
+// Body: multipart form with text, file, order_id, product_id, human_agent.
+export async function POST(request, { params }) {
+  const g = await chatGuard();
+  if (g.response) return g.response;
+
+  const form = await request.formData();
+  let text = String(form.get('text') || '');
+  let file = null;
+  const upload = form.get('file');
+  if (upload && typeof upload === 'object' && upload.size > 0) {
+    if (upload.size > MAX_MEDIA_BYTES) return NextResponse.json({ error: 'file_too_large' }, { status: 400 });
+    file = { buffer: Buffer.from(await upload.arrayBuffer()), mime: upload.type, name: path.basename(upload.name || 'file') };
+  }
+
+  let orderId = parseInt(form.get('order_id')) || null;
+  if (orderId) {
+    const o = await queryOne('SELECT id FROM orders WHERE id = ? AND shop_id = ?', [orderId, g.shopId]);
+    if (!o) return NextResponse.json({ error: 'order_not_found' }, { status: 404 });
+  }
+
+  const productId = parseInt(form.get('product_id')) || null;
+  if (productId) {
+    const p = await queryOne('SELECT * FROM products WHERE id = ? AND shop_id = ?', [productId, g.shopId]);
+    if (!p) return NextResponse.json({ error: 'product_not_found' }, { status: 404 });
+    const name = p.name_lo || p.name_th || p.name_en || p.sku;
+    if (!text) text = `${name}\n${formatCurrency(p.selling_price_lak, 'LAK')}`;
+    if (!file) file = productPhoto(p.image_url);
+  }
+
+  try {
+    const result = await sendMessage({
+      shopId: g.shopId, conversationId: params.id, text, file, orderId, humanAgent: form.get('human_agent') === '1',
+    });
+    return NextResponse.json(result, { status: result.status === 'failed' ? 502 : 200 });
+  } catch (e) {
+    if (e instanceof SendError || ERROR_STATUS[e.message]) {
+      const code = e.code || e.message;
+      return NextResponse.json({ error: code }, { status: ERROR_STATUS[code] || 400 });
+    }
+    console.error('chat send:', e);
+    return NextResponse.json({ error: 'send_failed' }, { status: 500 });
+  }
+}

@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { query } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
+import { shopWithFeature } from '../../../lib/features';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('webhooks'); if (g.response) return g.response; shopId = g.shopId; }
   const hooks = await query('SELECT * FROM webhooks WHERE shop_id = ? ORDER BY created_at DESC', [shopId]);
   return NextResponse.json(hooks);
 }
@@ -25,7 +26,7 @@ function validate(b) {
 
 export async function POST(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('webhooks'); if (g.response) return g.response; shopId = g.shopId; }
   const b = await request.json();
   const invalid = validate(b);
   if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
@@ -39,7 +40,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('webhooks'); if (g.response) return g.response; shopId = g.shopId; }
   const b = await request.json();
   if (Object.keys(b).length === 2 && 'is_active' in b) {
     await query('UPDATE webhooks SET is_active = ? WHERE id = ? AND shop_id = ?', [b.is_active ? 1 : 0, b.id, shopId]);
@@ -56,7 +57,7 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   let shopId;
-  try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  { const g = await shopWithFeature('webhooks'); if (g.response) return g.response; shopId = g.shopId; }
   const { searchParams } = new URL(request.url);
   await query('DELETE FROM webhooks WHERE id = ? AND shop_id = ?', [searchParams.get('id'), shopId]);
   return NextResponse.json({ success: true });
