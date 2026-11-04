@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '../../../../lib/db';
 import { chatGuard } from '../../../../lib/chat/guard';
+import { chatPlatforms } from '../../../../lib/features';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,11 @@ export async function GET(request) {
   const platform = p.get('platform');
   const q = (p.get('q') || '').trim();
 
-  const platforms = ['messenger', 'whatsapp'].filter(x => features[`chat_${x}`] && (!platform || platform === x));
-  if (!platforms.length) return NextResponse.json({ conversations: [], counts: {} });
+  // The UI filters by family (Messenger / WhatsApp); WhatsApp covers both the
+  // Cloud API and numbers connected by scanning.
+  const families = ['messenger', 'whatsapp'].filter(x => features[`chat_${x}`]);
+  const platforms = chatPlatforms(features).filter(x => !platform || x === platform || (platform === 'whatsapp' && x === 'whatsapp_web'));
+  if (!platforms.length) return NextResponse.json({ conversations: [], counts: {}, platforms: families });
 
   let sql = `
     SELECT c.id, c.platform, c.name, c.phone, c.avatar_url, c.customer_id, c.status, c.unread_count,
@@ -48,6 +52,6 @@ export async function GET(request) {
   return NextResponse.json({
     conversations,
     counts: { unread: Number(cr.unread) || 0, open: Number(cr.open) || 0, done: Number(cr.done) || 0, all: Number(cr.total) || 0 },
-    platforms,
+    platforms: families,
   });
 }

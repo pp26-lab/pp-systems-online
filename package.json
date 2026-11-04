@@ -8,8 +8,10 @@
     "start": "next start"
   },
   "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
     "mysql2": "^3.11.0",
     "next": "^14.2.35",
+    "qrcode": "1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "uuid": "^10.0.0"

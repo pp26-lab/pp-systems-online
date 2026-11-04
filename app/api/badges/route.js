@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
-import { getShopFeatures } from '../../../lib/features';
+import { getShopFeatures, chatPlatforms } from '../../../lib/features';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export async function GET() {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ handoffs: 0, pending_orders: 0, chat_unread: 0 }); }
 
   const features = await getShopFeatures(shopId);
-  const platforms = ['messenger', 'whatsapp'].filter(p => features[`chat_${p}`]);
+  const platforms = chatPlatforms(features);
 
   const [handoffs, orders, chat] = await Promise.all([
     queryOne("SELECT COUNT(*) as c FROM handoffs WHERE shop_id = ? AND status = 'pending'", [shopId]),

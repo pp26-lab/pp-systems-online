@@ -4,6 +4,7 @@ import { open } from '../../../../../lib/secret-box';
 import { chatGuard } from '../../../../../lib/chat/guard';
 import { windowState } from '../../../../../lib/chat/send';
 import { whatsappMarkRead } from '../../../../../lib/chat/meta';
+import { waGateway } from '../../../../../lib/chat/waweb';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,15 @@ export async function GET(request, { params }) {
       const lastIn = await queryOne("SELECT external_id FROM chat_messages WHERE conversation_id = ? AND direction = 'in' ORDER BY id DESC LIMIT 1", [conv.id]);
       const ch = await queryOne('SELECT external_id, token_enc FROM chat_channels WHERE id = ? AND shop_id = ?', [conv.channel_id, g.shopId]);
       if (lastIn?.external_id && ch) whatsappMarkRead(ch.external_id, lastIn.external_id, open(ch.token_enc));
+    }
+    if (conv.platform === 'whatsapp_web') {
+      // Read the messages that were unread, the way a person opening the chat would.
+      const unread = await query(
+        "SELECT external_id FROM chat_messages WHERE conversation_id = ? AND direction = 'in' AND external_id IS NOT NULL ORDER BY id DESC LIMIT ?",
+        [conv.id, String(Math.min(20, conv.unread_count))]
+      );
+      const ids = unread.map(r => r.external_id).reverse();
+      if (ids.length) waGateway.read(conv.channel_id, conv.external_user_id, ids).catch(() => {});
     }
   }
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../../lib/db';
 import { requireShopId } from '../../../../lib/auth';
-import { getShopFeatures } from '../../../../lib/features';
+import { getShopFeatures, chatPlatforms } from '../../../../lib/features';
 import { windowState } from '../../../../lib/chat/send';
 import { digits } from '../../../../lib/chat/store';
 
@@ -18,7 +18,7 @@ export async function GET(request) {
   const o = await queryOne('SELECT id, customer_id, customer_phone FROM orders WHERE id = ? AND shop_id = ?', [orderId, shopId]);
   if (!o) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
-  const platforms = ['messenger', 'whatsapp'].filter(p => features[`chat_${p}`]);
+  const platforms = chatPlatforms(features);
   let rows = [];
   if (o.customer_id) {
     rows = await query(
@@ -30,7 +30,7 @@ export async function GET(request) {
   // Fall back to a WhatsApp chat with the same phone number.
   const d = digits(o.customer_phone);
   if (!rows.length && d.length >= 8 && platforms.includes('whatsapp')) {
-    const cands = await query("SELECT id, platform, name, phone, last_inbound_at FROM chat_conversations WHERE shop_id = ? AND platform = 'whatsapp' AND phone LIKE ?", [shopId, `%${d.slice(-4)}`]);
+    const cands = await query("SELECT id, platform, name, phone, last_inbound_at FROM chat_conversations WHERE shop_id = ? AND platform IN ('whatsapp','whatsapp_web') AND phone LIKE ?", [shopId, `%${d.slice(-4)}`]);
     rows = cands.filter(c => digits(c.phone).endsWith(d.slice(-8)));
   }
   return NextResponse.json({

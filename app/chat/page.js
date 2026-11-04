@@ -19,7 +19,8 @@ const COPY = {
     customer: 'ລູກຄ້າ', link: 'ຜູກກັບລູກຄ້າທີ່ມີຢູ່', create: 'ບັນທຶກເປັນລູກຄ້າໃໝ່', unlink: 'ຍົກເລີກການຜູກ', suggest: 'ລູກຄ້າທີ່ເບີໂທກົງກັນ', pickCustomer: 'ເລືອກລູກຄ້າ',
     spent: 'ຍອດຊື້ລວມ', orders: 'ບິນ', avg: 'ສະເລ່ຍ', bought: 'ສິນຄ້າທີ່ເຄີຍຊື້', sendProduct: 'ກົດເພື່ອສົ່ງສິນຄ້ານີ້ໃຫ້ລູກຄ້າ', recent: 'ອໍເດີ້ຫຼ້າສຸດ',
     openProfile: 'ເປີດໜ້າລູກຄ້າ', blacklisted: 'ລູກຄ້ານີ້ຢູ່ໃນບັນຊີດຳ', vip: 'VIP', regular: 'ລູກຄ້າປະຈຳ', newC: 'ລູກຄ້າໃໝ່',
-    errors: { window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ' },
+    errors: { window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
+    replyOnly: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ', replyOnlyText: 'ເພື່ອບໍ່ໃຫ້ເບີຖືກແບນ ລະບົບຕອບໄດ້ສະເພາະລູກຄ້າທີ່ທັກມາກ່ອນ',
     status: { pending: 'ລໍຖ້າຈັດສົ່ງ', shipping: 'ກຳລັງຈັດສົ່ງ', completed: 'ສຳເລັດ', cancelled: 'ຍົກເລີກ' }, details: 'ຂໍ້ມູນລູກຄ້າ', back: 'ກັບ',
   },
   th: {
@@ -35,7 +36,8 @@ const COPY = {
     customer: 'ลูกค้า', link: 'ผูกกับลูกค้าที่มีอยู่', create: 'บันทึกเป็นลูกค้าใหม่', unlink: 'ยกเลิกการผูก', suggest: 'ลูกค้าที่เบอร์ตรงกัน', pickCustomer: 'เลือกลูกค้า',
     spent: 'ยอดซื้อรวม', orders: 'บิล', avg: 'เฉลี่ย', bought: 'สินค้าที่เคยซื้อ', sendProduct: 'กดเพื่อส่งสินค้านี้ให้ลูกค้า', recent: 'ออเดอร์ล่าสุด',
     openProfile: 'เปิดหน้าลูกค้า', blacklisted: 'ลูกค้านี้อยู่ในบัญชีดำ', vip: 'VIP', regular: 'ลูกค้าประจำ', newC: 'ลูกค้าใหม่',
-    errors: { window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ' },
+    errors: { window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
+    replyOnly: 'รอลูกค้าทักมาก่อน', replyOnlyText: 'เพื่อไม่ให้เบอร์ถูกแบน ระบบตอบได้เฉพาะลูกค้าที่ทักมาก่อน',
     status: { pending: 'รอจัดส่ง', shipping: 'กำลังจัดส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' }, details: 'ข้อมูลลูกค้า', back: 'กลับ',
   },
   en: {
@@ -51,7 +53,8 @@ const COPY = {
     customer: 'Customer', link: 'Link to existing customer', create: 'Save as new customer', unlink: 'Unlink', suggest: 'Customers with this phone', pickCustomer: 'Choose customer',
     spent: 'Lifetime', orders: 'Orders', avg: 'Average', bought: 'Bought before', sendProduct: 'Tap to send this product', recent: 'Recent orders',
     openProfile: 'Open customer page', blacklisted: 'This customer is blacklisted', vip: 'VIP', regular: 'Regular', newC: 'New customer',
-    errors: { window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send" },
+    errors: { window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
+    replyOnly: 'Waiting for the customer to write first', replyOnlyText: 'To keep the number from being banned, the system only replies to customers who wrote first.',
     status: { pending: 'To ship', shipping: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' }, details: 'Customer details', back: 'Back',
   },
 };
@@ -59,6 +62,7 @@ const COPY = {
 const PLATFORM = {
   messenger: { label: 'Messenger', dot: 'bg-[#2B4A85]' },
   whatsapp: { label: 'WhatsApp', dot: 'bg-[#2A8C7E]' },
+  whatsapp_web: { label: 'WhatsApp', dot: 'bg-[#2A8C7E]' },
 };
 const ORDER_TONE = { pending: 'gold', shipping: 'navy', completed: 'green', cancelled: 'gray' };
 
@@ -363,8 +367,8 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
             </p>
           </div>
           {conv && (winOpen
-            ? <span className="hidden sm:inline-flex"><Pill tone="green">{c.windowLeft(remaining(win.closesAt - now))}</Pill></span>
-            : <span className="hidden sm:inline-flex"><Pill tone="red">{c.windowClosed}</Pill></span>)}
+            ? (win.closesAt ? <span className="hidden sm:inline-flex"><Pill tone="green">{c.windowLeft(remaining(win.closesAt - now))}</Pill></span> : null)
+            : <span className="hidden sm:inline-flex"><Pill tone="red">{win.replyOnly ? c.replyOnly : c.windowClosed}</Pill></span>)}
           {conv && (conv.status === 'done'
             ? <Button size="sm" tone="ghost" icon="refresh" onClick={() => setStatus('open')}>{c.reopen}</Button>
             : <Button size="sm" tone="gold" icon="check" onClick={() => setStatus('done')}>{c.markDone}</Button>)}
@@ -387,8 +391,8 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
         <div className="shrink-0 bg-white border-t border-line p-3">
           {conv && !winOpen && (
             <div className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-danger">
-              <p className="font-semibold">{c.windowClosed}</p>
-              <p className="text-xs">{c.windowClosedText}</p>
+              <p className="font-semibold">{win.replyOnly ? c.replyOnly : c.windowClosed}</p>
+              <p className="text-xs">{win.replyOnly ? c.replyOnlyText : c.windowClosedText}</p>
               {win.humanAgent && (
                 <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
                   <input type="checkbox" checked={humanAgent} onChange={e => setHumanAgent(e.target.checked)} className="accent-[#1C3260]" />{c.humanAgent}
@@ -409,7 +413,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
               onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
             <IconButton icon="image" label={c.attach} onClick={() => fileRef.current?.click()} disabled={!canSend} />
             <textarea rows={1} value={text} onChange={e => setText(e.target.value)} onKeyDown={onKey} onPaste={onPaste} disabled={!canSend}
-              placeholder={canSend ? c.placeholder : c.windowClosed} aria-label={c.placeholder}
+              placeholder={canSend ? c.placeholder : (win.replyOnly ? c.replyOnly : c.windowClosed)} aria-label={c.placeholder}
               className={`${inputCls} resize-none max-h-40 min-h-[2.75rem] disabled:bg-canvas`} style={{ fieldSizing: 'content' }} />
             <Button onClick={() => send()} disabled={!canSend || sending || (!text.trim() && !file)} className="h-11">{c.send}</Button>
           </div>
@@ -465,7 +469,7 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
           {out && m.status !== 'failed' && <span title={c[m.status]} className={m.status === 'read' ? 'text-success font-bold' : ''}>{TICKS[m.status]}</span>}
           {out && m.status === 'failed' && (
             <span className="text-danger font-semibold" title={m.error || ''}>
-              {c.failed} <button onClick={() => onRetry(m)} className="underline ml-1">{c.retry}</button>
+              {c.failed}{c.errors[m.error] ? ` (${c.errors[m.error]})` : ''} <button onClick={() => onRetry(m)} className="underline ml-1">{c.retry}</button>
             </span>
           )}
           {!out && isImg && (

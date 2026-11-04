@@ -3,6 +3,8 @@ import { query, queryOne } from '../../../../../../lib/db';
 import { verifyAdminSession, adminAudit } from '../../../../../../lib/admin-auth';
 import { seal, hasEncryptionKey } from '../../../../../../lib/secret-box';
 import * as meta from '../../../../../../lib/chat/meta';
+import { waGateway, gatewayConfigured } from '../../../../../../lib/chat/waweb';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +19,28 @@ export async function POST(request, { params }) {
   if (!shop) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   const b = await request.json();
+
+  // WhatsApp by scan: create a pending channel and ask the gateway for a QR / pairing code.
+  // The real phone number is filled in when the shop owner links it from their phone.
+  if (b.platform === 'whatsapp_web') {
+    if (!gatewayConfigured()) return NextResponse.json({ error: 'gateway_not_configured' }, { status: 500 });
+    const pairingPhone = String(b.pairing_phone || '').replace(/\D/g, '');
+    if (pairingPhone && (pairingPhone.length < 8 || pairingPhone.length > 15)) return NextResponse.json({ error: 'bad_phone' }, { status: 400 });
+    const pending = `pending-${crypto.randomBytes(8).toString('hex')}`;
+    const r = await query(
+      "INSERT INTO chat_channels (shop_id, platform, external_id, name, token_enc, status) VALUES (?, 'whatsapp_web', ?, '', ?, 'pending')",
+      [shop.id, pending, seal('-')]
+    );
+    try {
+      const session = await waGateway.start(r.insertId, pairingPhone ? { pairingPhone } : {});
+      await adminAudit(request, 'channel.pairing_started', shop.id, { platform: 'whatsapp_web', channel_id: r.insertId });
+      return NextResponse.json({ success: true, channel_id: r.insertId, session });
+    } catch (e) {
+      await query('DELETE FROM chat_channels WHERE id = ?', [r.insertId]);
+      return NextResponse.json({ error: e.code || 'gateway_unreachable' }, { status: 502 });
+    }
+  }
+
   const token = String(b.token || '').trim();
   if (!token || token.length > 1000) return NextResponse.json({ error: 'token_required' }, { status: 400 });
 
@@ -62,9 +86,19 @@ export async function PATCH(request, { params }) {
   if (!(await verifyAdminSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const b = await request.json();
   if (!['active', 'disabled'].includes(b.status)) return NextResponse.json({ error: 'invalid_status' }, { status: 400 });
-  const r = await query('UPDATE chat_channels SET status = ? WHERE id = ? AND shop_id = ?', [b.status, b.channel_id, params.id]);
-  if (!r.affectedRows) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-  await adminAudit(request, `channel.${b.status}`, Number(params.id), { channel_id: b.channel_id });
+  const ch = await queryOne('SELECT id, platform FROM chat_channels WHERE id = ? AND shop_id = ?', [b.channel_id, params.id]);
+  if (!ch) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  // A paused scanned number is disconnected (but stays linked), so no message is received and lost.
+  if (ch.platform === 'whatsapp_web') {
+    try {
+      if (b.status === 'disabled') await waGateway.stop(ch.id);
+      else await waGateway.start(ch.id);
+    } catch (e) {
+      return NextResponse.json({ error: e.code || 'gateway_unreachable' }, { status: 502 });
+    }
+  }
+  await query('UPDATE chat_channels SET status = ? WHERE id = ? AND shop_id = ?', [b.status, ch.id, params.id]);
+  await adminAudit(request, `channel.${b.status}`, Number(params.id), { channel_id: ch.id });
   return NextResponse.json({ success: true });
 }
 
@@ -74,6 +108,8 @@ export async function DELETE(request, { params }) {
   const channelId = new URL(request.url).searchParams.get('channel_id');
   const ch = await queryOne('SELECT id, platform, external_id FROM chat_channels WHERE id = ? AND shop_id = ?', [channelId, params.id]);
   if (!ch) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  // Unlink the scanned device from the shop's WhatsApp too, so nothing keeps listening.
+  if (ch.platform === 'whatsapp_web') await waGateway.logout(ch.id).catch(() => {});
   await query('DELETE FROM chat_messages WHERE channel_id = ? AND shop_id = ?', [ch.id, params.id]);
   await query('DELETE FROM chat_channels WHERE id = ? AND shop_id = ?', [ch.id, params.id]);
   await adminAudit(request, 'channel.removed', Number(params.id), { platform: ch.platform, external_id: ch.external_id });

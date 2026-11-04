@@ -581,10 +581,10 @@ function OrderChatSend({ order, lang }) {
         <div className="flex items-center gap-2">
           {chats.length > 1 && (
             <select value={conv.id} onChange={e => setConvId(Number(e.target.value))} className={`${inputCls} py-1.5 text-sm w-auto`}>
-              {chats.map(x => <option key={x.id} value={x.id}>{x.platform === 'whatsapp' ? 'WhatsApp' : 'Messenger'} {x.name}</option>)}
+              {chats.map(x => <option key={x.id} value={x.id}>{x.platform.startsWith('whatsapp') ? 'WhatsApp' : 'Messenger'} {x.name}</option>)}
             </select>
           )}
-          {chats.length === 1 && <Pill tone={conv.platform === 'whatsapp' ? 'green' : 'navy'}>{conv.platform === 'whatsapp' ? 'WhatsApp' : 'Messenger'}</Pill>}
+          {chats.length === 1 && <Pill tone={conv.platform.startsWith('whatsapp') ? 'green' : 'navy'}>{conv.platform.startsWith('whatsapp') ? 'WhatsApp' : 'Messenger'}</Pill>}
           <a href="/chat" className="text-sm font-semibold text-primary hover:text-gold-dark">{c.openChat}</a>
         </div>
       </div>
