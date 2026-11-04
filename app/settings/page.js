@@ -134,7 +134,7 @@ export default function SettingsPage() {
   const error = state && state !== 'saving' && state !== 'saved' ? state : '';
 
   return (
-    <form onSubmit={save} className="max-w-6xl pb-24">
+    <form onSubmit={save} className="max-w-6xl pb-24 lg:pb-24">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] items-start">
         <div className="space-y-5">
           <Section title={c.shop} note={c.shopNote}>
@@ -240,7 +240,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Sticky save bar */}
-      <div className="fixed bottom-0 inset-x-0 lg:left-auto z-30 no-print pointer-events-none">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0 inset-x-0 lg:left-auto z-30 no-print pointer-events-none">
         <div className="max-w-6xl lg:mr-8 ml-auto px-4 pb-4 pointer-events-auto">
           <div className={`ml-auto w-full sm:w-auto sm:max-w-md flex items-center justify-between gap-4 rounded-2xl px-4 py-3 shadow-lg transition-colors ${dirty ? 'bg-ink text-white' : 'bg-white border border-line'}`}>
             <span role="status" className={`text-sm ${error ? 'text-danger' : dirty ? 'text-slate-300' : 'text-success'}`}>

@@ -111,6 +111,13 @@ export default function ChatPage() {
   const [activeId, setActiveId] = useState(null);
   const [view, setView] = useState('list'); // mobile: list | thread | profile
 
+  // While a conversation is open on a phone, hide the bottom menu so the message box has room.
+  useEffect(() => {
+    if (view === 'list') delete document.documentElement.dataset.chatThread;
+    else document.documentElement.dataset.chatThread = '1';
+    return () => { delete document.documentElement.dataset.chatThread; };
+  }, [view]);
+
   const loadList = useCallback(async () => {
     const p = new URLSearchParams({ filter });
     if (platform) p.set('platform', platform);
@@ -144,7 +151,7 @@ export default function ChatPage() {
   const active = list.find(x => x.id === activeId);
 
   return (
-    <div className="relative -m-4 lg:-m-6 h-[calc(100dvh-4rem)] flex bg-white overflow-hidden">
+    <div className={`relative -m-4 lg:-m-6 flex bg-white overflow-hidden ${view === 'list' ? 'h-[calc(100dvh-8rem-env(safe-area-inset-bottom))]' : 'h-[calc(100dvh-4rem)]'} lg:h-[calc(100dvh-4rem)]`}>
       {/* Conversation list */}
       <aside className={`${view === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 xl:w-96 shrink-0 flex-col border-r border-line`}>
         <div className="p-3 space-y-2 border-b border-line">
@@ -218,6 +225,9 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   const [slipFor, setSlipFor] = useState(null); // message
   const [preview, setPreview] = useState(null); // image url
   const [now, setNow] = useState(Date.now());
+  // Touch keyboards: Enter makes a new line and the Send button sends, like the WhatsApp app.
+  const [touch, setTouch] = useState(false);
+  useEffect(() => { setTouch(window.matchMedia('(pointer: coarse)').matches); }, []);
   const scroller = useRef(null);
   const fileRef = useRef(null);
   const atBottom = useRef(true);
@@ -318,6 +328,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   }
 
   function onKey(e) {
+    if (touch) return;
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       if (canSend) send();
@@ -413,7 +424,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
               onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
             <IconButton icon="image" label={c.attach} onClick={() => fileRef.current?.click()} disabled={!canSend} />
             <textarea rows={1} value={text} onChange={e => setText(e.target.value)} onKeyDown={onKey} onPaste={onPaste} disabled={!canSend}
-              placeholder={canSend ? c.placeholder : (win.replyOnly ? c.replyOnly : c.windowClosed)} aria-label={c.placeholder}
+              placeholder={canSend ? (touch ? c.placeholder.split(' (')[0] : c.placeholder) : (win.replyOnly ? c.replyOnly : c.windowClosed)} aria-label={c.placeholder.split(' (')[0]}
               className={`${inputCls} resize-none max-h-40 min-h-[2.75rem] disabled:bg-canvas`} style={{ fieldSizing: 'content' }} />
             <Button onClick={() => send()} disabled={!canSend || sending || (!text.trim() && !file)} className="h-11">{c.send}</Button>
           </div>

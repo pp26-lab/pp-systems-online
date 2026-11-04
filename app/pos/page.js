@@ -71,6 +71,7 @@ export default function POSPage() {
   const searchRef = useRef(null);
 
   const [products, setProducts] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [currencies, setCurrencies] = useState([]);
   const [shop, setShop] = useState({});
   const [search, setSearch] = useState('');
@@ -115,7 +116,7 @@ export default function POSPage() {
       const data = await res.json();
       const today = localToday();
       setProducts(Array.isArray(data) ? data.filter(p => sellable(p, today)) : []);
-    } catch {}
+    } catch {} finally { setLoaded(true); }
   }
 
   function nameOf(p) {
@@ -440,7 +441,7 @@ export default function POSPage() {
         <SearchInput inputRef={searchRef} value={search} onChange={setSearch} onKeyDown={onSearchKey} placeholder={c.search} />
 
         {categories.length > 0 && (
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
             <Chip active={!category} onClick={() => setCategory('')} count={products.length}>{c.all}</Chip>
             {categories.map(([name, count]) => (
               <Chip key={name} active={category === name} onClick={() => setCategory(name)} count={count}>{name}</Chip>
@@ -449,7 +450,11 @@ export default function POSPage() {
         )}
 
         <div className="mt-4 flex-1 lg:overflow-y-auto min-h-0">
-          {visible.length === 0 ? (
+          {!loaded ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3" aria-busy="true">
+              {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="aspect-[3/4] rounded-2xl bg-white animate-pulse" />)}
+            </div>
+          ) : visible.length === 0 ? (
             <EmptyState icon="search" title={c.noMatch} text={c.noMatchText} />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
@@ -512,7 +517,7 @@ export default function POSPage() {
       <aside className="hidden lg:flex w-[390px] shrink-0 bg-white border-l border-line flex-col no-print">{ticket}</aside>
 
       {/* Phones and tablets: cart lives in a bottom bar that opens a sheet. */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-20 bg-ink text-white px-4 py-3 flex items-center gap-3 no-print">
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-20 bg-ink text-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-3 no-print">
         <button onClick={() => setMobileCart(true)} className="flex-1 text-left min-w-0">
           <span className="block text-xs text-slate-400">{c.view} <span className="num">({itemCount})</span></span>
           <span className="block text-xl font-extrabold text-gold num truncate">{formatCurrency(total, 'LAK')}</span>

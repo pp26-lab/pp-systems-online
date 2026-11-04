@@ -41,8 +41,9 @@ export function Icon({ name, className = 'w-5 h-5', strokeWidth = 1.7 }) {
   );
 }
 
-const BTN_BASE = 'inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap';
-const BTN_SIZE = { sm: 'px-3 py-1.5 text-sm', md: 'px-4 py-2.5 text-sm', lg: 'px-5 py-3.5 text-base' };
+const BTN_BASE = 'inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-[color,background-color,border-color,transform] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap';
+// Below lg (phones and tablets) every control is at least ~44px tall for fingers.
+const BTN_SIZE = { sm: 'px-3 min-h-10 lg:min-h-0 py-1.5 text-sm', md: 'px-4 min-h-11 lg:min-h-0 py-2.5 text-sm', lg: 'px-5 min-h-12 py-3.5 text-base' };
 const BTN_TONE = {
   primary: 'bg-primary text-white hover:bg-primary-dark',
   gold: 'bg-gold text-ink hover:bg-gold-dark hover:text-white',
@@ -73,13 +74,14 @@ export function IconButton({ icon, label, tone = 'default', className = '', ...p
   };
   return (
     <button type="button" aria-label={label} title={label}
-      className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${tones[tone]} ${className}`} {...props}>
+      className={`inline-flex items-center justify-center w-11 h-11 lg:w-9 lg:h-9 rounded-lg transition-colors ${tones[tone]} ${className}`} {...props}>
       <Icon name={icon} className="w-[1.15rem] h-[1.15rem]" />
     </button>
   );
 }
 
-export const inputCls = 'w-full px-3.5 py-2.5 border rounded-xl text-[0.95rem] text-ink placeholder:text-slate-400';
+// 16px text below lg stops iPhones from zooming in when a field is tapped.
+export const inputCls = 'w-full px-3.5 py-3 lg:py-2.5 border rounded-xl text-base lg:text-[0.95rem] text-ink placeholder:text-slate-400';
 
 export function Field({ label, hint, children, className = '' }) {
   return (
@@ -93,7 +95,7 @@ export function Field({ label, hint, children, className = '' }) {
 
 // One-of-many choice as a row of buttons.
 export function Segmented({ value, onChange, options, className = '', size = 'md' }) {
-  const pad = size === 'sm' ? 'py-1.5 text-[0.8rem]' : 'py-2.5 text-sm';
+  const pad = size === 'sm' ? 'py-2 lg:py-1.5 text-[0.8rem]' : 'py-3 lg:py-2.5 text-sm';
   return (
     <div role="radiogroup" className={`grid gap-1 p-1 rounded-xl bg-canvas border border-line ${className}`}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
@@ -138,9 +140,10 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 no-print">
       <div className="absolute inset-0 bg-ink/55" onClick={onClose} aria-hidden="true" />
       <div ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title}
-        className={`relative w-full ${widths[size]} bg-white sm:rounded-2xl rounded-t-2xl max-h-[92vh] flex flex-col outline-none`}>
+        className={`relative w-full ${widths[size]} bg-white sm:rounded-2xl rounded-t-2xl max-h-[92dvh] flex flex-col outline-none`}>
+        <span className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-slate-300" aria-hidden="true" />
         {title && (
-          <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-line">
+          <div className="flex items-start justify-between gap-4 px-5 sm:px-6 pt-3 sm:pt-5 pb-4 border-b border-line">
             <div className="min-w-0">
               <h2 className="text-lg font-bold text-ink">{title}</h2>
               {description && <p className="text-sm text-slate-500 mt-0.5">{description}</p>}
@@ -148,8 +151,8 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <IconButton icon="close" label="Close" onClick={onClose} className="-mr-2 -mt-1" />
           </div>
         )}
-        <div className="px-6 py-5 overflow-y-auto">{children}</div>
-        {footer && <div className="px-6 py-4 border-t border-line flex flex-wrap justify-end gap-2">{footer}</div>}
+        <div className={`px-5 sm:px-6 py-5 overflow-y-auto overscroll-contain ${footer ? '' : 'pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:pb-5'}`}>{children}</div>
+        {footer && <div className="px-5 sm:px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 border-t border-line flex flex-wrap justify-end gap-2 [&>*]:flex-1 sm:[&>*]:flex-none">{footer}</div>}
       </div>
     </div>
   );
@@ -176,7 +179,7 @@ export function Toolbar({ children, actions }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
       <div className="flex-1 flex flex-wrap items-center gap-2 min-w-0">{children}</div>
-      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0 [&>*]:flex-1 sm:[&>*]:flex-none">{actions}</div>}
     </div>
   );
 }
@@ -195,7 +198,7 @@ export function SearchInput({ value, onChange, placeholder, className = '', inpu
 export function Chip({ active, onClick, children, count }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={active}
-      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
+      className={`inline-flex items-center gap-1.5 px-4 lg:px-3.5 min-h-10 lg:min-h-0 py-1.5 rounded-full text-sm font-semibold border transition-colors whitespace-nowrap ${
         active ? 'bg-ink text-white border-ink' : 'bg-white text-slate-600 border-line hover:border-slate-300 hover:text-ink'
       }`}>
       {children}

@@ -93,10 +93,10 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-ink/50 z-20 lg:hidden" onClick={onToggle} aria-hidden="true" />
+        <div className="fixed inset-0 bg-ink/50 z-[35] lg:hidden" onClick={onToggle} aria-hidden="true" />
       )}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-30 bg-ink text-white flex flex-col no-print transition-[width,transform] duration-200 ease-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-40 lg:z-auto bg-ink text-white flex flex-col no-print transition-[width,transform] duration-200 ease-out ${
           isOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0 lg:w-[76px]'
         }`}
       >
@@ -133,7 +133,7 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
                         onClick={handleNavigate}
                         title={collapsed ? label : undefined}
                         aria-current={active ? 'page' : undefined}
-                        className={`group flex items-center gap-3 mx-3 px-3 py-2.5 rounded-lg text-[0.9rem] transition-colors ${
+                        className={`group flex items-center gap-3 mx-3 px-3 py-3 lg:py-2.5 rounded-lg text-[0.95rem] lg:text-[0.9rem] transition-colors ${
                           active ? 'bg-ink-soft text-white font-semibold' : 'text-slate-300 hover:bg-ink-soft hover:text-white'
                         } ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
                       >

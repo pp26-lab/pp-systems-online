@@ -186,7 +186,7 @@ export default function OrdersPage() {
         </div>
       </Toolbar>
 
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
         <Chip active={!status} onClick={() => setStatus('')} count={orders.length}>{c.all}</Chip>
         {['pending', 'shipping', 'completed', 'cancelled'].map(s => (
           <Chip key={s} active={status === s} onClick={() => setStatus(s)} count={counts[s] || 0}>{c[s]}</Chip>

@@ -127,3 +127,15 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+
+/* Touch screens: no 300ms tap delay, no grey flash on tap, no font inflation on rotate. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+a, button, label, input, select, textarea, [role="button"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+/* Horizontal chip rows scroll by swipe without showing a scrollbar. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Chat: an open conversation takes the whole phone screen. */
+html[data-chat-thread="1"] .bottom-nav { display: none; }

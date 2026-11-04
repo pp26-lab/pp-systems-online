@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '../components/Layout/Sidebar';
 import Header from '../components/Layout/Header';
+import BottomNav, { NO_PAD } from '../components/Layout/BottomNav';
 
 export const AppContext = createContext();
 
@@ -95,7 +96,8 @@ export default function RootLayout({ children }) {
         <head>
           <BootScript />
           <title>PP Systems Online - Login</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#0E1A33" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -115,7 +117,8 @@ export default function RootLayout({ children }) {
         <head>
           <BootScript />
           <title>PP Systems Online</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#0E1A33" />
         </head>
         <body className="bg-gray-50 min-h-screen flex items-center justify-center">
           <div className="text-center">
@@ -127,25 +130,30 @@ export default function RootLayout({ children }) {
     );
   }
 
+  const hasBottomNav = !NO_PAD.some(p => pathname === p || pathname.startsWith(p + '/'));
+
   return (
     <html lang={lang}>
       <head>
         <BootScript />
         <title>PP Systems Online</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#0E1A33" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-canvas min-h-screen">
         <AppContext.Provider value={{ lang, setLang, user, handleLogout }}>
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex h-[100dvh] overflow-hidden">
             <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onClose={() => setSidebarOpen(false)} lang={lang} />
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
               <Header lang={lang} setLang={setLang} onMenuToggle={() => setSidebarOpen(!sidebarOpen)} onLogout={handleLogout} user={user} />
-              <main className="flex-1 overflow-auto p-4 lg:p-6">
+              {/* Leave room for the bottom navigation on phones and tablets. */}
+              <main className={`flex-1 overflow-auto p-4 lg:p-6 ${hasBottomNav ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-6' : ''}`}>
                 {children}
               </main>
+              <BottomNav lang={lang} onMore={() => setSidebarOpen(true)} />
             </div>
           </div>
         </AppContext.Provider>

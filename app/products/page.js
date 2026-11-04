@@ -203,7 +203,7 @@ export default function ProductsPage() {
         <SearchInput value={search} onChange={setSearch} placeholder={c.search} className="w-full sm:w-80" />
       </Toolbar>
 
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
         <Chip active={!filter} onClick={() => setFilter('')} count={products.length}>{c.all}</Chip>
         {['active', 'pre_order', 'hidden', 'out_of_stock', 'low'].map(f => (
           <Chip key={f} active={filter === f} onClick={() => setFilter(f)} count={counts[f] || 0}>{c[f]}</Chip>
@@ -225,7 +225,39 @@ export default function ProductsPage() {
         ) : visible.length === 0 ? (
           <EmptyState icon="search" title={c.noMatch} />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Phones: one tappable card per product, the numbers people check first on the right. */}
+          <ul className="md:hidden divide-y divide-line">
+            {visible.map(p => {
+              const stock = stockOf(p);
+              return (
+                <li key={p.id} className={`flex items-center gap-3 pl-4 pr-1 py-3 ${p.status === 'hidden' ? 'opacity-60' : ''}`}>
+                  <button onClick={() => openEditor(p)} className="flex-1 min-w-0 flex items-center gap-3 text-left active:opacity-70">
+                    <span className="w-14 h-14 rounded-xl bg-canvas overflow-hidden shrink-0 flex items-center justify-center text-slate-300">
+                      {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" loading="lazy" /> : <Icon name="image" className="w-6 h-6" />}
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block font-semibold text-ink truncate">{nameOf(p) || p.sku}</span>
+                      <span className="block text-xs text-slate-500 num truncate">
+                        {p.sku}{p.category ? `, ${p.category}` : ''}
+                        {isExpired(p) && <span className="ml-1 text-danger font-semibold">{c.expired}</span>}
+                      </span>
+                      <span className="mt-1 flex items-center gap-2">
+                        <span className="font-bold text-ink num">{formatCurrency(p.selling_price_lak, 'LAK')}</span>
+                        <Pill tone={STATUS_TONE[p.status || 'active']}>{c[p.status || 'active']}</Pill>
+                      </span>
+                    </span>
+                    <span className="text-right shrink-0 pl-1">
+                      <span className="block text-[0.7rem] text-slate-500">{c.stock}</span>
+                      <span className={`block text-lg font-extrabold num ${stock === 0 ? 'text-danger' : stock <= threshold ? 'text-warning' : 'text-ink'}`}>{stock}</span>
+                    </span>
+                  </button>
+                  <IconButton icon="trash" label={c.del} tone="danger" onClick={() => setConfirmDel(p)} />
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-line">
                 <tr>
@@ -280,6 +312,7 @@ export default function ProductsPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
 

@@ -159,7 +159,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl space-y-6">
       <section className="rounded-2xl bg-ink text-white overflow-hidden" aria-labelledby="sales-heading">
-        <div className="p-6 lg:p-8">
+        <div className="p-5 sm:p-6 lg:p-8">
           <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Period">
             {PRESETS.map(p => (
               <button
@@ -167,7 +167,7 @@ export default function Dashboard() {
                 role="tab"
                 aria-selected={preset === p}
                 onClick={() => choosePreset(p)}
-                className={`px-3.5 py-1.5 rounded-full text-[0.8rem] font-semibold transition-colors ${
+                className={`px-4 lg:px-3.5 min-h-10 lg:min-h-0 py-1.5 rounded-full text-[0.85rem] lg:text-[0.8rem] font-semibold transition-colors ${
                   preset === p ? 'bg-gold text-ink' : 'text-slate-300 hover:bg-ink-soft hover:text-white'
                 }`}
               >
@@ -179,10 +179,10 @@ export default function Dashboard() {
           <div className="mt-7 flex flex-col lg:flex-row lg:items-end gap-8">
             <div className="flex-1 min-w-0">
               <p id="sales-heading" className="text-sm text-slate-400">{isRange ? c.salesRange : c.salesToday}</p>
-              <p className="mt-1 text-[2.5rem] lg:text-[3.25rem] leading-none font-extrabold text-gold num tracking-tight break-words">
+              <p className="mt-1 text-[2.1rem] sm:text-[2.5rem] lg:text-[3.25rem] leading-none font-extrabold text-gold num tracking-tight break-words">
                 {formatCurrency(salesTotal, 'LAK')}
               </p>
-              <dl className="mt-6 grid grid-cols-3 gap-4 max-w-xl">
+              <dl className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 max-w-xl">
                 <div>
                   <dt className="text-xs text-slate-400">{c.orders}</dt>
                   <dd className="mt-0.5 text-lg font-bold num">{orderCount}</dd>
