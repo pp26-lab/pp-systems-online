@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
 import { formatCurrency, calculateMargin, localToday } from '../../lib/currency';
+import { compressImage } from '../../lib/image';
 import { Icon, IconButton, Button, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
 
 const EMPTY = {
@@ -23,7 +24,7 @@ const COPY = {
     edit: 'ແກ້ໄຂ', duplicate: 'ສຳເນົາ', del: 'ລຶບ', delAsk: p => `ລຶບ "${p}"?`, delNote: 'ຖ້າສິນຄ້ານີ້ເຄີຍຂາຍແລ້ວ ລະບົບຈະເຊື່ອງໄວ້ແທນການລຶບ ເພື່ອຮັກສາປະຫວັດການຂາຍ', archived: 'ສິນຄ້ານີ້ມີປະຫວັດການຂາຍ ຈຶ່ງເຊື່ອງໄວ້ແທນການລຶບ',
     duplicated: 'ສຳເນົາແລ້ວ (ຖືກເຊື່ອງໄວ້ ແກ້ໄຂກ່ອນເປີດຂາຍ)', imported: (a, b, e) => `ນຳເຂົ້າ: ເພີ່ມ ${a}, ອັບເດດ ${b}${e ? `, ຜິດພາດ ${e}` : ''}`,
     photos: 'ຮູບພາບ', main: 'ຮູບຫຼັກ', extra: 'ຮູບເພີ່ມເຕີມ (ສົ່ງໃຫ້ລູກຄ້າຜ່ານແຊັດບອດ)', saveFirst: 'ບັນທຶກສິນຄ້າກ່ອນ ຈຶ່ງເພີ່ມຮູບເພີ່ມເຕີມໄດ້',
-    upload: 'ອັບໂຫຼດ', remove: 'ເອົາອອກ', details: 'ຂໍ້ມູນສິນຄ້າ', nameLo: 'ຊື່ (ລາວ)', nameTh: 'ຊື່ (ໄທ)', nameEn: 'ຊື່ (ອັງກິດ)',
+    upload: 'ເລືອກຮູບ', camera: 'ຖ່າຍຮູບ', remove: 'ເອົາອອກ', details: 'ຂໍ້ມູນສິນຄ້າ', nameLo: 'ຊື່ (ລາວ)', nameTh: 'ຊື່ (ໄທ)', nameEn: 'ຊື່ (ອັງກິດ)',
     skuHint: 'ປ່ອຍວ່າງ ລະບົບຈະສ້າງໃຫ້', barcode: 'ບາໂຄ້ດ', category: 'ໝວດໝູ່', endDate: 'ວັນໝົດເຂດຂາຍ', endHint: 'ປ່ອຍວ່າງ = ຂາຍຕະຫຼອດ',
     pricing: 'ຕົ້ນທຶນ ແລະ ລາຄາ', costNote: 'ຕົ້ນທຶນທັງໝົດຄິດເປັນສະກຸນທີ່ຊື້', landed: 'ຕົ້ນທຶນລວມ (ກີບ)', retail: 'ລາຄາຂາຍ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ', margin: 'ກຳໄລ',
     variants: 'ຕົວເລືອກ (ເຊັ່ນ ສີ / ຂະໜາດ)', variantsNone: 'ສິນຄ້ານີ້ບໍ່ມີຕົວເລືອກ ສະຕ໋ອກນັບລວມ', addOption: 'ເພີ່ມຕົວເລືອກ',
@@ -39,7 +40,7 @@ const COPY = {
     edit: 'แก้ไข', duplicate: 'ทำสำเนา', del: 'ลบ', delAsk: p => `ลบ "${p}"?`, delNote: 'ถ้าสินค้านี้เคยขายแล้ว ระบบจะซ่อนไว้แทนการลบ เพื่อเก็บประวัติการขาย', archived: 'สินค้านี้มีประวัติการขาย จึงซ่อนไว้แทนการลบ',
     duplicated: 'ทำสำเนาแล้ว (ถูกซ่อนไว้ แก้ไขก่อนเปิดขาย)', imported: (a, b, e) => `นำเข้า: เพิ่ม ${a}, อัปเดต ${b}${e ? `, ผิดพลาด ${e}` : ''}`,
     photos: 'รูปภาพ', main: 'รูปหลัก', extra: 'รูปเพิ่มเติม (ส่งให้ลูกค้าผ่านแชทบอท)', saveFirst: 'บันทึกสินค้าก่อน จึงเพิ่มรูปเพิ่มเติมได้',
-    upload: 'อัปโหลด', remove: 'เอาออก', details: 'ข้อมูลสินค้า', nameLo: 'ชื่อ (ลาว)', nameTh: 'ชื่อ (ไทย)', nameEn: 'ชื่อ (อังกฤษ)',
+    upload: 'เลือกรูป', camera: 'ถ่ายรูป', remove: 'เอาออก', details: 'ข้อมูลสินค้า', nameLo: 'ชื่อ (ลาว)', nameTh: 'ชื่อ (ไทย)', nameEn: 'ชื่อ (อังกฤษ)',
     skuHint: 'เว้นว่าง ระบบจะสร้างให้', barcode: 'บาร์โค้ด', category: 'หมวดหมู่', endDate: 'วันหมดเขตขาย', endHint: 'เว้นว่าง = ขายตลอด',
     pricing: 'ต้นทุนและราคา', costNote: 'ต้นทุนทั้งหมดคิดเป็นสกุลเงินที่ซื้อ', landed: 'ต้นทุนรวม (กีบ)', retail: 'ราคาขาย', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก', margin: 'กำไร',
     variants: 'ตัวเลือก (เช่น สี / ขนาด)', variantsNone: 'สินค้านี้ไม่มีตัวเลือก สต็อกนับรวม', addOption: 'เพิ่มตัวเลือก',
@@ -55,7 +56,7 @@ const COPY = {
     edit: 'Edit', duplicate: 'Duplicate', del: 'Delete', delAsk: p => `Delete "${p}"?`, delNote: 'If this product has been sold before, it is hidden instead so your sales history stays intact.', archived: 'This product has sales history, so it was hidden instead of deleted',
     duplicated: 'Copy created and hidden. Edit it before putting it on sale.', imported: (a, b, e) => `Imported: ${a} added, ${b} updated${e ? `, ${e} failed` : ''}`,
     photos: 'Photos', main: 'Main photo', extra: 'Extra photos (sent to customers by the chatbot)', saveFirst: 'Save the product first to add extra photos',
-    upload: 'Upload', remove: 'Remove', details: 'Product details', nameLo: 'Name (Lao)', nameTh: 'Name (Thai)', nameEn: 'Name (English)',
+    upload: 'Choose photo', camera: 'Take photo', remove: 'Remove', details: 'Product details', nameLo: 'Name (Lao)', nameTh: 'Name (Thai)', nameEn: 'Name (English)',
     skuHint: 'Leave blank to generate one', barcode: 'Barcode', category: 'Category', endDate: 'Stop selling on', endHint: 'Blank = no end date',
     pricing: 'Cost and price', costNote: 'All costs are in the purchase currency', landed: 'Landed cost (LAK)', retail: 'Retail price', wholesale: 'Wholesale price', member: 'Member price', margin: 'Margin',
     variants: 'Options (e.g. color / size)', variantsNone: 'No options. Stock is counted as one item.', addOption: 'Add option',
@@ -326,8 +327,9 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
   const costCurrencies = ['LAK', ...currencies.map(x => x.code).filter(x => x !== 'LAK')];
 
   async function upload(file) {
+    const prepared = await compressImage(file);
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', prepared);
     const res = await fetch('/api/upload', { method: 'POST', body: fd });
     const data = await res.json();
     if (!res.ok || !data.url) throw new Error(data.error || c.failed);
@@ -440,9 +442,13 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
               <div className="w-28 h-28 rounded-xl bg-canvas border border-line overflow-hidden flex items-center justify-center text-slate-300">
                 {form.image_url ? <img src={form.image_url} alt="" className="w-full h-full object-cover" /> : <Icon name="image" className="w-8 h-8" strokeWidth={1.3} />}
               </div>
-              <div className="mt-2 flex gap-2 text-sm">
-                <label className={`font-semibold text-primary hover:text-gold-dark cursor-pointer ${busy === 'main' ? 'opacity-50 pointer-events-none' : ''}`}>
-                  {busy === 'main' ? '…' : c.upload}
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <label className={`inline-flex items-center gap-1 font-semibold text-primary hover:text-gold-dark cursor-pointer ${busy === 'main' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <Icon name="camera" className="w-4 h-4" />{busy === 'main' ? '…' : c.camera}
+                  <input type="file" accept="image/*" capture="environment" onChange={uploadMain} className="sr-only" />
+                </label>
+                <label className={`inline-flex items-center gap-1 font-semibold text-primary hover:text-gold-dark cursor-pointer ${busy === 'main' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <Icon name="image" className="w-4 h-4" />{c.upload}
                   <input type="file" accept="image/*" onChange={uploadMain} className="sr-only" />
                 </label>
                 {form.image_url && <button onClick={() => set('image_url', '')} className="text-slate-500 hover:text-danger">{c.remove}</button>}
@@ -462,11 +468,18 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
                     </div>
                   ))}
                   {images.length < 5 && (
-                    <label className={`w-20 h-20 rounded-lg border border-dashed border-slate-300 flex items-center justify-center text-slate-400 hover:border-gold hover:text-gold-dark cursor-pointer ${busy === 'extra' ? 'opacity-50 pointer-events-none' : ''}`}>
-                      <Icon name="plus" className="w-6 h-6" />
-                      <span className="sr-only">{c.upload}</span>
-                      <input type="file" accept="image/*" multiple onChange={uploadExtra} className="sr-only" />
-                    </label>
+                    <>
+                      <label className={`w-20 h-20 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:border-gold hover:text-gold-dark cursor-pointer ${busy === 'extra' ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <Icon name="camera" className="w-5 h-5" />
+                        <span className="text-[0.65rem] font-semibold">{c.camera}</span>
+                        <input type="file" accept="image/*" capture="environment" onChange={uploadExtra} className="sr-only" />
+                      </label>
+                      <label className={`w-20 h-20 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:border-gold hover:text-gold-dark cursor-pointer ${busy === 'extra' ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <Icon name="image" className="w-5 h-5" />
+                        <span className="text-[0.65rem] font-semibold">{c.upload}</span>
+                        <input type="file" accept="image/*" multiple onChange={uploadExtra} className="sr-only" />
+                      </label>
+                    </>
                   )}
                 </div>
               ) : (
