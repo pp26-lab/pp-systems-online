@@ -21,7 +21,7 @@ const COPY = {
     rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `ຍອດເປັນ ${c}`, view: 'ເບິ່ງກະຕ່າ', pick: 'ເລືອກຕົວເລືອກ',
     online: 'ສົ່ງອອນລາຍ', walkin: 'ໜ້າຮ້ານ', optional: 'ບໍ່ບັງຄັບ',
     carrier: 'ຂົນສົ່ງ', carrierPick: 'ເລືອກ ຫຼື ພິມຊື່ຂົນສົ່ງ', carrierNone: 'ຍັງບໍ່ໄດ້ຕັ້ງຂົນສົ່ງ (ຕັ້ງໄດ້ໃນໜ້າຕັ້ງຄ່າ)',
-    paidNow: 'ຈ່າຍມາແລ້ວ (ມັດຈຳ)', cod: 'ເກັບປາຍທາງ (COD)', paidFull: 'ຊຳລະຄົບແລ້ວ',
+    paidNow: 'ຈ່າຍມາແລ້ວ (ມັດຈຳ)', cod: 'ເກັບປາຍທາງ (COD)', paidFull: 'ຊຳລະຄົບແລ້ວ', existing: 'ຊື້ແລ້ວ',
   },
   th: {
     search: 'ค้นหา หรือยิงบาร์โค้ดแล้วกด Enter', all: 'ทั้งหมด', cart: 'ตะกร้า', clear: 'ล้างตะกร้า',
@@ -37,7 +37,7 @@ const COPY = {
     rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `ยอดเป็น ${c}`, view: 'ดูตะกร้า', pick: 'เลือกตัวเลือก',
     online: 'ส่งออนไลน์', walkin: 'หน้าร้าน', optional: 'ไม่บังคับ',
     carrier: 'ขนส่ง', carrierPick: 'เลือกหรือพิมพ์ชื่อขนส่ง', carrierNone: 'ยังไม่ได้ตั้งขนส่ง (ตั้งได้ในหน้าตั้งค่า)',
-    paidNow: 'จ่ายมาแล้ว (มัดจำ)', cod: 'เก็บปลายทาง (COD)', paidFull: 'ชำระครบแล้ว',
+    paidNow: 'จ่ายมาแล้ว (มัดจำ)', cod: 'เก็บปลายทาง (COD)', paidFull: 'ชำระครบแล้ว', existing: 'ซื้อแล้ว',
   },
   en: {
     search: 'Search or scan a barcode, then press Enter', all: 'All', cart: 'Cart', clear: 'Clear cart',
@@ -53,7 +53,7 @@ const COPY = {
     rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `Total in ${c}`, view: 'View cart', pick: 'Choose an option',
     online: 'Online delivery', walkin: 'In store', optional: 'optional',
     carrier: 'Carrier', carrierPick: 'Pick or type a carrier', carrierNone: 'No carriers set yet (add them in Settings)',
-    paidNow: 'Paid now (deposit)', cod: 'Collect on delivery (COD)', paidFull: 'Paid in full',
+    paidNow: 'Paid now (deposit)', cod: 'Collect on delivery (COD)', paidFull: 'Paid in full', existing: 'orders',
   },
 };
 
@@ -84,6 +84,8 @@ export default function POSPage() {
   const [checkout, setCheckout] = useState(false);
   const [orderType, setOrderType] = useState('walk_in');
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
+  const [custMatches, setCustMatches] = useState([]);
+  const [pickedPhone, setPickedPhone] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [shippingNotes, setShippingNotes] = useState('');
   const [carrier, setCarrier] = useState('');
@@ -222,6 +224,26 @@ export default function POSPage() {
   // A coupon validated against an old cart total is no longer trustworthy.
   useEffect(() => { setCoupon(null); setCouponError(''); }, [subtotal]);
 
+  // While typing a phone, suggest existing customers so the rest fills in automatically.
+  useEffect(() => {
+    const phone = customer.phone.replace(/\D/g, '');
+    if (!checkout || phone.length < 5 || phone === pickedPhone) { setCustMatches([]); return; }
+    const id = setTimeout(async () => {
+      try {
+        const data = await fetch(`/api/customers?search=${encodeURIComponent(phone)}`).then(r => r.json());
+        setCustMatches((Array.isArray(data) ? data : [])
+          .filter(x => String(x.phone || '').replace(/\D/g, '').includes(phone)).slice(0, 5));
+      } catch { setCustMatches([]); }
+    }, 300);
+    return () => clearTimeout(id);
+  }, [customer.phone, checkout, pickedPhone]);
+
+  function pickCustomer(x) {
+    setCustomer({ name: x.name || '', phone: x.phone || customer.phone, address: x.address || '' });
+    setPickedPhone(String(x.phone || customer.phone).replace(/\D/g, ''));
+    setCustMatches([]);
+  }
+
   const currencyOptions = useMemo(() => {
     const codes = currencies.map(x => x.code);
     const list = ['LAK', ...codes.filter(x => x !== 'LAK')];
@@ -314,6 +336,8 @@ export default function POSPage() {
       setCart([]);
       setDiscount(0);
       setCustomer({ name: '', phone: '', address: '' });
+      setCustMatches([]);
+      setPickedPhone('');
       setDeliveryDate('');
       setShippingNotes('');
       setCarrier('');
@@ -560,7 +584,27 @@ export default function POSPage() {
                 <input value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} className={inputCls} />
               </Field>
               <Field label={t('customer_phone', lang)}>
-                <input type="tel" inputMode="tel" value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })} className={`${inputCls} num`} />
+                <div className="relative">
+                  <input type="tel" inputMode="tel" value={customer.phone}
+                    onChange={e => { setCustomer({ ...customer, phone: e.target.value }); setPickedPhone(''); }}
+                    className={`${inputCls} num`} autoComplete="off" />
+                  {custMatches.length > 0 && customer.phone.replace(/\D/g, '') !== pickedPhone && (
+                    <ul className="absolute z-10 left-0 right-0 mt-1 bg-white border border-line rounded-xl shadow-lg overflow-hidden">
+                      {custMatches.map(x => (
+                        <li key={x.id}>
+                          <button type="button" onClick={() => pickCustomer(x)}
+                            className="w-full text-left px-3 py-2 hover:bg-canvas flex items-center justify-between gap-2">
+                            <span className="min-w-0">
+                              <span className="block font-semibold text-ink truncate">{x.name || x.phone}</span>
+                              <span className="block text-xs text-slate-500 num">{x.phone} · {c.existing} {x.order_count || 0}</span>
+                            </span>
+                            <Icon name="user" className="w-4 h-4 text-gold-dark shrink-0" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </Field>
             </div>
             {orderType === 'online' && (
