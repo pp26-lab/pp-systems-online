@@ -8,11 +8,21 @@ export const dynamic = 'force-dynamic';
 
 const PATH = '/api/channels/wa-web/event';
 const ok = () => NextResponse.json({ ok: true });
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+// The gateway calls us directly on 127.0.0.1. Next.js itself fills x-forwarded-for with
+// the socket address, so a direct local call shows exactly one loopback address. Requests
+// through Cloudflare/nginx carry the client's address (and CF/real-IP headers) instead.
+// The HMAC signature below is the real protection; this is a second layer.
+function fromThisServer(request) {
+  if (request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip')) return false;
+  const xff = String(request.headers.get('x-forwarded-for') || '').trim();
+  return !xff || LOOPBACK.has(xff);
+}
 
 // Events from the WhatsApp gateway on this same server (never from the internet).
 export async function POST(request) {
-  // The gateway calls us directly on 127.0.0.1; anything that came through nginx is from outside.
-  if (request.headers.get('x-forwarded-for')) return new NextResponse('Forbidden', { status: 403 });
+  if (!fromThisServer(request)) return new NextResponse('Forbidden', { status: 403 });
   const raw = await request.text();
   if (raw.length > 30 * 1024 * 1024) return new NextResponse('Too large', { status: 413 });
   if (!verifyGatewayEvent(request, PATH, raw)) return new NextResponse('Invalid signature', { status: 401 });
