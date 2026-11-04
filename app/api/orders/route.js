@@ -91,17 +91,23 @@ export async function POST(request) {
     }
   }
 
+  // How much is paid now. Walk-in is paid in full; online may be a deposit, the rest COD.
+  const paidNow = orderType === 'online'
+    ? Math.max(0, Math.min(Number(body.amount_paid) || 0, Number(body.total) || 0))
+    : (Number(body.total) || 0);
+
   const orderResult = await query(
     `INSERT INTO orders (shop_id, customer_id, order_number, customer_name, customer_phone, customer_address,
       subtotal, discount, tax, total, currency, exchange_rate_used, total_in_lak,
-      payment_method, order_type, delivery_date, shipping_notes, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      payment_method, order_type, delivery_date, shipping_notes, shipping_carrier, amount_paid, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [shopId, customerId, orderNumber, body.customer_name || '', body.customer_phone || '',
       body.customer_address || '',
       body.subtotal, body.discount || 0, body.tax || 0, body.total,
       body.currency || 'LAK', exchangeRate, totalInLak,
       body.payment_method || 'cash', orderType,
-      body.delivery_date || null, body.shipping_notes || '', initialStatus]
+      body.delivery_date || null, body.shipping_notes || '',
+      orderType === 'online' ? (body.shipping_carrier || '') : '', paidNow, initialStatus]
   );
 
   const orderId = orderResult.insertId;
@@ -146,7 +152,7 @@ export async function PUT(request) {
 
   const body = await request.json();
 
-  const editable = ['tracking_number', 'shipping_carrier', 'internal_notes', 'payment_slip_url'];
+  const editable = ['tracking_number', 'shipping_carrier', 'internal_notes', 'payment_slip_url', 'amount_paid'];
   if (editable.some(f => body[f] !== undefined)) {
     const fields = [], vals = [];
     for (const f of editable) {

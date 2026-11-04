@@ -30,17 +30,19 @@ export async function PUT(request) {
   const staffPin = (body.staff_pin || '').replace(/\D/g, '').slice(0, 20);
   const parsedThreshold = parseInt(body.low_stock_threshold);
   const lowStockThreshold = Number.isFinite(parsedThreshold) && parsedThreshold >= 0 ? parsedThreshold : 5;
+  // Carriers: one per line, trimmed, blanks and duplicates removed, capped for safety.
+  const shippingCarriers = [...new Set(String(body.shipping_carriers || '').split('\n').map(s => s.trim()).filter(Boolean))].slice(0, 30).join('\n');
 
   const existing = await queryOne('SELECT id FROM shop_settings WHERE shop_id = ?', [shopId]);
   if (existing) {
     await query(
-      'UPDATE shop_settings SET shop_name=?, shop_phone=?, shop_address=?, shop_logo=?, receipt_footer=?, default_order_type=?, variant_label_1=?, variant_label_2=?, whatsapp_template=?, whatsapp_country_code=?, staff_pin=?, low_stock_threshold=? WHERE shop_id=?',
-      [body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shopId]
+      'UPDATE shop_settings SET shop_name=?, shop_phone=?, shop_address=?, shop_logo=?, receipt_footer=?, default_order_type=?, variant_label_1=?, variant_label_2=?, whatsapp_template=?, whatsapp_country_code=?, staff_pin=?, low_stock_threshold=?, shipping_carriers=? WHERE shop_id=?',
+      [body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shippingCarriers, shopId]
     );
   } else {
     await query(
-      'INSERT INTO shop_settings (shop_id, shop_name, shop_phone, shop_address, shop_logo, receipt_footer, default_order_type, variant_label_1, variant_label_2, whatsapp_template, whatsapp_country_code, staff_pin, low_stock_threshold) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [shopId, body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, whatsappCountryCode, staffPin, lowStockThreshold]
+      'INSERT INTO shop_settings (shop_id, shop_name, shop_phone, shop_address, shop_logo, receipt_footer, default_order_type, variant_label_1, variant_label_2, whatsapp_template, whatsapp_country_code, staff_pin, low_stock_threshold, shipping_carriers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [shopId, body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shippingCarriers]
     );
   }
 

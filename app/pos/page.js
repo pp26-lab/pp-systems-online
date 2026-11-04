@@ -20,6 +20,8 @@ const COPY = {
     done: 'ຂາຍສຳເລັດ', printReceipt: 'ພິມໃບບິນ', printLabel: 'ພິມໃບປະໜ້າ', newSale: 'ເລີ່ມການຂາຍໃໝ່',
     rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `ຍອດເປັນ ${c}`, view: 'ເບິ່ງກະຕ່າ', pick: 'ເລືອກຕົວເລືອກ',
     online: 'ສົ່ງອອນລາຍ', walkin: 'ໜ້າຮ້ານ', optional: 'ບໍ່ບັງຄັບ',
+    carrier: 'ຂົນສົ່ງ', carrierPick: 'ເລືອກ ຫຼື ພິມຊື່ຂົນສົ່ງ', carrierNone: 'ຍັງບໍ່ໄດ້ຕັ້ງຂົນສົ່ງ (ຕັ້ງໄດ້ໃນໜ້າຕັ້ງຄ່າ)',
+    paidNow: 'ຈ່າຍມາແລ້ວ (ມັດຈຳ)', cod: 'ເກັບປາຍທາງ (COD)', paidFull: 'ຊຳລະຄົບແລ້ວ',
   },
   th: {
     search: 'ค้นหา หรือยิงบาร์โค้ดแล้วกด Enter', all: 'ทั้งหมด', cart: 'ตะกร้า', clear: 'ล้างตะกร้า',
@@ -34,6 +36,8 @@ const COPY = {
     done: 'ขายสำเร็จ', printReceipt: 'พิมพ์ใบเสร็จ', printLabel: 'พิมพ์ใบปะหน้า', newSale: 'เริ่มการขายใหม่',
     rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `ยอดเป็น ${c}`, view: 'ดูตะกร้า', pick: 'เลือกตัวเลือก',
     online: 'ส่งออนไลน์', walkin: 'หน้าร้าน', optional: 'ไม่บังคับ',
+    carrier: 'ขนส่ง', carrierPick: 'เลือกหรือพิมพ์ชื่อขนส่ง', carrierNone: 'ยังไม่ได้ตั้งขนส่ง (ตั้งได้ในหน้าตั้งค่า)',
+    paidNow: 'จ่ายมาแล้ว (มัดจำ)', cod: 'เก็บปลายทาง (COD)', paidFull: 'ชำระครบแล้ว',
   },
   en: {
     search: 'Search or scan a barcode, then press Enter', all: 'All', cart: 'Cart', clear: 'Clear cart',
@@ -48,6 +52,8 @@ const COPY = {
     done: 'Sale complete', printReceipt: 'Print receipt', printLabel: 'Print shipping label', newSale: 'New sale',
     rate: (c, r) => `1 ${c} = ${r}`, inCurrency: c => `Total in ${c}`, view: 'View cart', pick: 'Choose an option',
     online: 'Online delivery', walkin: 'In store', optional: 'optional',
+    carrier: 'Carrier', carrierPick: 'Pick or type a carrier', carrierNone: 'No carriers set yet (add them in Settings)',
+    paidNow: 'Paid now (deposit)', cod: 'Collect on delivery (COD)', paidFull: 'Paid in full',
   },
 };
 
@@ -80,6 +86,7 @@ export default function POSPage() {
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
   const [deliveryDate, setDeliveryDate] = useState('');
   const [shippingNotes, setShippingNotes] = useState('');
+  const [carrier, setCarrier] = useState('');
   const [currency, setCurrency] = useState('LAK');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [received, setReceived] = useState('');
@@ -224,6 +231,12 @@ export default function POSPage() {
   const due = total / rate;
   const receivedNum = parseFloat(received) || 0;
   const changeDue = receivedNum - due;
+  // Online orders: whatever is not paid now is collected on delivery (COD).
+  const codDue = Math.max(0, due - receivedNum);
+  const carriers = useMemo(
+    () => String(shop.shipping_carriers || '').split('\n').map(s => s.trim()).filter(Boolean),
+    [shop.shipping_carriers]
+  );
 
   const quickAmounts = useMemo(() => {
     if (!(due > 0)) return [];
@@ -276,6 +289,9 @@ export default function POSPage() {
       order_type: orderType,
       delivery_date: orderType === 'online' ? deliveryDate || null : null,
       shipping_notes: orderType === 'online' ? shippingNotes : '',
+      shipping_carrier: orderType === 'online' ? carrier.trim() : '',
+      // In the order currency. Server caps at total and forces full payment for walk-in.
+      amount_paid: orderType === 'online' ? receivedNum : conv(total),
       items: lines.map(i => ({
         product_id: i.product_id,
         variant_id: i.variant_id,
@@ -293,13 +309,14 @@ export default function POSPage() {
       if (!res.ok) throw new Error('save failed');
       const order = await res.json();
       order.items = (order.items || []).map((oi, idx) => ({ ...oi, name: lines[idx]?.name, variant_color: lines[idx]?.variant }));
-      setLastSale({ order, received: paymentMethod === 'cash' && receivedNum > 0 ? receivedNum : null });
+      setLastSale({ order, received: orderType === 'walk_in' && paymentMethod === 'cash' && receivedNum > 0 ? receivedNum : null });
       setCheckout(false);
       setCart([]);
       setDiscount(0);
       setCustomer({ name: '', phone: '', address: '' });
       setDeliveryDate('');
       setShippingNotes('');
+      setCarrier('');
       setCouponCode('');
       setCoupon(null);
       setReceived('');
@@ -559,6 +576,14 @@ export default function POSPage() {
                     <input value={shippingNotes} onChange={e => setShippingNotes(e.target.value)} className={inputCls} />
                   </Field>
                 </div>
+                <Field label={c.carrier}>
+                  <input list="pos-carriers" value={carrier} onChange={e => setCarrier(e.target.value)}
+                    placeholder={c.carrierPick} className={inputCls} />
+                  <datalist id="pos-carriers">
+                    {carriers.map(x => <option key={x} value={x} />)}
+                  </datalist>
+                  {carriers.length === 0 && <span className="mt-1 block text-xs text-slate-400">{c.carrierNone}</span>}
+                </Field>
               </>
             )}
             <div>
@@ -597,7 +622,29 @@ export default function POSPage() {
               )}
             </div>
 
-            {paymentMethod === 'cash' && (
+            {orderType === 'online' ? (
+              <div>
+                {/* Deposit paid now; the rest is collected on delivery. */}
+                <Field label={c.paidNow}>
+                  <input type="number" min="0" inputMode="decimal" value={received} onChange={e => setReceived(e.target.value)}
+                    placeholder="0" className={`${inputCls} text-right text-xl font-bold num`} />
+                </Field>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setReceived(String(Math.round(due * 100) / 100))}
+                    className="px-3 py-1.5 rounded-lg border border-line text-sm font-semibold text-ink hover:border-gold hover:bg-gold-soft num">
+                    {c.paidFull}
+                  </button>
+                  <button type="button" onClick={() => setReceived('')}
+                    className="px-3 py-1.5 rounded-lg border border-line text-sm font-semibold text-ink hover:border-gold hover:bg-gold-soft">
+                    COD
+                  </button>
+                </div>
+                <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${codDue > 0 ? 'bg-gold-soft text-[#8A6A22]' : 'bg-[#E3F2EF] text-[#1E6B60]'}`}>
+                  <span className="font-semibold">{codDue > 0 ? c.cod : c.paidFull}</span>
+                  {codDue > 0 && <span className="text-xl font-extrabold num">{formatCurrency(codDue, currency)}</span>}
+                </div>
+              </div>
+            ) : paymentMethod === 'cash' ? (
               <div>
                 <Field label={c.received}>
                   <input type="number" min="0" inputMode="decimal" value={received} onChange={e => setReceived(e.target.value)}
@@ -618,7 +665,7 @@ export default function POSPage() {
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </Modal>
@@ -638,11 +685,16 @@ export default function POSPage() {
               </p>
             )}
             <div className="mt-6 grid gap-2">
-              <Button tone="primary" icon="print" onClick={() => printReceipt(lastSale.order, shop, lang, { received: lastSale.received })}>
-                {c.printReceipt}
-              </Button>
-              {lastSale.order.order_type === 'online' && (
-                <Button tone="ghost" icon="truck" onClick={() => printShippingLabel(lastSale.order, shop, lang)}>{c.printLabel}</Button>
+              {lastSale.order.order_type === 'online' ? (
+                <>
+                  {/* Online: the parcel label is the main document */}
+                  <Button tone="primary" icon="truck" onClick={() => printShippingLabel(lastSale.order, shop, lang)}>{c.printLabel}</Button>
+                  <Button tone="ghost" icon="print" onClick={() => printReceipt(lastSale.order, shop, lang)}>{c.printReceipt}</Button>
+                </>
+              ) : (
+                <Button tone="primary" icon="print" onClick={() => printReceipt(lastSale.order, shop, lang, { received: lastSale.received })}>
+                  {c.printReceipt}
+                </Button>
               )}
               <Button tone="gold" onClick={newSale}>{c.newSale}</Button>
             </div>

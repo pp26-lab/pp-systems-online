@@ -10,6 +10,7 @@ const COPY = {
     logo: 'ໂລໂກ້', upload: 'ອັບໂຫຼດໂລໂກ້', replace: 'ປ່ຽນໂລໂກ້', removeLogo: 'ເອົາອອກ', footer: 'ຂໍ້ຄວາມທ້າຍໃບບິນ', footerPh: 'ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ',
     sell: 'ການຂາຍ', orderType: 'ປະເພດການຂາຍເລີ່ມຕົ້ນ', walkin: 'ໜ້າຮ້ານ', online: 'ອອນລາຍ', low: 'ແຈ້ງເຕືອນສະຕ໋ອກໃກ້ໝົດເມື່ອເຫຼືອ', units: 'ຊິ້ນ ຫຼື ໜ້ອຍກວ່າ',
     options: 'ຊື່ຕົວເລືອກສິນຄ້າເລີ່ມຕົ້ນ', optionsNote: 'ໃຊ້ກັບສິນຄ້າໃໝ່ ເຊັ່ນ ສີ ແລະ ຂະໜາດ', opt1: 'ຕົວເລືອກທີ 1', opt2: 'ຕົວເລືອກທີ 2',
+    carriers: 'ຂົນສົ່ງທີ່ຮ້ານໃຊ້', carriersNote: 'ພິມໜຶ່ງຊື່ຕໍ່ໜຶ່ງແຖວ ຈະຂຶ້ນໃຫ້ເລືອກຕອນອອກອໍເດີ້ອອນລາຍ', carriersPh: 'Anousith\nHAL\nMixay Express',
     wa: 'ຂໍ້ຄວາມ WhatsApp', waNote: 'ໃຊ້ເມື່ອກົດ "ສົ່ງ WhatsApp" ໃນໜ້າອໍເດີ້ ປ່ອຍວ່າງເພື່ອໃຊ້ຂໍ້ຄວາມມາດຕະຖານ', cc: 'ລະຫັດປະເທດ', template: 'ແມ່ແບບຂໍ້ຄວາມ',
     insert: 'ກົດເພື່ອແຊກຂໍ້ມູນ', keys: { name: 'ຊື່ລູກຄ້າ', order_number: 'ເລກອໍເດີ້', total: 'ຍອດລວມ', status: 'ສະຖານະ', tracking: 'ເລກພັດສະດຸ', carrier: 'ຂົນສົ່ງ', shop: 'ຊື່ຮ້ານ' },
     previewMsg: 'ຕົວຢ່າງຂໍ້ຄວາມ', receipt: 'ຕົວຢ່າງໃບບິນ', item: 'ສິນຄ້າຕົວຢ່າງ', total: 'ລວມ',
@@ -21,6 +22,7 @@ const COPY = {
     logo: 'โลโก้', upload: 'อัปโหลดโลโก้', replace: 'เปลี่ยนโลโก้', removeLogo: 'เอาออก', footer: 'ข้อความท้ายใบเสร็จ', footerPh: 'ขอบคุณที่ใช้บริการ',
     sell: 'การขาย', orderType: 'ประเภทการขายเริ่มต้น', walkin: 'หน้าร้าน', online: 'ออนไลน์', low: 'แจ้งเตือนสต็อกใกล้หมดเมื่อเหลือ', units: 'ชิ้นหรือน้อยกว่า',
     options: 'ชื่อตัวเลือกสินค้าเริ่มต้น', optionsNote: 'ใช้กับสินค้าใหม่ เช่น สี และ ขนาด', opt1: 'ตัวเลือกที่ 1', opt2: 'ตัวเลือกที่ 2',
+    carriers: 'ขนส่งที่ร้านใช้', carriersNote: 'พิมพ์หนึ่งชื่อต่อหนึ่งบรรทัด จะขึ้นให้เลือกตอนออกออเดอร์ออนไลน์', carriersPh: 'Anousith\nHAL\nMixay Express',
     wa: 'ข้อความ WhatsApp', waNote: 'ใช้เมื่อกด "ส่ง WhatsApp" ในหน้าออเดอร์ เว้นว่างเพื่อใช้ข้อความมาตรฐาน', cc: 'รหัสประเทศ', template: 'แม่แบบข้อความ',
     insert: 'กดเพื่อแทรกข้อมูล', keys: { name: 'ชื่อลูกค้า', order_number: 'เลขออเดอร์', total: 'ยอดรวม', status: 'สถานะ', tracking: 'เลขพัสดุ', carrier: 'ขนส่ง', shop: 'ชื่อร้าน' },
     previewMsg: 'ตัวอย่างข้อความ', receipt: 'ตัวอย่างใบเสร็จ', item: 'สินค้าตัวอย่าง', total: 'รวม',
@@ -32,6 +34,7 @@ const COPY = {
     logo: 'Logo', upload: 'Upload logo', replace: 'Replace logo', removeLogo: 'Remove', footer: 'Receipt footer', footerPh: 'Thank you for shopping with us',
     sell: 'Selling', orderType: 'Default sale type', walkin: 'In store', online: 'Online', low: 'Warn me when stock is at', units: 'units or fewer',
     options: 'Default option names', optionsNote: 'Used for new products, for example colour and size', opt1: 'First option', opt2: 'Second option',
+    carriers: 'Your carriers', carriersNote: 'One name per line. These appear as choices on online orders.', carriersPh: 'Anousith\nHAL\nMixay Express',
     wa: 'WhatsApp message', waNote: 'Used by "Send on WhatsApp" on the orders page. Leave empty to use the standard message.', cc: 'Country code', template: 'Message template',
     insert: 'Tap to insert', keys: { name: 'Customer name', order_number: 'Order number', total: 'Total', status: 'Status', tracking: 'Tracking no.', carrier: 'Carrier', shop: 'Shop name' },
     previewMsg: 'Message preview', receipt: 'Receipt preview', item: 'Sample item', total: 'Total',
@@ -63,6 +66,7 @@ export default function SettingsPage() {
         variant_label_1: data.variant_label_1 || 'color', variant_label_2: data.variant_label_2 || 'size',
         low_stock_threshold: data.low_stock_threshold ?? 5,
         whatsapp_country_code: data.whatsapp_country_code || '856', whatsapp_template: data.whatsapp_template || '',
+        shipping_carriers: data.shipping_carriers || '',
       };
       setForm(f);
       setInitial(JSON.stringify(f));
@@ -169,6 +173,12 @@ export default function SettingsPage() {
                   <span className="text-sm text-slate-500">{c.units}</span>
                 </div>
               </div>
+            </div>
+            <div className="mt-5">
+              <label htmlFor="carriers" className="block text-sm font-semibold text-ink mb-1.5">{c.carriers}</label>
+              <p className="text-xs text-slate-500 mb-1.5">{c.carriersNote}</p>
+              <textarea id="carriers" rows={4} value={form.shipping_carriers} onChange={set('shipping_carriers')}
+                placeholder={c.carriersPh} className={inputCls} />
             </div>
           </Section>
 

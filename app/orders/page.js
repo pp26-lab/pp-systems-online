@@ -20,6 +20,7 @@ const COPY = {
     tracking: 'ຕິດຕາມພັດສະດຸ', carrier: 'ບໍລິສັດຂົນສົ່ງ', trackNo: 'ເລກພັດສະດຸ', save: 'ບັນທຶກ', saved: 'ບັນທຶກແລ້ວ',
     items: 'ລາຍການສິນຄ້າ', subtotal: 'ລວມຍ່ອຍ', discount: 'ສ່ວນຫຼຸດ', total: 'ຍອດລວມ', paidBy: 'ຊຳລະໂດຍ',
     slip: 'ສະລິບໂອນເງິນ', uploadSlip: 'ອັບໂຫຼດສະລິບ', replace: 'ປ່ຽນຮູບ', internal: 'ໂນດພາຍໃນ (ລູກຄ້າບໍ່ເຫັນ)',
+    cod: 'ເກັບປາຍທາງ (COD)', deposit: 'ມັດຈຳ', markPaid: 'ຮັບເງິນຄົບແລ້ວ', paidFull: 'ຊຳລະຄົບແລ້ວ',
     receipt: 'ພິມໃບບິນ', label: 'ພິມໃບປະໜ້າ', whatsapp: 'ສົ່ງ WhatsApp', noPhone: 'ອໍເດີ້ນີ້ບໍ່ມີເບີໂທລູກຄ້າ',
     failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ', orders: n => `${n} ອໍເດີ້`,
   },
@@ -35,6 +36,7 @@ const COPY = {
     tracking: 'ติดตามพัสดุ', carrier: 'บริษัทขนส่ง', trackNo: 'เลขพัสดุ', save: 'บันทึก', saved: 'บันทึกแล้ว',
     items: 'รายการสินค้า', subtotal: 'รวมย่อย', discount: 'ส่วนลด', total: 'ยอดรวม', paidBy: 'ชำระโดย',
     slip: 'สลิปโอนเงิน', uploadSlip: 'อัปโหลดสลิป', replace: 'เปลี่ยนรูป', internal: 'โน้ตภายใน (ลูกค้าไม่เห็น)',
+    cod: 'เก็บปลายทาง (COD)', deposit: 'มัดจำ', markPaid: 'รับเงินครบแล้ว', paidFull: 'ชำระครบแล้ว',
     receipt: 'พิมพ์ใบเสร็จ', label: 'พิมพ์ใบปะหน้า', whatsapp: 'ส่ง WhatsApp', noPhone: 'ออเดอร์นี้ไม่มีเบอร์ลูกค้า',
     failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', orders: n => `${n} ออเดอร์`,
   },
@@ -50,6 +52,7 @@ const COPY = {
     tracking: 'Tracking', carrier: 'Carrier', trackNo: 'Tracking number', save: 'Save', saved: 'Saved',
     items: 'Items', subtotal: 'Subtotal', discount: 'Discount', total: 'Total', paidBy: 'Paid by',
     slip: 'Transfer slip', uploadSlip: 'Upload slip', replace: 'Replace', internal: 'Internal note (customer never sees it)',
+    cod: 'Collect on delivery (COD)', deposit: 'deposit', markPaid: 'Mark fully paid', paidFull: 'Paid in full',
     receipt: 'Print receipt', label: 'Print shipping label', whatsapp: 'Send on WhatsApp', noPhone: 'This order has no customer phone',
     failed: "Couldn't save. Try again.", orders: n => `${n} ${n === 1 ? 'order' : 'orders'}`,
   },
@@ -398,8 +401,11 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
         <div className="mt-6">
           <h3 className="font-bold text-ink text-sm">{c.tracking}</h3>
           <div className="mt-2 grid sm:grid-cols-[1fr_1.3fr_auto] gap-2">
-            <input aria-label={c.carrier} placeholder={c.carrier} value={tracking.carrier}
+            <input aria-label={c.carrier} placeholder={c.carrier} value={tracking.carrier} list="order-carriers"
               onChange={e => setTracking({ ...tracking, carrier: e.target.value })} className={inputCls} />
+            <datalist id="order-carriers">
+              {String(shop.shipping_carriers || '').split('\n').map(s => s.trim()).filter(Boolean).map(x => <option key={x} value={x} />)}
+            </datalist>
             <input aria-label={c.trackNo} placeholder={c.trackNo} value={tracking.number}
               onChange={e => setTracking({ ...tracking, number: e.target.value })} className={`${inputCls} num`} />
             <Button tone="primary" disabled={!trackingDirty || !!busy}
@@ -440,6 +446,23 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
           {order.currency !== 'LAK' && (
             <p className="text-right text-xs text-slate-500 num">{formatCurrency(order.total_in_lak, 'LAK')}</p>
           )}
+          {online && (() => {
+            const paid = Math.max(0, Number(order.amount_paid) || 0);
+            const cod = Math.max(0, (Number(order.total) || 0) - paid);
+            return cod > 0 ? (
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-gold-soft px-4 py-2.5">
+                <span className="font-semibold text-[#8A6A22]">{c.cod}{paid > 0 ? ` (${c.deposit} ${formatCurrency(paid, order.currency)})` : ''}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-extrabold text-[#8A6A22] num">{formatCurrency(cod, order.currency)}</span>
+                  {!cancelled && <Button size="sm" tone="ghost" disabled={!!busy} onClick={() => run('paid', { amount_paid: order.total }, c.saved)}>{c.markPaid}</Button>}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-[#E3F2EF] px-4 py-2.5">
+                <span className="font-semibold text-[#1E6B60]">{c.paidFull}</span>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
