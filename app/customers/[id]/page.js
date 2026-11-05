@@ -60,7 +60,7 @@ export default function CustomerDetail() {
   }
 
   if (missing) return <EmptyState icon="user" title={c.notFound} action={<a href="/customers" className="text-sm font-semibold text-primary">{c.back}</a>} />;
-  if (!customer) return <div className="max-w-6xl space-y-4" aria-busy="true"><div className="h-36 rounded-2xl bg-white animate-pulse" /><div className="h-64 rounded-2xl bg-white animate-pulse" /></div>;
+  if (!customer) return <div className="max-w-6xl space-y-4" aria-busy="true"><div className="h-36 rounded-xl bg-white animate-pulse" /><div className="h-64 rounded-xl bg-white animate-pulse" /></div>;
 
   // Cancelled orders are already taken out of total_spent / order_count by the orders API.
   const count = Number(customer.order_count) || 0;
@@ -73,21 +73,21 @@ export default function CustomerDetail() {
         <Icon name="back" className="w-4 h-4" />{c.back}
       </a>
 
-      <section className="rounded-2xl bg-ink text-white p-6 sm:p-7">
+      <section className="rounded-xl bg-white border border-line p-6 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-extrabold truncate">{customer.name || customer.phone || '-'}</h1>
-            <p className="mt-1 text-sm text-slate-400">{c.since} {new Date(customer.created_at).toLocaleDateString()}</p>
+            <h1 className="text-2xl font-extrabold text-ink truncate">{customer.name || customer.phone || '-'}</h1>
+            <p className="mt-1 text-sm text-slate-500">{c.since} {new Date(customer.created_at).toLocaleDateString()}</p>
           </div>
           <div className="flex gap-2">
-            <Button tone="gold" size="sm" icon="edit" onClick={() => setEditing(true)}>{c.edit}</Button>
+            <Button tone="ghost" size="sm" icon="edit" onClick={() => setEditing(true)}>{c.edit}</Button>
           </div>
         </div>
-        {!!customer.is_blacklisted && <p className="mt-4 inline-flex rounded-lg bg-danger/20 text-red-200 px-3 py-1.5 text-sm font-semibold">{c.blacklisted}</p>}
-        <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-ink-line pt-5">
-          <div><dt className="text-xs text-slate-400">{c.spent}</dt><dd className="mt-1 text-xl sm:text-3xl font-extrabold text-gold num truncate">{formatCurrency(spent, 'LAK')}</dd></div>
-          <div><dt className="text-xs text-slate-400">{c.orders}</dt><dd className="mt-1 text-xl sm:text-3xl font-extrabold num">{count}</dd></div>
-          <div><dt className="text-xs text-slate-400">{c.avg}</dt><dd className="mt-1 text-xl sm:text-3xl font-extrabold num truncate">{formatCurrency(count ? spent / count : 0, 'LAK')}</dd></div>
+        {!!customer.is_blacklisted && <p className="mt-4 inline-flex rounded-lg bg-red-50 text-danger px-3 py-1.5 text-sm font-semibold">{c.blacklisted}</p>}
+        <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-line pt-5">
+          <div><dt className="text-xs text-slate-500">{c.spent}</dt><dd className="mt-1 text-xl sm:text-3xl font-extrabold text-primary num truncate">{formatCurrency(spent, 'LAK')}</dd></div>
+          <div><dt className="text-xs text-slate-500">{c.orders}</dt><dd className="mt-1 text-xl sm:text-3xl font-extrabold text-ink num">{count}</dd></div>
+          <div><dt className="text-xs text-slate-500">{c.avg}</dt><dd className="mt-1 text-xl sm:text-3xl font-extrabold text-ink num truncate">{formatCurrency(count ? spent / count : 0, 'LAK')}</dd></div>
         </dl>
       </section>
 
@@ -103,7 +103,7 @@ export default function CustomerDetail() {
                   <span className="flex">
                     <IconButton icon="copy" label={copied ? c.copied : c.copy} onClick={copyPhone} />
                     <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"
-                      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:text-success hover:bg-[#E3F2EF]">
+                      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:text-success hover:bg-[#E3F5EC]">
                       <Icon name="whatsapp" className="w-[1.15rem] h-[1.15rem]" />
                     </a>
                   </span>

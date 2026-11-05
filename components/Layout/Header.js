@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { t } from '../../lib/i18n';
@@ -19,7 +20,12 @@ export default function Header({ lang, setLang, onMenuToggle, onLogout, user }) 
   const today = new Date().toLocaleDateString(LOCALES[lang] || 'en-GB', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
-  const initials = (user?.shop_name || 'PP').trim().slice(0, 2).toUpperCase();
+  const [logoFailed, setLogoFailed] = useState(false);
+  // First letters of the shop name, cut by visible characters so Lao/Thai vowels stay whole.
+  const name = (user?.shop_name || 'PP').replace(/s+/g, '');
+  const initials = (typeof Intl !== 'undefined' && Intl.Segmenter
+    ? [...new Intl.Segmenter().segment(name)].slice(0, 2).map(x => x.segment).join('')
+    : name.slice(0, 2)).toUpperCase();
 
   return (
     <header className="h-16 bg-white border-b border-line px-4 lg:px-6 flex items-center gap-3 no-print shrink-0">
@@ -41,8 +47,17 @@ export default function Header({ lang, setLang, onMenuToggle, onLogout, user }) 
       <LanguageSwitcher lang={lang} setLang={setLang} />
 
       <div className="flex items-center gap-2 pl-3 border-l border-line">
-        <div className="hidden sm:flex w-9 h-9 rounded-full bg-ink text-gold items-center justify-center text-[0.8rem] font-bold ring-1 ring-gold/40" aria-hidden="true">
-          {initials}
+        {/* The shop's own logo; its initials when no logo has been uploaded. */}
+        <div className="hidden sm:flex items-center gap-2.5 min-w-0" title={user?.shop_name || ''}>
+          {user?.shop_logo && !logoFailed ? (
+            <img src={user.shop_logo} alt="" onError={() => setLogoFailed(true)}
+              className="w-9 h-9 rounded-full object-cover bg-white ring-1 ring-line" />
+          ) : (
+            <span className="w-9 h-9 rounded-full bg-gold-soft text-primary-dark flex items-center justify-center text-[0.8rem] font-bold ring-1 ring-primary/20" aria-hidden="true">
+              {initials}
+            </span>
+          )}
+          {user?.shop_name && <span className="hidden xl:block max-w-[10rem] truncate text-sm font-semibold text-ink">{user.shop_name}</span>}
         </div>
         {onLogout && (
           <button

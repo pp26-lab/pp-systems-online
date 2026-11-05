@@ -27,7 +27,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm">
+      <form onSubmit={submit} className="bg-white rounded-xl shadow-xl p-8 w-full max-w-sm">
         <img src="/brand/pp-systems-logo.png" alt="PP Systems" className="w-36 h-auto mb-6" />
         <h1 className="text-xl font-bold mb-1">เข้าสู่หลังบ้าน</h1>
         <p className="text-sm text-gray-500 mb-6">สำหรับเจ้าของระบบ PP Systems เท่านั้น</p>

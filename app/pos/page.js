@@ -452,7 +452,7 @@ export default function POSPage() {
         <div className="mt-4 flex-1 lg:overflow-y-auto min-h-0">
           {!loaded ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3" aria-busy="true">
-              {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="aspect-[3/4] rounded-2xl bg-white animate-pulse" />)}
+              {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="aspect-[3/4] rounded-xl bg-white animate-pulse" />)}
             </div>
           ) : visible.length === 0 ? (
             <EmptyState icon="search" title={c.noMatch} text={c.noMatchText} />
@@ -468,7 +468,7 @@ export default function POSPage() {
                     key={p.id}
                     onClick={() => !soldOut && pickProduct(p)}
                     disabled={soldOut}
-                    className={`group text-left bg-white rounded-2xl border overflow-hidden transition-colors ${
+                    className={`group text-left bg-white rounded-xl border overflow-hidden transition-colors ${
                       inCart ? 'border-gold ring-1 ring-gold' : 'border-line hover:border-slate-300'
                     } ${soldOut ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
@@ -601,7 +601,7 @@ export default function POSPage() {
                             className="w-full text-left px-3 py-2 hover:bg-canvas flex items-center justify-between gap-2">
                             <span className="min-w-0">
                               <span className="block font-semibold text-ink truncate">{x.name || x.phone}</span>
-                              <span className="block text-xs text-slate-500 num">{x.phone} · {c.existing} {x.order_count || 0}</span>
+                              <span className="block text-xs text-slate-500 num">{x.phone}, {c.existing} {x.order_count || 0}</span>
                             </span>
                             <Icon name="user" className="w-4 h-4 text-gold-dark shrink-0" />
                           </button>
@@ -654,7 +654,7 @@ export default function POSPage() {
             <Segmented value={paymentMethod} onChange={setPaymentMethod}
               options={[{ value: 'cash', label: t('cash', lang) }, { value: 'transfer', label: t('transfer', lang) }]} />
 
-            <div className="rounded-2xl bg-ink text-white p-5">
+            <div className="rounded-xl bg-ink text-white p-5">
               <div className="flex items-end justify-between gap-3">
                 <span className="text-sm text-slate-400">{currency === 'LAK' ? c.total : c.inCurrency(currency)}</span>
                 <span className="text-3xl font-extrabold text-gold num leading-none">{formatCurrency(due, currency)}</span>
@@ -688,7 +688,7 @@ export default function POSPage() {
                     COD
                   </button>
                 </div>
-                <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${codDue > 0 ? 'bg-gold-soft text-[#8A6A22]' : 'bg-[#E3F2EF] text-[#1E6B60]'}`}>
+                <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${codDue > 0 ? 'bg-gold-soft text-[#0950C2]' : 'bg-[#E3F5EC] text-[#0B6B49]'}`}>
                   <span className="font-semibold">{codDue > 0 ? c.cod : c.paidFull}</span>
                   {codDue > 0 && <span className="text-xl font-extrabold num">{formatCurrency(codDue, currency)}</span>}
                 </div>
@@ -708,7 +708,7 @@ export default function POSPage() {
                   ))}
                 </div>
                 {received !== '' && (
-                  <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${changeDue >= 0 ? 'bg-[#E3F2EF] text-[#1E6B60]' : 'bg-red-50 text-danger'}`}>
+                  <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${changeDue >= 0 ? 'bg-[#E3F5EC] text-[#0B6B49]' : 'bg-red-50 text-danger'}`}>
                     <span className="font-semibold">{changeDue >= 0 ? c.change : c.short}</span>
                     <span className="text-xl font-extrabold num">{formatCurrency(Math.abs(changeDue), currency)}</span>
                   </div>
@@ -722,7 +722,7 @@ export default function POSPage() {
       <Modal open={!!lastSale} onClose={newSale} size="sm">
         {lastSale && (
           <div className="text-center">
-            <div className="mx-auto w-14 h-14 rounded-full bg-[#E3F2EF] text-success flex items-center justify-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-[#E3F5EC] text-success flex items-center justify-center">
               <Icon name="check" className="w-7 h-7" strokeWidth={2.4} />
             </div>
             <p className="mt-4 text-lg font-bold text-ink">{c.done}</p>

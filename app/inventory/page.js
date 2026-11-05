@@ -109,12 +109,12 @@ export default function InventoryPage() {
 
   return (
     <div className="max-w-7xl">
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-2xl overflow-hidden border border-line bg-line mb-5">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-px rounded-xl overflow-hidden border border-line bg-line mb-5">
         {BUCKETS.map(b => (
           <button key={b} onClick={() => setFilter(filter === b ? '' : b)} aria-pressed={filter === b}
-            className={`text-left px-5 py-4 transition-colors ${filter === b ? 'bg-ink text-white' : 'bg-white hover:bg-canvas'}`}>
-            <span className={`block text-xs ${filter === b ? 'text-slate-400' : 'text-slate-500'}`}>{c[b]}</span>
-            <span className={`block mt-1 text-2xl font-extrabold num ${filter === b ? 'text-gold' : 'text-ink'}`}>{totals[b].toLocaleString()}</span>
+            className={`text-left px-5 py-4 transition-colors ${filter === b ? 'bg-gold-soft shadow-[inset_0_-3px_0_#0B63E5]' : 'bg-white hover:bg-canvas'}`}>
+            <span className={`block text-xs ${filter === b ? 'text-primary-dark font-semibold' : 'text-slate-500'}`}>{c[b]}</span>
+            <span className={`block mt-1 text-2xl font-extrabold num ${filter === b ? 'text-primary-dark' : 'text-ink'}`}>{totals[b].toLocaleString()}</span>
           </button>
         ))}
       </section>
@@ -367,7 +367,7 @@ function StockEditor({ product, products, batches, c, lang, nameOf, onClose, onC
               )}
             </section>
 
-            <section className="rounded-2xl bg-canvas p-4">
+            <section className="rounded-xl bg-canvas p-4">
               <h3 className="font-bold text-ink text-sm">{c.addBatch}</h3>
               <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Field label={c.qty}><input type="number" min="1" value={add.quantity} onChange={e => setAdd({ ...add, quantity: e.target.value })} className={`${inputCls} text-right num`} /></Field>

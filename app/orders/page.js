@@ -451,15 +451,15 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
             const cod = Math.max(0, (Number(order.total) || 0) - paid);
             return cod > 0 ? (
               <div className="mt-2 flex items-center justify-between rounded-xl bg-gold-soft px-4 py-2.5">
-                <span className="font-semibold text-[#8A6A22]">{c.cod}{paid > 0 ? ` (${c.deposit} ${formatCurrency(paid, order.currency)})` : ''}</span>
+                <span className="font-semibold text-[#0950C2]">{c.cod}{paid > 0 ? ` (${c.deposit} ${formatCurrency(paid, order.currency)})` : ''}</span>
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-extrabold text-[#8A6A22] num">{formatCurrency(cod, order.currency)}</span>
+                  <span className="text-lg font-extrabold text-[#0950C2] num">{formatCurrency(cod, order.currency)}</span>
                   {!cancelled && <Button size="sm" tone="ghost" disabled={!!busy} onClick={() => run('paid', { amount_paid: order.total }, c.saved)}>{c.markPaid}</Button>}
                 </div>
               </div>
             ) : (
-              <div className="mt-2 flex items-center justify-between rounded-xl bg-[#E3F2EF] px-4 py-2.5">
-                <span className="font-semibold text-[#1E6B60]">{c.paidFull}</span>
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-[#E3F5EC] px-4 py-2.5">
+                <span className="font-semibold text-[#0B6B49]">{c.paidFull}</span>
               </div>
             );
           })()}
@@ -575,7 +575,7 @@ function OrderChatSend({ order, lang }) {
   }
 
   return (
-    <section className="mt-5 rounded-2xl border border-line p-4">
+    <section className="mt-5 rounded-xl border border-line p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-bold text-ink text-sm">{c.title}</h3>
         <div className="flex items-center gap-2">

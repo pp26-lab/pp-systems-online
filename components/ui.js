@@ -41,12 +41,13 @@ export function Icon({ name, className = 'w-5 h-5', strokeWidth = 1.7 }) {
   );
 }
 
-const BTN_BASE = 'inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-[color,background-color,border-color,transform] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap';
+const BTN_BASE = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-[color,background-color,border-color,transform] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap';
 // Below lg (phones and tablets) every control is at least ~44px tall for fingers.
 const BTN_SIZE = { sm: 'px-3 min-h-10 lg:min-h-0 py-1.5 text-sm', md: 'px-4 min-h-11 lg:min-h-0 py-2.5 text-sm', lg: 'px-5 min-h-12 py-3.5 text-base' };
 const BTN_TONE = {
   primary: 'bg-primary text-white hover:bg-primary-dark',
-  gold: 'bg-gold text-ink hover:bg-gold-dark hover:text-white',
+  // The main action of a screen (charge, save sale). Same blue, extra weight.
+  gold: 'bg-primary text-white hover:bg-primary-dark shadow-[0_1px_0_rgba(14,26,51,.25)]',
   ghost: 'bg-white text-ink border border-line hover:border-slate-300 hover:bg-canvas',
   subtle: 'text-slate-600 hover:bg-canvas hover:text-ink',
   danger: 'bg-white text-danger border border-line hover:bg-red-50 hover:border-red-200',
@@ -81,7 +82,7 @@ export function IconButton({ icon, label, tone = 'default', className = '', ...p
 }
 
 // 16px text below lg stops iPhones from zooming in when a field is tapped.
-export const inputCls = 'w-full px-3.5 py-3 lg:py-2.5 border rounded-xl text-base lg:text-[0.95rem] text-ink placeholder:text-slate-400';
+export const inputCls = 'w-full px-3.5 py-3 lg:py-2.5 border rounded-lg text-base lg:text-[0.95rem] text-ink placeholder:text-slate-400';
 
 export function Field({ label, hint, children, className = '' }) {
   return (
@@ -97,14 +98,14 @@ export function Field({ label, hint, children, className = '' }) {
 export function Segmented({ value, onChange, options, className = '', size = 'md' }) {
   const pad = size === 'sm' ? 'py-2 lg:py-1.5 text-[0.8rem]' : 'py-3 lg:py-2.5 text-sm';
   return (
-    <div role="radiogroup" className={`grid gap-1 p-1 rounded-xl bg-canvas border border-line ${className}`}
+    <div role="radiogroup" className={`grid gap-1 p-1 rounded-lg bg-canvas border border-line ${className}`}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map(o => {
         const active = value === o.value;
         return (
           <button key={o.value} type="button" role="radio" aria-checked={active}
             onClick={() => onChange(o.value)}
-            className={`px-2 rounded-lg font-semibold transition-colors ${pad} ${
+            className={`px-2 rounded-md font-semibold transition-colors ${pad} ${
               active ? 'bg-white text-primary shadow-sm ring-1 ring-line' : 'text-slate-500 hover:text-ink'
             }`}>
             {o.label}
@@ -172,7 +173,7 @@ export function EmptyState({ icon = 'box', title, text, action }) {
 }
 
 // Card surface used for page sections and tables.
-export const card = 'bg-white rounded-2xl border border-line';
+export const card = 'bg-white rounded-xl border border-line';
 
 // Toolbar row at the top of a page: filters on the left, actions on the right.
 export function Toolbar({ children, actions }) {
@@ -199,18 +200,18 @@ export function Chip({ active, onClick, children, count }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={active}
       className={`inline-flex items-center gap-1.5 px-4 lg:px-3.5 min-h-10 lg:min-h-0 py-1.5 rounded-full text-sm font-semibold border transition-colors whitespace-nowrap ${
-        active ? 'bg-ink text-white border-ink' : 'bg-white text-slate-600 border-line hover:border-slate-300 hover:text-ink'
+        active ? 'bg-gold-soft text-primary-dark border-primary/40' : 'bg-white text-slate-600 border-line hover:border-slate-300 hover:text-ink'
       }`}>
       {children}
-      {count != null && <span className={`num text-xs ${active ? 'text-gold' : 'text-slate-400'}`}>{count}</span>}
+      {count != null && <span className={`num text-xs ${active ? 'text-primary' : 'text-slate-400'}`}>{count}</span>}
     </button>
   );
 }
 
 const PILL = {
-  green: 'bg-[#E3F2EF] text-[#1E6B60]',
-  navy: 'bg-[#E6ECF6] text-primary',
-  gold: 'bg-gold-soft text-[#8A6A22]',
+  green: 'bg-[#E3F5EC] text-[#0B6B49]',
+  navy: 'bg-[#E8F1FF] text-[#0950C2]',
+  gold: 'bg-[#FFF3DE] text-[#8A4B00]',
   red: 'bg-red-50 text-danger',
   gray: 'bg-canvas text-slate-600',
   violet: 'bg-[#EAE8F5] text-[#3F3A7A]',

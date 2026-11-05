@@ -10,18 +10,23 @@
   --color-ink-soft: #172647;
   --color-ink-line: #24365C;
 
-  --color-primary: #1C3260;
-  --color-primary-dark: #14264A;
-  --color-primary-light: #2B4A85;
+  /* Brand colours come from the PP Systems logo: deep navy + electric blue.
+     "primary" is the one colour for anything you can press. */
+  --color-primary: #0B63E5;
+  --color-primary-dark: #0950C2;
+  --color-primary-light: #3D83F5;
 
-  --color-gold: #C8A04A;
-  --color-gold-dark: #A9832F;
-  --color-gold-soft: #F5EDD8;
+  /* The "gold" tokens are the brand accent (kept under the old name so every
+     screen picks the new colour up): light electric blue for marks on navy,
+     a deeper blue for text, and a pale blue for selected rows. */
+  --color-gold: #5AA4FF;
+  --color-gold-dark: #0B63E5;
+  --color-gold-soft: #E8F1FF;
 
-  --color-secondary: #2A8C7E;
-  --color-success: #2A8C7E;
-  --color-warning: #B7791F;
-  --color-danger: #C2413A;
+  --color-secondary: #0E8A5F;
+  --color-success: #0E8A5F;
+  --color-warning: #B45F06;
+  --color-danger: #CC3333;
 
   --color-canvas: #F3F5F8;
   --color-line: #E1E5EC;

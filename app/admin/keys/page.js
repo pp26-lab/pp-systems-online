@@ -95,7 +95,7 @@ export default function AdminKeys() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <form onSubmit={createKey} className="bg-white rounded-2xl max-w-md w-full p-6 space-y-3">
+          <form onSubmit={createKey} className="bg-white rounded-xl max-w-md w-full p-6 space-y-3">
             <h2 className="text-xl font-bold">New API Key</h2>
             <select required value={form.shop_id} onChange={e => setForm({ ...form, shop_id: e.target.value })}
               className="w-full px-3 py-2 border rounded-lg">

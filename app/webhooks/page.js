@@ -110,11 +110,11 @@ export default function WebhooksPage() {
       <Toolbar actions={<Button icon="plus" onClick={() => open(null)}>{c.add}</Button>} />
 
       {secret && (
-        <section role="alert" className="mb-5 rounded-2xl bg-ink text-white p-5">
-          <h2 className="font-bold text-gold">{c.secretTitle}</h2>
-          <p className="mt-1 text-sm text-slate-300">{c.secretText}</p>
+        <section role="alert" className="mb-5 rounded-xl bg-[#FFF8EB] border border-[#F2CC8F] p-5">
+          <h2 className="font-bold text-[#8A4B00]">{c.secretTitle}</h2>
+          <p className="mt-1 text-sm text-slate-700">{c.secretText}</p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <code className="flex-1 min-w-0 break-all rounded-xl bg-ink-soft border border-ink-line px-3 py-2 text-sm text-white">{secret}</code>
+            <code className="flex-1 min-w-0 break-all rounded-lg bg-white border border-line px-3 py-2 text-sm text-ink">{secret}</code>
             <Button size="sm" tone="ghost" icon="copy" onClick={() => navigator.clipboard?.writeText(secret).then(() => setCopied(true))}>{copied ? c.copied : c.copy}</Button>
             <Button size="sm" tone="gold" onClick={() => { setSecret(null); setCopied(false); }}>{c.done}</Button>
           </div>
@@ -170,7 +170,7 @@ export default function WebhooksPage() {
               <div className="space-y-1">
                 {EVENTS.map(ev => (
                   <label key={ev} className="flex items-center gap-3 rounded-xl border border-line px-3.5 py-2.5 cursor-pointer has-[:checked]:border-gold has-[:checked]:bg-gold-soft/50">
-                    <input type="checkbox" checked={form.events.includes(ev)} onChange={() => toggleEvent(ev)} className="w-4 h-4 accent-[#1C3260]" />
+                    <input type="checkbox" checked={form.events.includes(ev)} onChange={() => toggleEvent(ev)} className="w-4 h-4 accent-[#0B63E5]" />
                     <span className="flex-1 text-sm text-ink">{c.ev[ev]}</span>
                     <span className="text-xs text-slate-400">{ev}</span>
                   </label>
@@ -178,7 +178,7 @@ export default function WebhooksPage() {
               </div>
             </fieldset>
             <label className="flex items-center gap-2.5 text-sm text-ink">
-              <input type="checkbox" checked={!!form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4 accent-[#2A8C7E]" />{c.active}
+              <input type="checkbox" checked={!!form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} className="w-4 h-4 accent-[#0E8A5F]" />{c.active}
             </label>
             {error && <p role="alert" className="text-sm text-danger">{error}</p>}
             <div className="flex justify-end gap-2">

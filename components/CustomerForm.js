@@ -65,7 +65,7 @@ export default function CustomerForm({ lang, initial, onSaved, onCancel }) {
       </div>
       {initial?.id && (
         <label className="flex items-center gap-2.5 text-sm text-ink">
-          <input type="checkbox" checked={!!form.is_blacklisted} onChange={set('is_blacklisted')} className="w-4 h-4 accent-[#C2413A]" />
+          <input type="checkbox" checked={!!form.is_blacklisted} onChange={set('is_blacklisted')} className="w-4 h-4 accent-[#CC3333]" />
           {c.blacklist}
         </label>
       )}

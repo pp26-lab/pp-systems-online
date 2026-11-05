@@ -128,7 +128,7 @@ export default function Dashboard() {
   if (!report) {
     return (
       <div className="max-w-7xl" aria-busy="true">
-        <div className="rounded-2xl bg-ink h-64 animate-pulse" />
+        <div className="rounded-xl bg-ink h-64 animate-pulse" />
         <p className="sr-only">{c.loading}</p>
       </div>
     );
@@ -158,7 +158,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl space-y-6">
-      <section className="rounded-2xl bg-ink text-white overflow-hidden" aria-labelledby="sales-heading">
+      <section className="rounded-xl bg-ink text-white overflow-hidden" aria-labelledby="sales-heading">
         <div className="p-5 sm:p-6 lg:p-8">
           <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Period">
             {PRESETS.map(p => (
@@ -258,7 +258,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-5">
-        <section className="lg:col-span-3 bg-white rounded-2xl border border-line p-6">
+        <section className="lg:col-span-3 bg-white rounded-xl border border-line p-6">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="font-bold text-ink text-lg">{c.top}</h2>
             <span className="text-xs text-slate-500">{c.topNote}</span>
@@ -288,7 +288,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="lg:col-span-2 bg-white rounded-2xl border border-line p-6">
+        <section className="lg:col-span-2 bg-white rounded-xl border border-line p-6">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="font-bold text-ink text-lg">{c.low}</h2>
             <span className="text-xs text-slate-500">{c.lowNote(threshold)}</span>
@@ -320,7 +320,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <section className="bg-white rounded-2xl border border-line p-6">
+        <section className="bg-white rounded-xl border border-line p-6">
           <h2 className="font-bold text-ink text-lg">{c.channel}</h2>
           {byType.length > 0 ? (
             <>
@@ -348,7 +348,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="bg-white rounded-2xl border border-line p-6">
+        <section className="bg-white rounded-xl border border-line p-6">
           <h2 className="font-bold text-ink text-lg">{c.currency}</h2>
           {(report.salesByCurrency || []).length > 0 ? (
             <ul className="mt-4 divide-y divide-line">

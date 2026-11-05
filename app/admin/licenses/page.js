@@ -143,7 +143,7 @@ export default function AdminLicenses() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <form onSubmit={createLicense} className="bg-white rounded-2xl max-w-md w-full p-6 space-y-3">
+          <form onSubmit={createLicense} className="bg-white rounded-xl max-w-md w-full p-6 space-y-3">
             <h2 className="text-xl font-bold">New License</h2>
             <input required placeholder="Customer name" value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} className="w-full px-3 py-2 border rounded-lg" />
             <input placeholder="Email" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} className="w-full px-3 py-2 border rounded-lg" />

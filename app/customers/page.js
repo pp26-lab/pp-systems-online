@@ -65,7 +65,7 @@ export default function CustomersPage() {
       </Toolbar>
 
       {!search && customers.length > 0 && (
-        <section className="grid grid-cols-3 gap-px rounded-2xl overflow-hidden border border-line bg-line mb-5">
+        <section className="grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-line bg-line mb-5">
           <Stat label={c.customers} value={stats.total.toLocaleString()} />
           <Stat label={c.repeat} value={stats.total ? `${Math.round(stats.repeat / stats.total * 100)}%` : '0%'} />
           <Stat label={c.lifetime} value={formatCurrency(stats.spent, 'LAK')} gold />
@@ -83,7 +83,7 @@ export default function CustomersPage() {
             {customers.map(x => (
               <li key={x.id}>
                 <a href={`/customers/${x.id}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-canvas/60">
-                  <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${x.is_blacklisted ? 'bg-red-50 text-danger' : 'bg-gold-soft text-[#8A6A22]'}`}>{initials(x.name || x.phone)}</span>
+                  <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${x.is_blacklisted ? 'bg-red-50 text-danger' : 'bg-gold-soft text-[#0950C2]'}`}>{initials(x.name || x.phone)}</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-ink truncate">
                       {x.name || x.phone || '-'}
@@ -115,9 +115,9 @@ export default function CustomersPage() {
 
 function Stat({ label, value, gold }) {
   return (
-    <div className={`px-5 py-4 ${gold ? 'bg-ink' : 'bg-white'}`}>
-      <p className={`text-xs ${gold ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
-      <p className={`mt-1 text-lg sm:text-2xl font-extrabold num truncate ${gold ? 'text-gold' : 'text-ink'}`}>{value}</p>
+    <div className="px-5 py-4 bg-white">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={`mt-1 text-lg sm:text-2xl font-extrabold num truncate ${gold ? 'text-primary' : 'text-ink'}`}>{value}</p>
     </div>
   );
 }

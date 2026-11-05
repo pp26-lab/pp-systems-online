@@ -128,7 +128,7 @@ export default function SettingsPage() {
   }
 
   if (!form) {
-    return <div className="max-w-6xl grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]" aria-busy="true"><div className="h-96 rounded-2xl bg-white animate-pulse" /><div className="h-96 rounded-2xl bg-white animate-pulse" /></div>;
+    return <div className="max-w-6xl grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]" aria-busy="true"><div className="h-96 rounded-xl bg-white animate-pulse" /><div className="h-96 rounded-xl bg-white animate-pulse" /></div>;
   }
 
   const error = state && state !== 'saving' && state !== 'saved' ? state : '';
@@ -210,7 +210,7 @@ export default function SettingsPage() {
                 {form.whatsapp_template.trim() && (
                   <div className="mt-4">
                     <p className="text-xs text-slate-500 mb-1.5">{c.previewMsg}</p>
-                    <div className="rounded-2xl rounded-tr-sm bg-[#E3F2EF] text-[#16443D] px-4 py-3 text-sm whitespace-pre-wrap break-words ml-auto max-w-sm">
+                    <div className="rounded-xl rounded-tr-sm bg-[#E3F5EC] text-[#16443D] px-4 py-3 text-sm whitespace-pre-wrap break-words ml-auto max-w-sm">
                       {fillTemplate(form.whatsapp_template, { ...SAMPLE, shop: form.shop_name })}
                     </div>
                   </div>
@@ -220,10 +220,10 @@ export default function SettingsPage() {
           </Section>
         </div>
 
-        {/* Live receipt: the paper slip on an ink desk is this page's one memorable element */}
-        <aside className="lg:sticky lg:top-4 rounded-2xl bg-ink p-6">
-          <p className="text-sm font-semibold text-slate-300 mb-4">{c.receipt}</p>
-          <div className="mx-auto w-full max-w-[16rem] bg-white text-ink px-5 py-6 text-center text-[0.8rem] shadow-[0_18px_40px_-12px_rgba(0,0,0,.6)]"
+        {/* Live receipt preview: how the printed slip will look */}
+        <aside className="lg:sticky lg:top-4 rounded-xl bg-[#E4E8EF] p-6">
+          <p className="text-sm font-semibold text-slate-600 mb-4">{c.receipt}</p>
+          <div className="mx-auto w-full max-w-[16rem] bg-white text-ink px-5 py-6 text-center text-[0.8rem] shadow-[0_10px_24px_-12px_rgba(14,26,51,.35)]"
             style={{ clipPath: 'polygon(0 0,100% 0,100% calc(100% - 6px),95% 100%,90% calc(100% - 6px),85% 100%,80% calc(100% - 6px),75% 100%,70% calc(100% - 6px),65% 100%,60% calc(100% - 6px),55% 100%,50% calc(100% - 6px),45% 100%,40% calc(100% - 6px),35% 100%,30% calc(100% - 6px),25% 100%,20% calc(100% - 6px),15% 100%,10% calc(100% - 6px),5% 100%,0 calc(100% - 6px))' }}>
             {form.shop_logo && <img src={form.shop_logo} alt="" className="w-12 h-12 object-contain mx-auto mb-2" />}
             <p className="text-base font-extrabold break-words">{form.shop_name || '—'}</p>
@@ -242,7 +242,7 @@ export default function SettingsPage() {
       {/* Sticky save bar */}
       <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0 inset-x-0 lg:left-auto z-30 no-print pointer-events-none">
         <div className="max-w-6xl lg:mr-8 ml-auto px-4 pb-4 pointer-events-auto">
-          <div className={`ml-auto w-full sm:w-auto sm:max-w-md flex items-center justify-between gap-4 rounded-2xl px-4 py-3 shadow-lg transition-colors ${dirty ? 'bg-ink text-white' : 'bg-white border border-line'}`}>
+          <div className={`ml-auto w-full sm:w-auto sm:max-w-md flex items-center justify-between gap-4 rounded-xl px-4 py-3 shadow-lg transition-colors ${dirty ? 'bg-ink text-white' : 'bg-white border border-line'}`}>
             <span role="status" className={`text-sm ${error ? 'text-danger' : dirty ? 'text-slate-300' : 'text-success'}`}>
               {error || (state === 'saved' ? c.saved : dirty ? c.unsaved : '')}
             </span>

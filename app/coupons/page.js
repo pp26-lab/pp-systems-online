@@ -130,9 +130,9 @@ export default function CouponsPage() {
       </Toolbar>
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">{[0, 1, 2].map(i => <div key={i} className="h-40 rounded-2xl bg-white animate-pulse" />)}</div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">{[0, 1, 2].map(i => <div key={i} className="h-40 rounded-xl bg-white animate-pulse" />)}</div>
       ) : visible.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-line">
+        <div className="bg-white rounded-xl border border-line">
           <EmptyState icon="ticket" title={c.empty} text={c.emptyText} action={!coupons.length && <Button icon="plus" onClick={() => open(null)}>{c.add}</Button>} />
         </div>
       ) : (
@@ -142,12 +142,12 @@ export default function CouponsPage() {
             const live = st === 'live';
             const amount = cp.discount_type === 'percent' ? `${Number(cp.discount_value)}%` : formatCurrency(cp.discount_value, 'LAK');
             return (
-              <article key={cp.id} className={`relative flex rounded-2xl border overflow-hidden ${live ? 'bg-white border-line' : 'bg-white/70 border-line'}`}>
+              <article key={cp.id} className={`relative flex rounded-xl border overflow-hidden ${live ? 'bg-white border-line' : 'bg-white/70 border-line'}`}>
                 {/* Ticket stub: the discount amount is the thing people scan for */}
-                <div className={`w-28 shrink-0 flex flex-col items-center justify-center px-2 py-5 border-r border-dashed ${live ? 'bg-ink border-ink-line' : 'bg-canvas border-line'}`}>
-                  <span className={`text-2xl font-extrabold num leading-none text-center break-all ${live ? 'text-gold' : 'text-slate-400'}`}>{amount}</span>
+                <div className={`w-28 shrink-0 flex flex-col items-center justify-center px-2 py-5 border-r border-dashed ${live ? 'bg-gold-soft border-primary/30' : 'bg-canvas border-line'}`}>
+                  <span className={`text-2xl font-extrabold num leading-none text-center break-all ${live ? 'text-primary-dark' : 'text-slate-400'}`}>{amount}</span>
                   {cp.discount_type === 'percent' && cp.max_discount > 0 && (
-                    <span className={`mt-2 text-[0.7rem] text-center ${live ? 'text-slate-400' : 'text-slate-400'}`}>{c.upTo(formatCurrency(cp.max_discount, 'LAK'))}</span>
+                    <span className="mt-2 text-[0.7rem] text-center text-slate-500">{c.upTo(formatCurrency(cp.max_discount, 'LAK'))}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 p-4 flex flex-col">
@@ -206,7 +206,7 @@ export default function CouponsPage() {
               <Field label={c.note}><input value={form.note} onChange={set('note')} className={inputCls} /></Field>
             </div>
             <label className="flex items-center gap-2.5 text-sm text-ink">
-              <input type="checkbox" checked={!!form.is_active} onChange={set('is_active')} className="w-4 h-4 accent-[#2A8C7E]" />{c.active}
+              <input type="checkbox" checked={!!form.is_active} onChange={set('is_active')} className="w-4 h-4 accent-[#0E8A5F]" />{c.active}
             </label>
             {error && <p role="alert" className="text-sm text-danger">{error}</p>}
             <div className="flex justify-end gap-2">

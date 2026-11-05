@@ -103,7 +103,7 @@ export default function HandoffsPage() {
               {visible.map(h => (
                 <li key={h.id}>
                   <button onClick={() => select(h)} aria-current={selectedId === h.id}
-                    className={`w-full text-left px-5 py-3.5 flex gap-3 ${selectedId === h.id ? 'bg-gold-soft/60 shadow-[inset_3px_0_0_#C8A04A]' : 'hover:bg-canvas/60'}`}>
+                    className={`w-full text-left px-5 py-3.5 flex gap-3 ${selectedId === h.id ? 'bg-gold-soft/60 shadow-[inset_3px_0_0_#0B63E5]' : 'hover:bg-canvas/60'}`}>
                     <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${h.status === 'pending' ? 'bg-danger' : h.status === 'in_progress' ? 'bg-gold' : 'bg-transparent'}`} />
                     <span className="flex-1 min-w-0">
                       <span className="flex items-baseline justify-between gap-2">
@@ -157,7 +157,7 @@ function Detail({ h, c, ago, onUpdate, onRemove }) {
         <Pill tone={TONE[h.status]}>{c[h.status]}</Pill>
       </div>
 
-      <div className="mt-4 rounded-2xl rounded-tl-sm bg-canvas p-4 text-[0.95rem] text-ink whitespace-pre-wrap break-words max-h-72 overflow-auto">{h.message}</div>
+      <div className="mt-4 rounded-xl rounded-tl-sm bg-canvas p-4 text-[0.95rem] text-ink whitespace-pre-wrap break-words max-h-72 overflow-auto">{h.message}</div>
       <p className="mt-1.5 text-xs text-slate-400">{c.received} {new Date(h.received_at).toLocaleString()} ({ago(h.received_at)})</p>
 
       <div className="mt-5 flex flex-wrap gap-2">

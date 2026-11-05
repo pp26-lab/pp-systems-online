@@ -61,8 +61,8 @@ const COPY = {
 
 const PLATFORM = {
   messenger: { label: 'Messenger', dot: 'bg-[#2B4A85]' },
-  whatsapp: { label: 'WhatsApp', dot: 'bg-[#2A8C7E]' },
-  whatsapp_web: { label: 'WhatsApp', dot: 'bg-[#2A8C7E]' },
+  whatsapp: { label: 'WhatsApp', dot: 'bg-[#0E8A5F]' },
+  whatsapp_web: { label: 'WhatsApp', dot: 'bg-[#0E8A5F]' },
 };
 const ORDER_TONE = { pending: 'gold', shipping: 'navy', completed: 'green', cancelled: 'gray' };
 
@@ -75,7 +75,7 @@ function Avatar({ conv, size = 'w-10 h-10' }) {
     <span className={`relative ${size} shrink-0`}>
       {conv.avatar_url
         ? <img src={conv.avatar_url} alt="" className={`${size} rounded-full object-cover bg-canvas`} referrerPolicy="no-referrer" />
-        : <span className={`${size} rounded-full bg-gold-soft text-[#8A6A22] flex items-center justify-center text-sm font-bold`}>{initials(conv.customer_name || conv.name || conv.phone)}</span>}
+        : <span className={`${size} rounded-full bg-gold-soft text-[#0950C2] flex items-center justify-center text-sm font-bold`}>{initials(conv.customer_name || conv.name || conv.phone)}</span>}
       <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-white ${PLATFORM[conv.platform]?.dot}`} title={PLATFORM[conv.platform]?.label} />
     </span>
   );
@@ -145,7 +145,7 @@ export default function ChatPage() {
   }
 
   if (state === 'off') {
-    return <div className="max-w-xl mx-auto mt-10 bg-white rounded-2xl border border-line"><EmptyState icon="chat" title={c.off} text={c.offText} /></div>;
+    return <div className="max-w-xl mx-auto mt-10 bg-white rounded-xl border border-line"><EmptyState icon="chat" title={c.off} text={c.offText} /></div>;
   }
 
   const active = list.find(x => x.id === activeId);
@@ -179,7 +179,7 @@ export default function ChatPage() {
                 return (
                   <li key={conv.id}>
                     <button onClick={() => openChat(conv.id)} aria-current={selected}
-                      className={`w-full text-left flex gap-3 px-3.5 py-3 border-b border-line/70 ${selected ? 'bg-gold-soft/60 shadow-[inset_3px_0_0_#C8A04A]' : 'hover:bg-canvas/70'}`}>
+                      className={`w-full text-left flex gap-3 px-3.5 py-3 border-b border-line/70 ${selected ? 'bg-gold-soft/60 shadow-[inset_3px_0_0_#0B63E5]' : 'hover:bg-canvas/70'}`}>
                       <Avatar conv={conv} />
                       <span className="flex-1 min-w-0">
                         <span className="flex items-baseline justify-between gap-2">
@@ -406,7 +406,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
               <p className="text-xs">{win.replyOnly ? c.replyOnlyText : c.windowClosedText}</p>
               {win.humanAgent && (
                 <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
-                  <input type="checkbox" checked={humanAgent} onChange={e => setHumanAgent(e.target.checked)} className="accent-[#1C3260]" />{c.humanAgent}
+                  <input type="checkbox" checked={humanAgent} onChange={e => setHumanAgent(e.target.checked)} className="accent-[#0B63E5]" />{c.humanAgent}
                 </label>
               )}
             </div>
@@ -455,7 +455,7 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
   return (
     <div className={`flex ${out ? 'justify-end' : 'justify-start'}`}>
       <div className={`group max-w-[85%] sm:max-w-[70%] flex flex-col ${out ? 'items-end' : 'items-start'}`}>
-        <div className={`rounded-2xl overflow-hidden ${out ? 'bg-primary text-white rounded-br-md' : 'bg-white text-ink border border-line rounded-bl-md'}`}>
+        <div className={`rounded-xl overflow-hidden ${out ? 'bg-primary text-white rounded-br-md' : 'bg-white text-ink border border-line rounded-bl-md'}`}>
           {isImg && (
             <button onClick={() => onPreview(media)} className="block">
               <img src={media} alt="" loading="lazy" className="max-h-72 w-auto object-cover" />
@@ -580,22 +580,22 @@ function Profile({ id, conv, c, lang, locale, visible, onBack, onLinked, onSendP
         </div>
       ) : (
         <div className="p-4 space-y-5">
-          {/* The one bold element of the page: who this person is to the shop */}
-          <section className="rounded-2xl bg-ink text-white p-4">
+          {/* Who this person is to the shop */}
+          <section className="rounded-xl bg-canvas border border-line p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-bold truncate">{cu.name || cu.phone}</p>
-                {cu.phone && <p className="text-xs text-slate-400 num">{cu.phone}</p>}
+                <p className="font-bold text-ink truncate">{cu.name || cu.phone}</p>
+                {cu.phone && <p className="text-xs text-slate-500 num">{cu.phone}</p>}
               </div>
               {tier && <Pill tone={tier.tone}>{tier.label}</Pill>}
             </div>
-            <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-ink-line pt-3">
-              <div><dt className="text-[0.7rem] text-slate-400">{c.spent}</dt><dd className="text-sm font-extrabold text-gold num truncate">{formatCurrency(spent, 'LAK')}</dd></div>
-              <div><dt className="text-[0.7rem] text-slate-400">{c.orders}</dt><dd className="text-sm font-extrabold num">{count}</dd></div>
-              <div><dt className="text-[0.7rem] text-slate-400">{c.avg}</dt><dd className="text-sm font-extrabold num truncate">{formatCurrency(count ? spent / count : 0, 'LAK')}</dd></div>
+            <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-line pt-3">
+              <div><dt className="text-[0.7rem] text-slate-500">{c.spent}</dt><dd className="text-sm font-extrabold text-primary num truncate">{formatCurrency(spent, 'LAK')}</dd></div>
+              <div><dt className="text-[0.7rem] text-slate-500">{c.orders}</dt><dd className="text-sm font-extrabold text-ink num">{count}</dd></div>
+              <div><dt className="text-[0.7rem] text-slate-500">{c.avg}</dt><dd className="text-sm font-extrabold text-ink num truncate">{formatCurrency(count ? spent / count : 0, 'LAK')}</dd></div>
             </dl>
-            {cu.address && <p className="mt-3 text-xs text-slate-300 whitespace-pre-wrap">{cu.address}</p>}
-            {cu.note && <p className="mt-2 text-xs text-gold-soft whitespace-pre-wrap">{cu.note}</p>}
+            {cu.address && <p className="mt-3 text-xs text-slate-600 whitespace-pre-wrap">{cu.address}</p>}
+            {cu.note && <p className="mt-2 text-xs text-[#8A4B00] bg-[#FFF3DE] rounded-md px-2 py-1 whitespace-pre-wrap">{cu.note}</p>}
           </section>
 
           {data.products?.length > 0 && (

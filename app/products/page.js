@@ -213,7 +213,7 @@ export default function ProductsPage() {
 
       {notice && (
         <p role="status" className={`mb-4 rounded-xl px-4 py-3 text-sm font-medium ${
-          notice.tone === 'red' ? 'bg-red-50 text-danger' : notice.tone === 'gold' ? 'bg-gold-soft text-[#7A5D1C]' : 'bg-[#E3F2EF] text-[#1E6B60]'
+          notice.tone === 'red' ? 'bg-red-50 text-danger' : notice.tone === 'gold' ? 'bg-gold-soft text-[#0950C2]' : 'bg-[#E3F5EC] text-[#0B6B49]'
         }`}>{notice.text}</p>
       )}
 
@@ -567,19 +567,19 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
             <Field label={t('transfer_fee', lang)}><input type="number" min="0" value={form.transfer_fee || ''} placeholder="0" onChange={num('transfer_fee')} className={`${inputCls} num`} /></Field>
           </div>
 
-          <div className="mt-4 rounded-2xl bg-ink text-white p-5 grid sm:grid-cols-[1fr_1.2fr_auto] gap-5 items-end">
+          <div className="mt-4 rounded-xl bg-canvas border border-line p-5 grid sm:grid-cols-[1fr_1.2fr_auto] gap-5 items-end">
             <div>
-              <p className="text-xs text-slate-400">{c.landed}</p>
-              <p className="mt-1 text-xl font-bold num">{formatCurrency(landed, 'LAK')}</p>
+              <p className="text-xs text-slate-500">{c.landed}</p>
+              <p className="mt-1 text-xl font-bold text-ink num">{formatCurrency(landed, 'LAK')}</p>
             </div>
             <label className="block">
-              <span className="block text-xs text-slate-400">{c.retail} (LAK)</span>
+              <span className="block text-sm font-semibold text-ink">{c.retail} (LAK)</span>
               <input type="number" min="0" value={form.selling_price_lak || ''} placeholder="0" onChange={num('selling_price_lak')}
-                className="mt-1 w-full px-3 py-2 rounded-xl !bg-ink-soft !border-ink-line text-gold text-xl font-extrabold num" />
+                className={`${inputCls} mt-1 bg-white text-xl font-extrabold num`} />
             </label>
             <div className="text-right">
-              <p className="text-xs text-slate-400">{c.margin}</p>
-              <p className={`mt-1 text-xl font-extrabold num ${margin >= 30 ? 'text-[#7FD3C4]' : margin >= 15 ? 'text-gold' : 'text-[#F2A39D]'}`}>{margin.toFixed(1)}%</p>
+              <p className="text-xs text-slate-500">{c.margin}</p>
+              <p className={`mt-1 text-xl font-extrabold num ${margin >= 30 ? 'text-success' : margin >= 15 ? 'text-warning' : 'text-danger'}`}>{margin.toFixed(1)}%</p>
             </div>
           </div>
 

@@ -161,7 +161,7 @@ export default function AdminShopDetail() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => setConnect({ platform: 'messenger', token: '', external_id: '' })} disabled={!setupOk}
-              className="px-3 py-2 rounded-lg text-sm font-semibold bg-[#1C3260] text-white disabled:opacity-40">เชื่อม Messenger</button>
+              className="px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-white disabled:opacity-40">เชื่อม Messenger</button>
             <button onClick={startScan} disabled={busy || !setup?.encryption_key || setup?.wa_gateway !== 'up'}
               className="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-40">เชื่อม WhatsApp (สแกน QR)</button>
             <button onClick={() => setConnect({ platform: 'whatsapp', token: '', external_id: '', account_id: '' })} disabled={!setupOk}

@@ -76,23 +76,23 @@ export default function CurrenciesPage() {
   return (
     <div className="max-w-5xl">
       <p className="text-sm text-slate-600 max-w-2xl mb-5">{c.intro}</p>
-      {flash && <p role="status" className="mb-4 rounded-xl px-4 py-3 text-sm font-medium bg-[#E3F2EF] text-[#1E6B60]">{flash}</p>}
+      {flash && <p role="status" className="mb-4 rounded-xl px-4 py-3 text-sm font-medium bg-[#E3F5EC] text-[#0B6B49]">{flash}</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {sorted.map(cur => {
           const base = cur.code === 'LAK';
           const open = editing === cur.code;
           return (
-            <section key={cur.code} className={`${base ? 'bg-ink text-white border-ink' : 'bg-white border-line'} rounded-2xl border p-5 flex flex-col`}>
+            <section key={cur.code} className={`${base ? 'bg-gold-soft border-primary/25' : 'bg-white border-line'} rounded-xl border p-5 flex flex-col`}>
               <div className="flex items-baseline justify-between">
-                <p className={`text-2xl font-extrabold ${base ? 'text-gold' : 'text-ink'}`}>{cur.code}</p>
-                <span className={`text-lg ${base ? 'text-slate-400' : 'text-slate-400'}`}>{cur.symbol}</span>
+                <p className={`text-2xl font-extrabold ${base ? 'text-primary-dark' : 'text-ink'}`}>{cur.code}</p>
+                <span className="text-lg text-slate-400">{cur.symbol}</span>
               </div>
-              <p className={`text-sm ${base ? 'text-slate-400' : 'text-slate-500'}`}>{cur.name}</p>
+              <p className="text-sm text-slate-500">{cur.name}</p>
 
               <div className="mt-5 flex-1">
                 {base ? (
-                  <p className="text-sm text-slate-300">{c.base}</p>
+                  <p className="text-sm font-semibold text-primary-dark">{c.base}</p>
                 ) : open ? (
                   <div>
                     <label className="block text-xs text-slate-500 mb-1">1 {cur.code} = ? LAK</label>
