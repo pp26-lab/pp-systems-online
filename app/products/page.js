@@ -4,6 +4,7 @@ import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
 import { formatCurrency, calculateMargin, localToday } from '../../lib/currency';
 import { compressImage } from '../../lib/image';
+import CameraCapture from '../../components/CameraCapture';
 import { Icon, IconButton, Button, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
 
 const EMPTY = {
@@ -345,6 +346,7 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
   const [variants, setVariants] = useState(initial.variants);
   const [images, setImages] = useState(initial.images);
   const [busy, setBusy] = useState('');
+  const [camFor, setCamFor] = useState(null); // 'main' | 'extra' while the camera window is open
   const [error, setError] = useState('');
   const id = initial.id;
 
@@ -469,6 +471,8 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
       <div className="space-y-8">
         <section>
           <h3 className="font-bold text-ink">{c.photos}</h3>
+          <CameraCapture open={!!camFor} lang={lang} onClose={() => setCamFor(null)}
+            onCapture={file => (camFor === 'extra' ? uploadExtra : uploadMain)({ target: { files: [file], value: '' } })} />
           <div className="mt-3 flex flex-wrap gap-6">
             <div>
               <p className="text-xs text-slate-500 mb-2">{c.main}</p>
@@ -476,10 +480,10 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
                 {form.image_url ? <img src={form.image_url} alt="" className="w-full h-full object-cover" /> : <Icon name="image" className="w-8 h-8" strokeWidth={1.3} />}
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <label className={`inline-flex items-center gap-1 font-semibold text-primary hover:text-gold-dark cursor-pointer ${busy === 'main' ? 'opacity-50 pointer-events-none' : ''}`}>
+                <button type="button" onClick={() => setCamFor('main')} disabled={busy === 'main'}
+                  className="inline-flex items-center gap-1 min-h-10 lg:min-h-0 font-semibold text-primary hover:text-gold-dark disabled:opacity-50">
                   <Icon name="camera" className="w-4 h-4" />{busy === 'main' ? '…' : c.camera}
-                  <input type="file" accept="image/*" capture="environment" onChange={uploadMain} className="sr-only" />
-                </label>
+                </button>
                 <label className={`inline-flex items-center gap-1 font-semibold text-primary hover:text-gold-dark cursor-pointer ${busy === 'main' ? 'opacity-50 pointer-events-none' : ''}`}>
                   <Icon name="image" className="w-4 h-4" />{c.upload}
                   <input type="file" accept="image/*" onChange={uploadMain} className="sr-only" />
@@ -502,11 +506,11 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
                   ))}
                   {images.length < 5 && (
                     <>
-                      <label className={`w-20 h-20 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:border-gold hover:text-gold-dark cursor-pointer ${busy === 'extra' ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <button type="button" onClick={() => setCamFor('extra')} disabled={busy === 'extra'}
+                        className="w-20 h-20 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:border-gold hover:text-gold-dark disabled:opacity-50">
                         <Icon name="camera" className="w-5 h-5" />
                         <span className="text-[0.65rem] font-semibold">{c.camera}</span>
-                        <input type="file" accept="image/*" capture="environment" onChange={uploadExtra} className="sr-only" />
-                      </label>
+                      </button>
                       <label className={`w-20 h-20 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:border-gold hover:text-gold-dark cursor-pointer ${busy === 'extra' ? 'opacity-50 pointer-events-none' : ''}`}>
                         <Icon name="image" className="w-5 h-5" />
                         <span className="text-[0.65rem] font-semibold">{c.upload}</span>
