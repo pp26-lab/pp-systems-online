@@ -102,9 +102,9 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
       >
         <div className={`h-16 flex items-center gap-3 border-b border-ink-line shrink-0 ${collapsed ? 'lg:justify-center px-5 lg:px-0' : 'px-5'}`}>
           <img
-            src={shopLogo || '/logo.png'}
+            src={shopLogo || '/brand/pp-systems-icon-192.png'}
             alt=""
-            onError={e => { e.currentTarget.src = '/logo.png'; }}
+            onError={e => { e.currentTarget.src = '/brand/pp-systems-icon-192.png'; }}
             className="w-9 h-9 rounded-lg object-cover ring-1 ring-gold/60 shrink-0"
           />
           <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>

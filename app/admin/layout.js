@@ -37,7 +37,10 @@ export default function AdminLayout({ children }) {
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-gray-900 text-white">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
-          <div className="font-bold">⚙️ PP Systems Admin</div>
+          <div className="flex items-center gap-2.5 font-bold">
+            <img src="/brand/pp-systems-icon-192.png" alt="" className="w-8 h-8 rounded-lg" />
+            <span>PP Systems <span className="font-normal text-gray-400">หลังบ้าน</span></span>
+          </div>
           <div className="flex gap-2 flex-wrap">
             {links.map(l => (
               <Link key={l.href} href={l.href}

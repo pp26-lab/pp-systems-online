@@ -98,6 +98,8 @@ export default function RootLayout({ children }) {
           <title>PP Systems Online - Login</title>
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0E1A33" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
+        <link rel="apple-touch-icon" href="/brand/pp-systems-icon-192.png" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -119,11 +121,13 @@ export default function RootLayout({ children }) {
           <title>PP Systems Online</title>
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0E1A33" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
+        <link rel="apple-touch-icon" href="/brand/pp-systems-icon-192.png" />
         </head>
-        <body className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <body className="bg-[#F3F5F8] min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading...</p>
+            <img src="/brand/pp-systems-logo.png" alt="PP Systems" className="w-36 h-auto mx-auto mb-6" />
+            <div className="w-8 h-8 border-[3px] border-[#1C3260] border-t-transparent rounded-full animate-spin mx-auto" aria-label="Loading"></div>
           </div>
         </body>
       </html>
@@ -139,6 +143,8 @@ export default function RootLayout({ children }) {
         <title>PP Systems Online</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0E1A33" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
+        <link rel="apple-touch-icon" href="/brand/pp-systems-icon-192.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />

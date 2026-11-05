@@ -72,7 +72,8 @@ export default function LoginPage() {
     <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-canvas">
       <aside className="hidden lg:flex flex-col justify-between bg-ink text-white p-12 relative overflow-hidden">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="" className="w-11 h-11 rounded-xl ring-1 ring-gold/60" />
+          {/* Platform brand (PP Systems). Shops keep their own logo inside the app. */}
+          <img src="/brand/pp-systems-icon-192.png" alt="" className="w-12 h-12 rounded-xl ring-1 ring-white/20" />
           <span className="font-bold text-lg tracking-tight">PP Systems</span>
         </div>
         <div className="max-w-md">
@@ -83,8 +84,8 @@ export default function LoginPage() {
           <p className="mt-6 text-slate-400 leading-relaxed">{c.shared}</p>
         </div>
         <p className="text-xs text-slate-500">ppsystems-shop.com</p>
-        <img src="/logo.png" alt="" aria-hidden="true"
-          className="absolute -right-24 -bottom-24 w-[26rem] opacity-[0.06] pointer-events-none select-none" />
+        <img src="/brand/pp-systems-mark.png" alt="" aria-hidden="true"
+          className="absolute -right-20 -bottom-16 w-[30rem] opacity-[0.10] pointer-events-none select-none" />
       </aside>
 
       <main className="flex flex-col p-6 sm:p-10">
@@ -94,7 +95,7 @@ export default function LoginPage() {
 
         <div className="flex-1 flex items-center justify-center">
           <div className="w-full max-w-sm">
-            <img src="/logo.png" alt="PP Systems" className="lg:hidden w-16 h-16 rounded-2xl ring-1 ring-gold/60 mb-6" />
+            <img src="/brand/pp-systems-logo.png" alt="PP Systems" className="lg:hidden w-40 h-auto mb-8" />
 
             {success ? (
               <div role="status">
