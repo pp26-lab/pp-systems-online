@@ -2,16 +2,16 @@
 import { useState, useEffect, useContext, useRef, useMemo, useCallback } from 'react';
 import { AppContext } from '../layout';
 import { formatCurrency } from '../../lib/currency';
-import { Button, IconButton, Modal, Chip, Pill, EmptyState, Icon, SearchInput, Segmented, inputCls } from '../../components/ui';
+import { Button, IconButton, Modal, Pill, EmptyState, Icon, SearchInput, inputCls } from '../../components/ui';
 import CustomerForm from '../../components/CustomerForm';
 
 const COPY = {
   lo: {
-    search: 'ຄົ້ນຫາຊື່, ເບີໂທ, ຂໍ້ຄວາມ', unread: 'ຍັງບໍ່ອ່ານ', open: 'ຕ້ອງຈັດການ', done: 'ແລ້ວໆ', all: 'ທັງໝົດ', allCh: 'ທຸກຊ່ອງທາງ',
+    search: 'ຄົ້ນຫາຊື່, ເບີໂທ, ຂໍ້ຄວາມ', unread: 'ຍັງບໍ່ອ່ານ', open: 'ຕ້ອງຈັດການ', done: 'ຈັດການແລ້ວ', all: 'ທັງໝົດ', allCh: 'ທຸກຊ່ອງທາງ',
     off: 'ຟັງຊັນແຊັດຍັງບໍ່ໄດ້ເປີດໃຊ້ສຳລັບຮ້ານນີ້', offText: 'ຕິດຕໍ່ PP Systems ເພື່ອເປີດໃຊ້ແຊັດ Facebook ແລະ WhatsApp',
     none: 'ຍັງບໍ່ມີແຊັດ', noneText: 'ເມື່ອລູກຄ້າທັກມາທາງເພຈ ຫຼື WhatsApp ຈະຂຶ້ນຢູ່ນີ້ທັນທີ', noMatch: 'ບໍ່ພົບແຊັດ',
     pick: 'ເລືອກແຊັດທາງຊ້າຍເພື່ອເລີ່ມຕອບ', placeholder: 'ພິມຂໍ້ຄວາມ… (Enter ສົ່ງ, Shift+Enter ຂຶ້ນແຖວໃໝ່)', send: 'ສົ່ງ', attach: 'ແນບຮູບ ຫຼື ໄຟລ໌',
-    markDone: 'ແລ້ວໆ', reopen: 'ເປີດຄືນ', older: 'ໂຫຼດຂໍ້ຄວາມເກົ່າ', today: 'ມື້ນີ້', yesterday: 'ມື້ວານ',
+    markDone: 'ຈັດການແລ້ວ', reopen: 'ເປີດຄືນ', older: 'ໂຫຼດຂໍ້ຄວາມເກົ່າ', today: 'ມື້ນີ້', yesterday: 'ມື້ວານ',
     sending: 'ກຳລັງສົ່ງ', sent: 'ສົ່ງແລ້ວ', delivered: 'ຮອດແລ້ວ', read: 'ອ່ານແລ້ວ', failed: 'ສົ່ງບໍ່ສຳເລັດ', retry: 'ສົ່ງໃໝ່',
     windowLeft: t => `ຕອບໄດ້ອີກ ${t}`, windowClosed: 'ໝົດເວລາຕອບຟຣີ 24 ຊົ່ວໂມງ', windowClosedText: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ ຈຶ່ງຈະສົ່ງຂໍ້ຄວາມໄດ້ອີກ',
     humanAgent: 'ສົ່ງແບບພະນັກງານຕອບ (ໄດ້ພາຍໃນ 7 ມື້)', mediaMissing: 'ໂຫຼດໄຟລ໌ບໍ່ໄດ້', useSlip: 'ໃຊ້ເປັນສະລິບ', slipFor: 'ແນບສະລິບກັບອໍເດີ້',
@@ -154,17 +154,40 @@ export default function ChatPage() {
     <div className={`relative -m-4 lg:-m-6 flex bg-white overflow-hidden ${view === 'list' ? 'h-[calc(100dvh-8rem-env(safe-area-inset-bottom))]' : 'h-[calc(100dvh-4rem)]'} lg:h-[calc(100dvh-4rem)]`}>
       {/* Conversation list */}
       <aside className={`${view === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 xl:w-96 shrink-0 flex-col border-r border-line`}>
-        <div className="p-3 space-y-2 border-b border-line">
-          <SearchInput value={search} onChange={setSearch} placeholder={c.search} />
-          <div className="flex flex-wrap gap-1.5">
-            {['open', 'unread', 'done', 'all'].map(f => (
-              <Chip key={f} active={filter === f} onClick={() => setFilter(f)} count={f === 'all' ? counts.all : counts[f]}>{c[f]}</Chip>
-            ))}
+        {/* One search box and one row of tabs. Unread chats stand out in the list itself,
+            so they need no filter of their own; the channel picker only appears when a shop has more than one. */}
+        <div className="px-3 pt-3 border-b border-line">
+          <div className="relative">
+            <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={c.search} aria-label={c.search}
+              className="w-full min-h-11 lg:min-h-10 pl-10 pr-3 rounded-lg bg-canvas border border-transparent text-base lg:text-sm text-ink placeholder:text-slate-400 focus:bg-white focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15" />
           </div>
-          {platforms.length > 1 && (
-            <Segmented size="sm" value={platform} onChange={setPlatform}
-              options={[{ value: '', label: c.allCh }, ...platforms.map(p => ({ value: p, label: PLATFORM[p].label }))]} />
-          )}
+          <div className="mt-1 flex items-end">
+            <div role="tablist" aria-label={c.all} className="flex flex-1 min-w-0 overflow-x-auto no-scrollbar">
+              {['open', 'done', 'all'].map(f => {
+                const on = filter === f;
+                return (
+                  <button key={f} role="tab" aria-selected={on} onClick={() => setFilter(f)}
+                    className={`relative shrink-0 px-2 sm:px-3 min-h-11 text-sm font-semibold whitespace-nowrap transition-colors ${on ? 'text-primary' : 'text-slate-500 hover:text-ink'}`}>
+                    {c[f]}
+                    {f === 'open' && counts.open > 0 && <span className={`ml-1.5 num text-xs ${on ? 'text-primary' : 'text-slate-400'}`}>{counts.open}</span>}
+                    {on && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-primary" aria-hidden="true" />}
+                  </button>
+                );
+              })}
+            </div>
+            {platforms.length > 1 && (
+              <label className="relative mb-1.5 shrink-0">
+                <span className="sr-only">{c.allCh}</span>
+                <select value={platform} onChange={e => setPlatform(e.target.value)}
+                  className="appearance-none min-h-8 pl-2.5 pr-7 rounded-md text-xs font-semibold text-slate-600 bg-canvas hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="">{c.allCh}</option>
+                  {platforms.map(p => <option key={p} value={p}>{PLATFORM[p].label}</option>)}
+                </select>
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+              </label>
+            )}
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {state === 'loading' ? (
@@ -179,16 +202,17 @@ export default function ChatPage() {
                 return (
                   <li key={conv.id}>
                     <button onClick={() => openChat(conv.id)} aria-current={selected}
-                      className={`w-full text-left flex gap-3 px-3.5 py-3 border-b border-line/70 ${selected ? 'bg-gold-soft/60 shadow-[inset_3px_0_0_#0B63E5]' : 'hover:bg-canvas/70'}`}>
+                      className={`w-full text-left flex items-center gap-3 pl-4 ${selected ? 'bg-gold-soft/70' : 'hover:bg-canvas/70'}`}>
                       <Avatar conv={conv} />
-                      <span className="flex-1 min-w-0">
+                      {/* Divider starts after the photo, so rows read as people rather than table cells. */}
+                      <span className="flex-1 min-w-0 py-3 pr-4 border-b border-line/70">
                         <span className="flex items-baseline justify-between gap-2">
-                          <span className={`truncate ${unread ? 'font-bold text-ink' : 'font-semibold text-ink'}`}>{conv.customer_name || conv.name || conv.phone || PLATFORM[conv.platform].label}</span>
-                          <span className={`text-xs shrink-0 num ${unread ? 'text-gold-dark font-semibold' : 'text-slate-400'}`}>{conv.last_message_at && shortTime(conv.last_message_at, c, locale)}</span>
+                          <span className={`truncate text-ink ${unread ? 'font-bold' : 'font-medium'}`}>{conv.customer_name || conv.name || conv.phone || PLATFORM[conv.platform].label}</span>
+                          <span className={`text-xs shrink-0 num ${unread ? 'text-primary font-semibold' : 'text-slate-400'}`}>{conv.last_message_at && shortTime(conv.last_message_at, c, locale)}</span>
                         </span>
                         <span className="flex items-center justify-between gap-2 mt-0.5">
-                          <span className={`text-sm truncate ${unread ? 'text-ink' : 'text-slate-500'}`}>{conv.last_message_preview}</span>
-                          {unread && <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gold text-ink text-[0.7rem] font-bold flex items-center justify-center num">{conv.unread_count}</span>}
+                          <span className={`text-sm truncate ${unread ? 'text-ink font-medium' : 'text-slate-500'}`}>{conv.last_message_preview || ' '}</span>
+                          {unread && <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary text-white text-[0.7rem] font-bold flex items-center justify-center num">{conv.unread_count > 99 ? '99+' : conv.unread_count}</span>}
                         </span>
                       </span>
                     </button>
