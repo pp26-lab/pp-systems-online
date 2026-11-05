@@ -59,6 +59,9 @@ export default function InventoryPage() {
 
   useEffect(() => {
     load();
+    // Links from the home screen open the list already filtered (e.g. ?filter=low).
+    const f = new URLSearchParams(window.location.search).get('filter');
+    if (['low', 'zero', 'in_stock', 'in_transit', 'pre_order', 'ready_to_ship'].includes(f)) setFilter(f);
     fetch('/api/shop-settings').then(r => r.json()).then(s => {
       if (Number.isFinite(Number(s.low_stock_threshold))) setThreshold(Number(s.low_stock_threshold));
     }).catch(() => {});
