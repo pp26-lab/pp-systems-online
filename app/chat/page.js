@@ -4,6 +4,7 @@ import { AppContext } from '../layout';
 import { formatCurrency } from '../../lib/currency';
 import { Button, IconButton, Modal, Pill, EmptyState, Icon, SearchInput, inputCls } from '../../components/ui';
 import CustomerForm from '../../components/CustomerForm';
+import { QR_COPY, QuickReplyPicker, QuickReplyManager, useQuickReplies } from '../../components/chat/QuickReplies';
 
 const COPY = {
   lo: {
@@ -255,6 +256,11 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   const scroller = useRef(null);
   const fileRef = useRef(null);
   const atBottom = useRef(true);
+  const qc = QR_COPY[lang] || QR_COPY.en;
+  const { replies, reload: reloadReplies } = useQuickReplies();
+  const [qrOpen, setQrOpen] = useState(false); // false | 'button' | 'typed'
+  const [qrFilter, setQrFilter] = useState('');
+  const [qrManage, setQrManage] = useState(false);
 
   const merge = useCallback((rows, replaceTail) => {
     setMessages(prev => {
@@ -337,6 +343,37 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
     }
   }
 
+  // Typing "/" at the start of an empty message box opens the quick replies, filtered by what follows.
+  function onType(v) {
+    setText(v);
+    const typed = /^\/[^\n]*$/.test(v);
+    if (typed) { setQrOpen('typed'); setQrFilter(v.slice(1)); }
+    else if (qrOpen === 'typed') setQrOpen(false);
+  }
+
+  async function sendQuick(reply) {
+    if (sending) return;
+    setSending(true);
+    setError('');
+    const form = new FormData();
+    form.append('quick_reply_id', reply.id);
+    if (!winOpen && humanAgent) form.append('human_agent', '1');
+    atBottom.current = true;
+    setMessages(prev => [...prev, { id: `tmp${Date.now()}`, direction: 'out', type: 'text', text: reply.text || '…', status: 'sending', created_at: new Date().toISOString() }]);
+    if (qrOpen === 'typed') setText('');
+    setQrOpen(false);
+    try {
+      const res = await fetch(`/api/chat/conversations/${id}/send`, { method: 'POST', body: form });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) setError(c.errors[d.error] || c.errors.send_failed);
+    } finally {
+      setSending(false);
+      await load();
+      onChanged();
+      reloadReplies();
+    }
+  }
+
   async function retry(m) {
     setMessages(prev => prev.map(x => (x.id === m.id ? { ...x, status: 'sending' } : x)));
     const res = await fetch(`/api/chat/messages/${m.id}`, { method: 'POST' });
@@ -352,7 +389,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   }
 
   function onKey(e) {
-    if (touch) return;
+    if (touch || qrOpen) return;
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       if (canSend) send();
@@ -423,7 +460,12 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 bg-white border-t border-line p-3">
+        <div className="relative shrink-0 bg-white border-t border-line p-3">
+          {qrOpen && canSend && (
+            <QuickReplyPicker c={qc} replies={replies} filter={qrFilter} onFilter={setQrFilter} typedFilter={qrOpen === 'typed'}
+              onSend={sendQuick} sending={sending} onClose={() => setQrOpen(false)}
+              onManage={() => { setQrOpen(false); setQrManage(true); }} />
+          )}
           {conv && !winOpen && (
             <div className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-danger">
               <p className="font-semibold">{win.replyOnly ? c.replyOnly : c.windowClosed}</p>
@@ -447,7 +489,10 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" className="hidden"
               onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
             <IconButton icon="image" label={c.attach} onClick={() => fileRef.current?.click()} disabled={!canSend} />
-            <textarea rows={1} value={text} onChange={e => setText(e.target.value)} onKeyDown={onKey} onPaste={onPaste} disabled={!canSend}
+            <IconButton icon="bolt" label={qc.open} data-qr-toggle="1" aria-expanded={!!qrOpen} disabled={!canSend}
+              onClick={() => { if (qrOpen) setQrOpen(false); else { setQrFilter(''); setQrOpen('button'); } }}
+              className={qrOpen ? '!text-primary !bg-gold-soft' : ''} />
+            <textarea rows={1} data-qr-toggle="1" value={text} onChange={e => onType(e.target.value)} onKeyDown={onKey} onPaste={onPaste} disabled={!canSend}
               placeholder={canSend ? (touch ? c.placeholder.split(' (')[0] : c.placeholder) : (win.replyOnly ? c.replyOnly : c.windowClosed)} aria-label={c.placeholder.split(' (')[0]}
               className={`${inputCls} resize-none max-h-40 min-h-[2.75rem] disabled:bg-canvas`} style={{ fieldSizing: 'content' }} />
             <Button onClick={() => send()} disabled={!canSend || sending || (!text.trim() && !file)} className="h-11">{c.send}</Button>
@@ -464,6 +509,8 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
         {preview && <img src={preview} alt="" className="w-full max-h-[75vh] object-contain" />}
       </Modal>
 
+      {qrManage && <QuickReplyManager c={qc} replies={replies} onClose={() => setQrManage(false)} onChanged={reloadReplies} />}
+
       {slipFor && <SlipPicker message={slipFor} convId={id} c={c} onClose={() => setSlipFor(null)} onDone={() => { setSlipFor(null); setProfileKey(k => k + 1); load(); }} />}
     </>
   );
@@ -475,10 +522,14 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
   const out = m.direction === 'out';
   const media = m.has_media ? `/api/chat/messages/${m.id}` : null;
   const isImg = media && String(m.media_mime).startsWith('image/');
+  const sticker = isImg && m.type === 'sticker' && !m.text;
   const time = new Date(m.created_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   return (
     <div className={`flex ${out ? 'justify-end' : 'justify-start'}`}>
       <div className={`group max-w-[85%] sm:max-w-[70%] flex flex-col ${out ? 'items-end' : 'items-start'}`}>
+        {sticker ? (
+          <img src={media} alt="" loading="lazy" className="w-32 h-32 sm:w-36 sm:h-36 object-contain" />
+        ) : (
         <div className={`rounded-xl overflow-hidden ${out ? 'bg-primary text-white rounded-br-md' : 'bg-white text-ink border border-line rounded-bl-md'}`}>
           {isImg && (
             <button onClick={() => onPreview(media)} className="block">
@@ -499,6 +550,7 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
             <p className="px-3.5 py-2 text-[0.95rem] whitespace-pre-wrap break-words">{m.text}</p>
           )}
         </div>
+        )}
         <div className="mt-0.5 flex items-center gap-2 px-1 text-[0.7rem] text-slate-400">
           <span className="num">{time}</span>
           {out && m.status !== 'failed' && <span title={c[m.status]} className={m.status === 'read' ? 'text-success font-bold' : ''}>{TICKS[m.status]}</span>}

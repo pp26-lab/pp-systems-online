@@ -4,7 +4,8 @@ import path from 'path';
 import { queryOne } from '../../../../../../lib/db';
 import { formatCurrency } from '../../../../../../lib/currency';
 import { chatGuard, ERROR_STATUS } from '../../../../../../lib/chat/guard';
-import { sendMessage, SendError } from '../../../../../../lib/chat/send';
+import { sendMessage, sendQuickReply, SendError } from '../../../../../../lib/chat/send';
+import { getReply, loadReplyFiles, countUse } from '../../../../../../lib/chat/quick-replies';
 import { MAX_MEDIA_BYTES } from '../../../../../../lib/chat/media';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,26 @@ export async function POST(request, { params }) {
   if (g.response) return g.response;
 
   const form = await request.formData();
+
+  // A saved reply: send its text and photos/stickers as they are stored.
+  const quickId = parseInt(form.get('quick_reply_id')) || null;
+  if (quickId) {
+    const reply = await getReply(g.shopId, quickId);
+    if (!reply) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    try {
+      const results = await sendQuickReply({
+        shopId: g.shopId, conversationId: params.id, text: reply.text, files: loadReplyFiles(g.shopId, reply), humanAgent: form.get('human_agent') === '1',
+      });
+      await countUse(g.shopId, quickId);
+      const failed = results.some(x => x.status === 'failed');
+      return NextResponse.json({ results }, { status: failed ? 502 : 200 });
+    } catch (e) {
+      const code = e.code || e.message;
+      if (e instanceof SendError || ERROR_STATUS[code]) return NextResponse.json({ error: code }, { status: ERROR_STATUS[code] || 400 });
+      console.error('chat quick reply send:', e);
+      return NextResponse.json({ error: 'send_failed' }, { status: 500 });
+    }
+  }
   let text = String(form.get('text') || '');
   let file = null;
   const upload = form.get('file');

@@ -474,6 +474,8 @@ function mediaContent(media, caption) {
   const buffer = Buffer.from(media.base64 || '', 'base64');
   if (!buffer.length || buffer.length > MAX_MEDIA) throw new GwError('file_too_large');
   const mimetype = String(media.mime || 'application/octet-stream').split(';')[0];
+  // A saved sticker goes out as a real WhatsApp sticker (WhatsApp needs WebP for that).
+  if (media.sticker && mimetype === 'image/webp') return { sticker: buffer, mimetype };
   if (mimetype.startsWith('image/')) return { image: buffer, mimetype, caption: caption || undefined };
   if (mimetype.startsWith('video/')) return { video: buffer, mimetype, caption: caption || undefined };
   if (mimetype.startsWith('audio/')) return { audio: buffer, mimetype };
