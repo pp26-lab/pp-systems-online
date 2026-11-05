@@ -18,9 +18,9 @@ const ICON = {
 
 const MORE = { lo: 'ເມນູ', th: 'เมนู', en: 'More' };
 
-// The checkout screen owns the bottom of the screen (cart bar). The chat screen hides the
-// bar itself while a conversation is open, so the message box gets the full height.
-export const HIDE_ON = ['/pos'];
+// Shown everywhere. On the checkout screen the cart bar sits just above it; the chat screen
+// hides the bar itself while a conversation is open, so the message box gets the full height.
+export const HIDE_ON = [];
 // Screens that size themselves to the viewport, so the page shouldn't add bottom padding.
 export const NO_PAD = ['/pos', '/chat'];
 

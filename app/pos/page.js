@@ -437,7 +437,7 @@ export default function POSPage() {
 
   return (
     <div className="-m-4 lg:-m-6 lg:h-[calc(100%+3rem)] flex">
-      <section className="flex-1 min-w-0 flex flex-col p-4 lg:p-6 pb-28 lg:pb-6">
+      <section className="flex-1 min-w-0 flex flex-col p-4 lg:p-6 pb-[calc(10rem+env(safe-area-inset-bottom))] lg:pb-6">
         <SearchInput inputRef={searchRef} value={search} onChange={setSearch} onKeyDown={onSearchKey} placeholder={c.search} />
 
         {categories.length > 0 && (
@@ -517,7 +517,7 @@ export default function POSPage() {
       <aside className="hidden lg:flex w-[390px] shrink-0 bg-white border-l border-line flex-col no-print">{ticket}</aside>
 
       {/* Phones and tablets: cart lives in a bottom bar that opens a sheet. */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-20 bg-ink text-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-3 no-print">
+      <div className="lg:hidden fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 bg-ink text-white px-4 py-3 flex items-center gap-3 no-print shadow-[0_-6px_16px_-8px_rgba(14,26,51,.35)]">
         <button onClick={() => setMobileCart(true)} className="flex-1 text-left min-w-0">
           <span className="block text-xs text-slate-400">{c.view} <span className="num">({itemCount})</span></span>
           <span className="block text-xl font-extrabold text-gold num truncate">{formatCurrency(total, 'LAK')}</span>

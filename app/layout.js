@@ -43,7 +43,19 @@ function BootScript() {
 }
 
 export default function RootLayout({ children }) {
-  const [lang, setLang] = useState('lo');
+  const [lang, setLangState] = useState('lo');
+
+  // The chosen language is remembered on this device until someone picks another.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('pp_lang');
+      if (saved === 'lo' || saved === 'th' || saved === 'en') setLangState(saved);
+    } catch { /* storage blocked: stay on the default */ }
+  }, []);
+  function setLang(next) {
+    setLangState(next);
+    try { localStorage.setItem('pp_lang', next); } catch { /* not saved, still switches */ }
+  }
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
