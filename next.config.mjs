@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Lets instrumentation.js start the background timers (shipping bills) when the server boots.
+  experimental: { instrumentationHook: true },
   async headers() {
     return [
       {
