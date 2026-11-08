@@ -208,6 +208,14 @@ async function saveKnownSoon(s) {
   }, 2000);
 }
 
+// Is this device linked to a WhatsApp account? Baileys sets creds.registered only for the
+// pairing-code flow; a QR-scanned device leaves it false forever. Both flows set creds.me
+// on success, so that is the real sign. (Checking only `registered` made every QR-linked
+// number count as "never linked": deleted at restart, and not reconnected after a drop.)
+function isLinked(creds) {
+  return !!(creds && (creds.registered || creds.me?.id));
+}
+
 async function startSession(id, { pairingPhone, fresh } = {}) {
   id = String(Number(id));
   if (!Number(id)) throw new GwError('bad_id');
@@ -285,7 +293,7 @@ async function onConnection(s, sock, { connection, lastDisconnect, qr }) {
   const code = lastDisconnect?.error?.output?.statusCode;
   if (s.stopping) { s.status = 'stopped'; return; }
 
-  const registered = !!sock.authState?.creds?.registered;
+  const registered = isLinked(sock.authState?.creds);
   const fatal = {
     [DisconnectReason.loggedOut]: 'logged_out',        // unlinked from the phone, or WhatsApp logged it out
     [DisconnectReason.forbidden]: 'forbidden',         // number restricted by WhatsApp
@@ -597,7 +605,7 @@ async function savedSession(id) {
   if (!fs.existsSync(file)) return 'no';
   const creds = await readSealedJson(file);
   if (!creds) return 'unreadable';
-  return creds.registered ? 'yes' : 'no';
+  return isLinked(creds) ? 'yes' : 'no';
 }
 
 async function boot() {
