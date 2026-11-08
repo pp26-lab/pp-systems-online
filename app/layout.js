@@ -163,6 +163,8 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-canvas min-h-screen">
         <AppContext.Provider value={{ lang, setLang, user, handleLogout }}>
+          {/* The small window opened from the carrier site's bookmark: no menus, just the result. */}
+          {pathname === '/shipping/import' ? <main className="min-h-[100dvh] p-4 sm:p-6">{children}</main> : (
           <div className="flex h-[100dvh] overflow-hidden">
             <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onClose={() => setSidebarOpen(false)} lang={lang} />
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -174,6 +176,7 @@ export default function RootLayout({ children }) {
               <BottomNav lang={lang} onMore={() => setSidebarOpen(true)} />
             </div>
           </div>
+          )}
         </AppContext.Provider>
       </body>
     </html>

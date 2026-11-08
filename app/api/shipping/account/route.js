@@ -60,12 +60,15 @@ export async function PUT(request) {
     ? (String(body.message_template).trim().slice(0, 1000) || null)
     : (acc?.message_template ?? null);
 
+  const autoNotify = body.auto_notify !== undefined ? !!body.auto_notify : (acc ? !!acc.auto_notify : true);
+
   const loginChanged = loginEnc !== (acc?.login_enc || null);
   await query(
-    `INSERT INTO shipping_accounts (shop_id, carrier, login_enc, enabled, message_template)
-     VALUES (?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE login_enc = VALUES(login_enc), enabled = VALUES(enabled), message_template = VALUES(message_template)`,
-    [shopId, CARRIER, loginEnc, enabled ? 1 : 0, template]
+    `INSERT INTO shipping_accounts (shop_id, carrier, login_enc, enabled, auto_notify, message_template)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE login_enc = VALUES(login_enc), enabled = VALUES(enabled), auto_notify = VALUES(auto_notify),
+       message_template = VALUES(message_template)`,
+    [shopId, CARRIER, loginEnc, enabled ? 1 : 0, autoNotify ? 1 : 0, template]
   );
   if (loginChanged) await query('UPDATE shipping_accounts SET last_error = NULL WHERE shop_id = ? AND carrier = ?', [shopId, CARRIER]);
   return NextResponse.json({ ok: true, warning });
@@ -75,6 +78,6 @@ export async function PUT(request) {
 export async function DELETE() {
   const g = await shippingGuard();
   if (g.response) return g.response;
-  await query('UPDATE shipping_accounts SET login_enc = NULL, enabled = 0 WHERE shop_id = ? AND carrier = ?', [g.shopId, CARRIER]);
+  await query("UPDATE shipping_accounts SET login_enc = NULL, enabled = 0, account_ref = '' WHERE shop_id = ? AND carrier = ?", [g.shopId, CARRIER]);
   return NextResponse.json({ ok: true });
 }

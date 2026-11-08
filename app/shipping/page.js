@@ -24,12 +24,26 @@ const COPY = {
     todoHint: 'ລູກຄ້າເຫຼົ່ານີ້ບໍ່ເຄີຍແຊັດກັບຮ້ານ ຫຼື ສົ່ງບໍ່ສຳເລັດ. ກົດ WhatsApp ເພື່ອສົ່ງຂໍ້ຄວາມທີ່ຂຽນໄວ້ແລ້ວ ຈາກເບີຂອງຮ້ານເອງ',
     order: 'ອໍເດີ້', noOrder: 'ບໍ່ພົບອໍເດີ້ທີ່ເບີກົງກັນ', sendWa: 'ສົ່ງທາງ WhatsApp', markDone: 'ແຈ້ງແລ້ວ',
     status: { queued: 'ລໍຖ້າສົ່ງ', sending: 'ກຳລັງສົ່ງ', sent: 'ແຈ້ງແລ້ວ', manual: 'ແຈ້ງເອງແລ້ວ', failed: 'ສົ່ງບໍ່ໄດ້', no_chat: 'ບໍ່ເຄີຍແຊັດ', off: 'ບໍ່ແຈ້ງ', waiting: 'ລໍຖ້າຈັບຄູ່' },
+    bm: {
+      title: 'ດຶງບິນຈາກ Anousith', open: 'ເປີດ Anousith', howTo: 'ວິທີຕິດຕັ້ງປຸ່ມ', hide: 'ເຊື່ອງ',
+      lastRun: d => `ດຶງລ່າສຸດ ${d}`, never: 'ຍັງບໍ່ເຄີຍດຶງບິນ', found: (n, m) => `ບິນໃໝ່ ${n}, ຈັບຄູ່ໄດ້ ${m}`,
+      intro: 'ກົດປຸ່ມໃນເວັບ Anousith ທີ່ເຂົ້າລະບົບໄວ້ ລະບົບຈະຮັບບິນ 3 ມື້ຫຼ້າສຸດ ຈັບຄູ່ກັບອໍເດີ້ ແລະ ແຈ້ງລູກຄ້າໃຫ້. ບໍ່ຕ້ອງໃຫ້ລະຫັດຜ່ານ Anousith ກັບລະບົບ',
+      step1: 'ລາກປຸ່ມນີ້ໄປວາງໃນແຖບ Bookmark ຂອງ Chrome (ບໍ່ເຫັນແຖບ? ກົດ Ctrl+Shift+B)', button: 'PP ດຶງບິນ',
+      mobile: 'ໃຊ້ມືຖື ຫຼື ແທັບເລັດ: ສຳເນົາລະຫັດ ແລ້ວສ້າງ Bookmark ໃໝ່ ທີ່ຊ່ອງ URL ໃຫ້ວາງລະຫັດນີ້ ຕັ້ງຊື່ວ່າ PP ດຶງບິນ. ເວລາໃຊ້ ໃຫ້ພິມ PP ດຶງບິນ ໃນແຖບທີ່ຢູ່ ແລ້ວເລືອກ Bookmark ນັ້ນ',
+      copy: 'ສຳເນົາລະຫັດ', copied: 'ສຳເນົາແລ້ວ',
+      step2: 'ເປີດ app.anousith.express ແລ້ວເຂົ້າລະບົບດ້ວຍບັນຊີຂອງຮ້ານ',
+      step3: 'ກົດປຸ່ມ PP ດຶງບິນ. ໜ້າຕ່າງນ້ອຍຈະເປີດ ແລະ ບອກວ່າໄດ້ບິນໃໝ່ຈັກໃບ',
+      tip: 'ກົດວັນລະ 1–2 ຄັ້ງ ຫຼັງຈາກສົ່ງເຄື່ອງໃຫ້ Anousith',
+      wrongSite: 'ເປີດເວັບ app.anousith.express ແລະ ເຂົ້າລະບົບກ່ອນ ແລ້ວກົດປຸ່ມນີ້ອີກຄັ້ງ',
+      needLogin: 'ເຂົ້າລະບົບ Anousith ກ່ອນ ແລ້ວກົດປຸ່ມນີ້ອີກຄັ້ງ',
+      popup: 'Browser ບລັອກໜ້າຕ່າງໃໝ່. ອະນຸຍາດ Pop-up ສຳລັບ app.anousith.express ແລ້ວກົດອີກຄັ້ງ',
+    },
     form: {
       title: 'ຕັ້ງຄ່າ Anousith', phone: 'ເບີໂທທີ່ໃຊ້ເຂົ້າ Anousith', phoneHint: 'ເບີຂອງຮ້ານ ທີ່ເປັນຜູ້ຝາກ', password: 'ລະຫັດຜ່ານ Anousith',
       passwordKeep: 'ປ່ອຍວ່າງໄວ້ ຖ້າບໍ່ປ່ຽນ', passwordNote: 'ລະບົບຈະລອງເຂົ້າ Anousith ກ່ອນບັນທຶກ ແລະ ເກັບລະຫັດແບບເຂົ້າລະຫັດ ບໍ່ມີໃຜເບິ່ງໄດ້',
-      auto: 'ກວດ ແລະ ແຈ້ງລູກຄ້າອັດຕະໂນມັດ', message: 'ຂໍ້ຄວາມແຈ້ງລູກຄ້າ', insert: 'ກົດເພື່ອໃສ່:', preview: 'ຕົວຢ່າງທີ່ລູກຄ້າຈະເຫັນ',
+      auto: 'ໃຫ້ເຊີບເວີກວດບິນທຸກຊົ່ວໂມງ', autoNotify: 'ແຈ້ງລູກຄ້າອັດຕະໂນມັດ', autoNotifyHint: 'ສົ່ງເລກພັດສະດຸທາງແຊັດ ໃຫ້ລູກຄ້າທີ່ເຄີຍທັກຮ້ານ ເວລາ 08:00–20:00', message: 'ຂໍ້ຄວາມແຈ້ງລູກຄ້າ', insert: 'ກົດເພື່ອໃສ່:', preview: 'ຕົວຢ່າງທີ່ລູກຄ້າຈະເຫັນ',
       reset: 'ໃຊ້ຂໍ້ຄວາມເລີ່ມຕົ້ນ', save: 'ບັນທຶກ', cancel: 'ຍົກເລີກ', disconnect: 'ຍົກເລີກການເຊື່ອມຕໍ່',
-      disconnectAsk: 'ລຶບບັນຊີ Anousith ອອກຈາກລະບົບ? ລະບົບຈະຢຸດກວດບິນ',
+      disconnectAsk: 'ຍົກເລີກການເຊື່ອມຕໍ່ບັນຊີ Anousith? ຄັ້ງຕໍ່ໄປທີ່ກົດປຸ່ມ ລະບົບຈະຮັບບັນຊີໃໝ່',
       keys: { name: 'ຊື່ລູກຄ້າ', shop: 'ຊື່ຮ້ານ', tracking: 'ເລກພັດສະດຸ', branch: 'ສາຂາປາຍທາງ', cod: 'ເກັບເງິນປາຍທາງ', carrier: 'ຂົນສົ່ງ' },
       sample: { name: 'ນາງ ແກ້ວ', tracking: 'ANS123456789', branch: 'ສາຂາ ຫຼວງພະບາງ', cod: 'ເກັບເງິນປາຍທາງ: 150,000₭' },
       saved: 'ບັນທຶກແລ້ວ', unverified: 'ບັນທຶກແລ້ວ ແຕ່ຍັງກວດລະຫັດກັບ Anousith ບໍ່ໄດ້ ຈະລອງໃນຮອບກວດຕໍ່ໄປ',
@@ -53,12 +67,26 @@ const COPY = {
     todoHint: 'ลูกค้าเหล่านี้ไม่เคยแชทกับร้าน หรือส่งไม่สำเร็จ กด WhatsApp เพื่อส่งข้อความที่เขียนไว้แล้ว จากเบอร์ของร้านเอง',
     order: 'ออเดอร์', noOrder: 'ไม่พบออเดอร์ที่เบอร์ตรงกัน', sendWa: 'ส่งทาง WhatsApp', markDone: 'แจ้งแล้ว',
     status: { queued: 'รอส่ง', sending: 'กำลังส่ง', sent: 'แจ้งแล้ว', manual: 'แจ้งเองแล้ว', failed: 'ส่งไม่ได้', no_chat: 'ไม่เคยแชท', off: 'ไม่แจ้ง', waiting: 'รอจับคู่' },
+    bm: {
+      title: 'ดึงบิลจาก Anousith', open: 'เปิด Anousith', howTo: 'วิธีติดตั้งปุ่ม', hide: 'ซ่อน',
+      lastRun: d => `ดึงล่าสุด ${d}`, never: 'ยังไม่เคยดึงบิล', found: (n, m) => `บิลใหม่ ${n}, จับคู่ได้ ${m}`,
+      intro: 'กดปุ่มบนเว็บ Anousith ที่ล็อกอินไว้ ระบบจะรับบิล 3 วันล่าสุด จับคู่กับออเดอร์ และแจ้งลูกค้าให้ ไม่ต้องให้รหัสผ่าน Anousith กับระบบ',
+      step1: 'ลากปุ่มนี้ไปวางในแถบ Bookmark ของ Chrome (ไม่เห็นแถบ? กด Ctrl+Shift+B)', button: 'PP ดึงบิล',
+      mobile: 'ใช้มือถือหรือแท็บเล็ต: คัดลอกโค้ด แล้วสร้าง Bookmark ใหม่ ช่อง URL ให้วางโค้ดนี้ ตั้งชื่อว่า PP ดึงบิล เวลาใช้ให้พิมพ์ PP ดึงบิล ในแถบที่อยู่แล้วเลือก Bookmark นั้น',
+      copy: 'คัดลอกโค้ด', copied: 'คัดลอกแล้ว',
+      step2: 'เปิด app.anousith.express แล้วล็อกอินด้วยบัญชีของร้าน',
+      step3: 'กดปุ่ม PP ดึงบิล หน้าต่างเล็กจะเปิดขึ้นและบอกว่าได้บิลใหม่กี่ใบ',
+      tip: 'กดวันละ 1–2 ครั้ง หลังส่งของให้ Anousith',
+      wrongSite: 'เปิดเว็บ app.anousith.express และล็อกอินก่อน แล้วกดปุ่มนี้อีกครั้ง',
+      needLogin: 'ล็อกอิน Anousith ก่อน แล้วกดปุ่มนี้อีกครั้ง',
+      popup: 'เบราว์เซอร์บล็อกหน้าต่างใหม่ อนุญาต Pop-up สำหรับ app.anousith.express แล้วกดอีกครั้ง',
+    },
     form: {
       title: 'ตั้งค่า Anousith', phone: 'เบอร์ที่ใช้เข้า Anousith', phoneHint: 'เบอร์ของร้านที่เป็นผู้ฝาก', password: 'รหัสผ่าน Anousith',
       passwordKeep: 'เว้นว่างไว้ถ้าไม่เปลี่ยน', passwordNote: 'ระบบจะลองเข้า Anousith ก่อนบันทึก และเก็บรหัสแบบเข้ารหัส ไม่มีใครดูได้',
-      auto: 'ตรวจและแจ้งลูกค้าอัตโนมัติ', message: 'ข้อความแจ้งลูกค้า', insert: 'กดเพื่อใส่:', preview: 'ตัวอย่างที่ลูกค้าจะเห็น',
+      auto: 'ให้เซิร์ฟเวอร์ตรวจบิลทุกชั่วโมง', autoNotify: 'แจ้งลูกค้าอัตโนมัติ', autoNotifyHint: 'ส่งเลขพัสดุทางแชทให้ลูกค้าที่เคยทักร้าน เวลา 08:00–20:00', message: 'ข้อความแจ้งลูกค้า', insert: 'กดเพื่อใส่:', preview: 'ตัวอย่างที่ลูกค้าจะเห็น',
       reset: 'ใช้ข้อความเริ่มต้น', save: 'บันทึก', cancel: 'ยกเลิก', disconnect: 'ยกเลิกการเชื่อมต่อ',
-      disconnectAsk: 'ลบบัญชี Anousith ออกจากระบบ? ระบบจะหยุดตรวจบิล',
+      disconnectAsk: 'ยกเลิกการเชื่อมต่อบัญชี Anousith? ครั้งต่อไปที่กดปุ่ม ระบบจะรับบัญชีใหม่',
       keys: { name: 'ชื่อลูกค้า', shop: 'ชื่อร้าน', tracking: 'เลขพัสดุ', branch: 'สาขาปลายทาง', cod: 'เก็บเงินปลายทาง', carrier: 'ขนส่ง' },
       sample: { name: 'นางแก้ว', tracking: 'ANS123456789', branch: 'สาขาหลวงพระบาง', cod: 'ເກັບເງິນປາຍທາງ: 150,000₭' },
       saved: 'บันทึกแล้ว', unverified: 'บันทึกแล้ว แต่ยังตรวจรหัสกับ Anousith ไม่ได้ จะลองในรอบตรวจถัดไป',
@@ -82,12 +110,26 @@ const COPY = {
     todoHint: "These customers never chatted with the shop, or the message failed. Tap WhatsApp to send the prepared message from the shop's own number.",
     order: 'Order', noOrder: 'No order with this phone', sendWa: 'Send on WhatsApp', markDone: 'Told',
     status: { queued: 'Waiting', sending: 'Sending', sent: 'Told', manual: 'Told by hand', failed: 'Not sent', no_chat: 'No chat', off: 'Not told', waiting: 'Matching' },
+    bm: {
+      title: 'Bills from Anousith', open: 'Open Anousith', howTo: 'How to set up the button', hide: 'Hide',
+      lastRun: d => `Last fetched ${d}`, never: 'No bills fetched yet', found: (n, m) => `${n} new, ${m} matched`,
+      intro: 'Tap the button on the Anousith site while signed in: the last 3 days of bills come in, get matched to orders, and customers are told. Your Anousith password is never given to PP Systems.',
+      step1: 'Drag this button to the Chrome bookmarks bar (no bar? press Ctrl+Shift+B)', button: 'PP get bills',
+      mobile: 'On a phone or tablet: copy the code, create a new bookmark, paste the code as its URL and name it PP get bills. To use it, type PP get bills in the address bar and pick that bookmark.',
+      copy: 'Copy code', copied: 'Copied',
+      step2: 'Open app.anousith.express and sign in with the shop account',
+      step3: 'Tap PP get bills. A small window opens and shows how many new bills came in.',
+      tip: 'Tap it once or twice a day, after handing parcels to Anousith.',
+      wrongSite: 'Open app.anousith.express and sign in first, then tap this button again.',
+      needLogin: 'Sign in to Anousith first, then tap this button again.',
+      popup: 'The browser blocked the new window. Allow pop-ups for app.anousith.express and tap again.',
+    },
     form: {
       title: 'Anousith settings', phone: 'Phone used to sign in to Anousith', phoneHint: "The shop's sender number", password: 'Anousith password',
       passwordKeep: 'Leave empty to keep it', passwordNote: 'It is checked with Anousith before saving, then stored encrypted. Nobody can read it back.',
-      auto: 'Check and tell customers automatically', message: 'Message to the customer', insert: 'Tap to insert:', preview: 'What the customer sees',
+      auto: 'Let the server check every hour', autoNotify: 'Tell customers automatically', autoNotifyHint: 'Sends the tracking number in chat to customers who have messaged the shop, 08:00–20:00', message: 'Message to the customer', insert: 'Tap to insert:', preview: 'What the customer sees',
       reset: 'Use the default message', save: 'Save', cancel: 'Cancel', disconnect: 'Disconnect',
-      disconnectAsk: 'Remove the Anousith account? Checking stops.',
+      disconnectAsk: 'Disconnect the Anousith account? The next bookmark tap will link whichever account is signed in.',
       keys: { name: 'Customer name', shop: 'Shop name', tracking: 'Tracking number', branch: 'Destination branch', cod: 'Cash on delivery', carrier: 'Carrier' },
       sample: { name: 'Ms Keo', tracking: 'ANS123456789', branch: 'Luang Prabang branch', cod: 'ເກັບເງິນປາຍທາງ: 150,000₭' },
       saved: 'Saved', unverified: "Saved, but Anousith couldn't confirm the password yet. It will try on the next check.",
@@ -156,6 +198,10 @@ export default function ShippingPage() {
   const shown = bills.filter(inTab[tab]);
   const acc = data?.account;
   const lastRun = data?.runs?.[0];
+  // Anousith turns servers away, so normally bills come in through the bookmark in the
+  // shop's own browser. Server-side checking only shows once the carrier has allowed it.
+  const serverMode = !!data?.server_checks;
+  const ready = serverMode ? !!acc?.connected : !!(acc?.linked || bills.length);
 
   const fmt = v => (v ? new Date(v).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '');
 
@@ -187,7 +233,9 @@ export default function ShippingPage() {
 
   return (
     <div className="max-w-5xl">
-      {!acc?.connected ? (
+      {!serverMode ? (
+        <BookmarkCard c={c} acc={acc} lastRun={lastRun} fmt={fmt} query={data.browser_query} onSettings={() => setEditing(true)} />
+      ) : !acc?.connected ? (
         <section className={card}>
           <EmptyState icon="truck" title={c.connectTitle} text={c.connectText}
             action={<Button icon="link" onClick={() => setEditing(true)}>{c.connect}</Button>} />
@@ -218,7 +266,7 @@ export default function ShippingPage() {
         </section>
       )}
 
-      {acc?.connected && (
+      {ready && (
         <section className={`${card} mt-5 overflow-hidden`}>
           <div role="tablist" className="flex overflow-x-auto no-scrollbar border-b border-line px-2">
             {TABS.map(t => (
@@ -279,17 +327,18 @@ export default function ShippingPage() {
         </section>
       )}
 
-      {editing && <SettingsModal c={c} acc={acc} defaultTemplate={data.default_template} shopName={data.shop_name}
+      {editing && <SettingsModal c={c} acc={acc} serverMode={serverMode} defaultTemplate={data.default_template} shopName={data.shop_name}
         onClose={() => setEditing(false)} onSaved={msg => { setEditing(false); setNotice(msg || ''); load(); }} />}
     </div>
   );
 }
 
-function SettingsModal({ c, acc, defaultTemplate, shopName, onClose, onSaved }) {
+function SettingsModal({ c, acc, serverMode, defaultTemplate, shopName, onClose, onSaved }) {
   const f = c.form;
   const [username, setUsername] = useState(acc?.username || '');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(acc ? acc.enabled : true);
+  const [autoNotify, setAutoNotify] = useState(acc ? acc.auto_notify : true);
   const [template, setTemplate] = useState(acc?.message_template || defaultTemplate);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -316,8 +365,12 @@ function SettingsModal({ c, acc, defaultTemplate, shopName, onClose, onSaved }) 
     setBusy(true);
     setError('');
     try {
-      const body = { username, enabled, message_template: template.trim() === defaultTemplate.trim() ? '' : template };
-      if (password) body.password = password;
+      const body = { auto_notify: autoNotify, message_template: template.trim() === defaultTemplate.trim() ? '' : template };
+      if (serverMode) {
+        body.username = username;
+        body.enabled = enabled;
+        if (password) body.password = password;
+      }
       const res = await fetch('/api/shipping/account', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) { setError(f.errors[d.error] || f.errors.failed); return; }
@@ -338,11 +391,20 @@ function SettingsModal({ c, acc, defaultTemplate, shopName, onClose, onSaved }) 
   return (
     <Modal open onClose={onClose} title={f.title} size="lg"
       footer={<>
-        {acc?.connected && <Button tone="danger" onClick={disconnect} className="sm:mr-auto">{f.disconnect}</Button>}
+        {(acc?.connected || acc?.linked) && <Button tone="danger" onClick={disconnect} className="sm:mr-auto">{f.disconnect}</Button>}
         <Button tone="ghost" onClick={onClose}>{f.cancel}</Button>
         <Button onClick={save} disabled={busy}>{f.save}</Button>
       </>}>
       <div className="space-y-5">
+        <label className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 cursor-pointer">
+          <span>
+            <span className="block text-sm font-semibold text-ink">{f.autoNotify}</span>
+            <span className="block text-xs text-slate-500 mt-0.5">{f.autoNotifyHint}</span>
+          </span>
+          <input type="checkbox" checked={autoNotify} onChange={e => setAutoNotify(e.target.checked)} className="w-5 h-5 shrink-0 accent-[#0B63E5]" />
+        </label>
+
+        {serverMode && <>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label={f.phone} hint={f.phoneHint}>
             <div className="flex">
@@ -362,6 +424,7 @@ function SettingsModal({ c, acc, defaultTemplate, shopName, onClose, onSaved }) 
           <span className="text-sm font-semibold text-ink">{f.auto}</span>
           <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="w-5 h-5 accent-[#0B63E5]" />
         </label>
+        </>}
 
         <div>
           <div className="flex items-baseline justify-between gap-3">
@@ -387,5 +450,114 @@ function SettingsModal({ c, acc, defaultTemplate, shopName, onClose, onSaved }) 
         {error && <p role="alert" className="text-sm text-danger font-semibold">{error}</p>}
       </div>
     </Modal>
+  );
+}
+
+// The bookmark ("bookmarklet") the shop keeps in its browser. It runs on app.anousith.express
+// with the shop's own sign-in, reads the last 3 days of parcels, opens a small PP Systems
+// window and hands the list to it. No password or key of any kind is inside it.
+function bookmarkletCode(origin, query, t) {
+  const src = [
+    '(async()=>{',
+    'const P=' + JSON.stringify(origin) + ';',
+    "if(location.hostname!=='app.anousith.express'){alert(" + JSON.stringify(t.wrongSite) + ');return}',
+    "let s;try{s=JSON.parse(localStorage.getItem('ANS_COD'))}catch(e){}",
+    'if(!s||!s.accessToken||!s.data||!s.data.id_list){alert(' + JSON.stringify(t.needLogin) + ');return}',
+    "const w=window.open(P+'/shipping/import','pp_import','width=480,height=640');",
+    'if(!w){alert(' + JSON.stringify(t.popup) + ');return}',
+    "const day=o=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Vientiane'}).format(new Date(Date.now()+o*864e5));",
+    'const Q=' + JSON.stringify(query) + ';',
+    "let items=[],err='';",
+    'try{for(let p=0;p<5;p++){',
+    "const r=await fetch('https://pro.api.anousith.express/graphql',{method:'POST',headers:{'Content-Type':'application/json',authorization:s.accessToken},",
+    "body:JSON.stringify({query:Q,variables:{where:{customerId:parseInt(s.data.id_list,10),isDeleted:0,createdDate_gte:day(-2),createdDate_lt:day(1)},skip:p*100,limit:100,orderBy:'createdDateDESC'}})});",
+    'const j=await r.json();if(j.errors&&j.errors.length)throw new Error(j.errors[0].message);',
+    'const d=j.data.itemsV2;items=items.concat(d.data||[]);if(!d.data||d.data.length<100||items.length>=d.total)break}}catch(e){err=String(e&&e.message||e)}',
+    "const msg={type:'pp-anousith-bills',error:err,account:{id:String(s.data.id_list),name:s.data.full_name||'',phone:s.data.contact_info||''},items:items};",
+    'let n=0;const t=setInterval(()=>{if(w.closed||++n>60){clearInterval(t);return}try{w.postMessage(msg,P)}catch(e){}},500);',
+    "addEventListener('message',e=>{if(e.origin===P&&e.data&&e.data.type==='pp-got')clearInterval(t)});",
+    '})()',
+  ].join('');
+  return 'javascript:' + encodeURIComponent(src);
+}
+
+function BookmarkCard({ c, acc, lastRun, fmt, query, onSettings }) {
+  const t = c.bm;
+  const linked = !!acc?.linked;
+  const [showSetup, setShowSetup] = useState(!linked);
+  const [copied, setCopied] = useState(false);
+  const [code, setCode] = useState('');
+  const link = useRef(null);
+
+  useEffect(() => { setShowSetup(!linked); }, [linked]);
+  useEffect(() => {
+    const value = bookmarkletCode(window.location.origin, query, t);
+    setCode(value);
+    // Set directly: React warns about (and newer versions block) javascript: links in JSX.
+    if (link.current) link.current.setAttribute('href', value);
+  }, [query, t, showSetup]);
+
+  async function copy() {
+    try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* clipboard blocked */ }
+  }
+
+  const steps = [
+    <>
+      <p>{t.step1}</p>
+      <div className="mt-2.5 flex flex-wrap items-center gap-3">
+        <a ref={link} draggable onClick={e => e.preventDefault()} title={t.button}
+          className="inline-flex items-center gap-2 px-4 min-h-10 rounded-lg bg-[#C8102E] text-white text-sm font-semibold cursor-grab active:cursor-grabbing shadow-[0_1px_0_rgba(14,26,51,.25)]">
+          <Icon name="download" className="w-4 h-4" strokeWidth={2} />{t.button}
+        </a>
+        <button type="button" onClick={copy} className="text-sm font-semibold text-primary hover:underline">{copied ? t.copied : t.copy}</button>
+      </div>
+      <p className="mt-2 text-xs text-slate-500">{t.mobile}</p>
+    </>,
+    <p>{t.step2}</p>,
+    <p>{t.step3}</p>,
+  ];
+
+  return (
+    <section className={`${card} p-4 sm:p-5`}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <span className="w-11 h-11 rounded-lg bg-[#FDECEC] text-[#C8102E] flex items-center justify-center shrink-0"><Icon name="truck" className="w-6 h-6" /></span>
+        <div className="flex-1 min-w-[12rem]">
+          <p className="font-bold text-ink">{t.title}</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {acc?.last_run_at ? t.lastRun(fmt(acc.last_run_at)) : t.never}
+            {lastRun?.status === 'ok' && <span className="text-slate-400">, {t.found(lastRun.bills_new, lastRun.bills_matched)}</span>}
+          </p>
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none">
+          <Button tone="ghost" icon="edit" onClick={onSettings}>{c.settings}</Button>
+          <a href="https://app.anousith.express" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-4 min-h-11 lg:min-h-0 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark">
+            <Icon name="link" className="w-4 h-4" strokeWidth={2} />{t.open}
+          </a>
+        </div>
+      </div>
+
+      {linked && (
+        <button type="button" onClick={() => setShowSetup(v => !v)} aria-expanded={showSetup}
+          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+          {showSetup ? t.hide : t.howTo}<Icon name={showSetup ? 'up' : 'down'} className="w-4 h-4" strokeWidth={2} />
+        </button>
+      )}
+
+      {showSetup && (
+        <div className="mt-4 pt-4 border-t border-line">
+          <p className="text-sm text-slate-600 max-w-2xl">{t.intro}</p>
+          <ol className="mt-4 space-y-4">
+            {steps.map((body, i) => (
+              <li key={i} className="flex gap-3 text-sm text-ink">
+                <span className="w-7 h-7 rounded-full bg-gold-soft text-primary-dark font-bold flex items-center justify-center shrink-0 num">{i + 1}</span>
+                <div className="pt-1 min-w-0 flex-1">{body}</div>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-4 text-xs text-slate-500">{t.tip}</p>
+        </div>
+      )}
+    </section>
   );
 }

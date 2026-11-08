@@ -4,6 +4,7 @@ import { open } from '../../../lib/secret-box';
 import { shippingGuard } from '../../../lib/shipping/guard';
 import { renderMessage, DEFAULT_TEMPLATE } from '../../../lib/shipping/notify';
 import { normalizePhone } from '../../../lib/shipping/phone';
+import { BROWSER_QUERY } from '../../../lib/shipping/anousith';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export async function GET() {
   const shopId = g.shopId;
 
   const [acc, settings, runs, bills] = await Promise.all([
-    queryOne('SELECT login_enc, enabled, last_run_at, last_error, message_template FROM shipping_accounts WHERE shop_id = ? AND carrier = ?', [shopId, CARRIER]),
+    queryOne('SELECT login_enc, enabled, auto_notify, account_ref, last_run_at, last_error, message_template FROM shipping_accounts WHERE shop_id = ? AND carrier = ?', [shopId, CARRIER]),
     queryOne('SELECT shop_name FROM shop_settings WHERE shop_id = ?', [shopId]),
     query('SELECT status, bills_seen, bills_new, bills_matched, error, started_at, finished_at FROM shipping_scrape_runs WHERE shop_id = ? ORDER BY id DESC LIMIT 5', [shopId]),
     query(
@@ -58,10 +59,13 @@ export async function GET() {
 
   return NextResponse.json({
     account: acc ? {
-      connected: !!acc.login_enc, username, enabled: !!acc.enabled, last_run_at: acc.last_run_at, last_error: acc.last_error,
+      connected: !!acc.login_enc, linked: !!acc.account_ref, username, enabled: !!acc.enabled, auto_notify: !!acc.auto_notify, last_run_at: acc.last_run_at, last_error: acc.last_error,
       message_template: acc.message_template || '',
     } : null,
     shop_name: settings?.shop_name || '',
+    // Server-side checking only where the carrier has allowed this server (see scheduler.js).
+    server_checks: process.env.SHIPPING_SCRAPE === 'on',
+    browser_query: BROWSER_QUERY,
     default_template: DEFAULT_TEMPLATE,
     runs,
     bills: out,
