@@ -342,10 +342,15 @@ function ScanPanel({ shopId, channelId, onClose, onConnected }) {
           ) : ['expired', 'stopped', 'logged_out', 'error'].includes(status) ? (
             <div className="px-4">
               <p className="text-sm text-slate-600">
-                {status === 'logged_out' ? (ERR[session.lastError] || 'เบอร์ถูกออกจากระบบ') : status === 'error' ? (session.lastError || 'เชื่อมต่อไม่ได้') : 'QR หมดอายุแล้ว'}
+                {status === 'logged_out' ? (ERR[session.lastError] || 'เบอร์ถูกออกจากระบบ')
+                  : status === 'error' ? (session.lastError || 'เชื่อมต่อไม่ได้')
+                  : status === 'stopped' ? 'เบอร์นี้ไม่ได้เชื่อมต่ออยู่ สแกนใหม่ได้เลย ประวัติแชทเดิมยังอยู่ครบ'
+                  : 'QR หมดอายุแล้ว'}
               </p>
               <button onClick={() => rescan(false)} disabled={busy} className="mt-3 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-40">สร้าง QR ใหม่</button>
             </div>
+          ) : status === 'reconnecting' ? (
+            <p className="text-sm text-slate-600 px-4">การเชื่อมต่อหลุด ระบบกำลังต่อใหม่ให้อัตโนมัติ…</p>
           ) : status === 'unreachable' ? (
             <p className="text-sm text-red-600 px-4">{ERR.gateway_unreachable}</p>
           ) : (
