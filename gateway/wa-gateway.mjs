@@ -315,16 +315,15 @@ async function onConnection(s, sock, { connection, lastDisconnect, qr }) {
     return;
   }
 
-  // Temporary network problem: reconnect with growing, jittered delays.
+  // Temporary network problem: reconnect with growing, jittered delays, and never give up
+  // on a linked number (it used to stop after 8 tries and stay dead until a restart).
+  // After a few failed tries the website is told, so the shop sees it isn't connected;
+  // the "connected" event puts it back to active when the link returns.
   s.retries += 1;
-  if (s.retries > 8) {
-    s.status = 'error';
-    s.lastError = `disconnected (${code || 'unknown'})`;
-    emit({ type: 'disconnected', channelId: s.id, reason: s.lastError });
-    return;
-  }
   s.status = 'reconnecting';
-  const wait = Math.min(120000, 2000 * 2 ** (s.retries - 1)) + rand(0, 3000);
+  s.lastError = `disconnected (${code || 'unknown'})`;
+  if (s.retries === 4) emit({ type: 'disconnected', channelId: s.id, reason: s.lastError });
+  const wait = (s.retries > 8 ? 300000 : Math.min(120000, 2000 * 2 ** (s.retries - 1))) + rand(0, 3000);
   s.reconnectTimer = setTimeout(() => connect(s).catch(e => log(`reconnect ${s.id}:`, e.message)), wait);
 }
 
@@ -574,8 +573,12 @@ const server = http.createServer(async (req, res) => {
       if (s) await stopSession(s, false);
       return reply(res, 200, { ok: true });
     }
-    if (!s) return reply(res, 409, { error: 'not_connected' });
-    if (action === 'send') return reply(res, 200, { id: await sendMessage(s, body) });
+    if (!s) {
+      // A linked number that isn't running (it failed to start at boot): start it now so the
+      // shop doesn't have to rescan; this message fails, the retry after a moment works.
+      if (await savedSession(id) === 'yes') startSession(id).catch(e => log(`restart ${id}:`, e.message));
+      return reply(res, 409, { error: 'not_connected' });
+    }    if (action === 'send') return reply(res, 200, { id: await sendMessage(s, body) });
     if (action === 'read') { await markRead(s, body.jid, body.ids); return reply(res, 200, { ok: true }); }
     return reply(res, 404, { error: 'not_found' });
   } catch (e) {
@@ -587,11 +590,24 @@ const server = http.createServer(async (req, res) => {
 
 // ------------------------------------------------------------------ boot / shutdown
 
+// Is there a linked (registered) session saved for this channel?
+// 'yes' | 'no' (nothing usable: abandoned pairing) | 'unreadable' (file there, can't decrypt)
+async function savedSession(id) {
+  const file = path.join(sessionDir(id), 'creds.json');
+  if (!fs.existsSync(file)) return 'no';
+  const creds = await readSealedJson(file);
+  if (!creds) return 'unreadable';
+  return creds.registered ? 'yes' : 'no';
+}
+
 async function boot() {
   for (const dir of fs.readdirSync(SESS_DIR)) {
     if (!/^\d+$/.test(dir)) continue;
-    const creds = await readSealedJson(path.join(SESS_DIR, dir, 'creds.json'));
-    if (!creds?.registered) { wipe(dir); continue; } // abandoned pairing
+    const saved = await savedSession(dir);
+    // Never delete a session we merely failed to read (wrong key in the environment, disk
+    // hiccup): that would force the shop to scan again for nothing. Only abandoned pairings go.
+    if (saved === 'unreadable') { log(`boot ${dir}: session file unreadable, kept (check CHANNEL_ENC_KEY)`); continue; }
+    if (saved === 'no') { wipe(dir); continue; }
     // Stagger reconnects so many numbers don't all reconnect in the same second.
     await sleep(rand(800, 2500));
     startSession(dir).catch(e => log(`boot ${dir}:`, e.message));
