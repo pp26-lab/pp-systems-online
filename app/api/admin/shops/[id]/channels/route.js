@@ -47,10 +47,18 @@ export async function POST(request, { params }) {
   let externalId, accountId = '', name;
   try {
     if (b.platform === 'messenger') {
-      const page = await meta.messengerPage(token);
-      externalId = String(page.id);
-      name = page.name;
-      if (b.external_id && String(b.external_id) !== externalId) return NextResponse.json({ error: 'page_mismatch' }, { status: 400 });
+      const providedId = String(b.external_id || '').trim();
+      if (providedId) {
+        // The shop gave the Page ID, so we never read the page from Meta — this avoids needing
+        // pages_read_engagement; only pages_messaging + pages_manage_metadata (on the token) remain.
+        if (!ID.test(providedId)) return NextResponse.json({ error: 'bad_page_id' }, { status: 400 });
+        externalId = providedId;
+        name = '';
+      } else {
+        const page = await meta.messengerPage(token);
+        externalId = String(page.id);
+        name = page.name;
+      }
       await meta.messengerSubscribe(externalId, token);
     } else if (b.platform === 'whatsapp') {
       externalId = String(b.external_id || '').trim();

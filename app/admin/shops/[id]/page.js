@@ -12,6 +12,7 @@ const ERR = {
   page_mismatch: 'Token นี้เป็นของเพจอื่น ไม่ตรงกับ Page ID ที่ใส่',
   owned_by_other_shop: 'เพจหรือเบอร์นี้เชื่อมกับร้านอื่นอยู่แล้ว',
   meta_rejected: 'Meta ปฏิเสธ token นี้',
+  bad_page_id: 'Page ID ต้องเป็นตัวเลขของเพจ (ดูใต้ชื่อเพจในหน้าต่าง Edit Page Subscriptions)',
   page_token_permissions: 'Token เพจยังขาดสิทธิ์ สร้าง Page token ใหม่โดยเลือกสิทธิ์ pages_messaging และ pages_manage_metadata ให้ครบ (ดูวิธีด้านล่าง)',
   core_feature: 'ฟังก์ชันหลักปิดไม่ได้',
   gateway_not_configured: 'เซิร์ฟเวอร์ยังไม่ได้ตั้ง WA_GATEWAY_SECRET',
@@ -212,6 +213,13 @@ export default function AdminShopDetail() {
                     className="mt-1 w-full border border-slate-300 rounded-md px-3 py-2 font-mono" />
                 </label>
               </div>
+            )}
+            {connect.platform === 'messenger' && (
+              <label className="block text-sm">Page ID (แนะนำให้ใส่ — เลขของเพจ)
+                <input value={connect.external_id} onChange={e => setConnect({ ...connect, external_id: e.target.value.trim() })} inputMode="numeric"
+                  placeholder="เช่น 264343473431428" className="mt-1 w-full border border-slate-300 rounded-md px-3 py-2 font-mono" />
+                <span className="block mt-1 text-xs text-slate-500">ดูได้ที่หน้าต่าง Edit Page Subscriptions (ใต้ชื่อเพจ) หรือ Facebook เพจ → เกี่ยวกับ ใส่แล้วไม่ต้องใช้สิทธิ์ pages_read_engagement</span>
+              </label>
             )}
             <label className="block text-sm">{connect.platform === 'messenger' ? 'Page access token (แบบไม่หมดอายุ)' : 'System user access token'}
               <input type="password" autoComplete="off" value={connect.token} onChange={e => setConnect({ ...connect, token: e.target.value })}
