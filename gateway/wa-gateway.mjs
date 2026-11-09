@@ -26,7 +26,7 @@ import QRCode from 'qrcode';
 import makeWASocket, {
   Browsers, DisconnectReason, fetchLatestWaWebVersion, makeCacheableSignalKeyStore, downloadMediaMessage,
   normalizeMessageContent, getContentType, jidNormalizedUser, jidDecode, isPnUser, isLidUser,
-  isJidGroup, isJidBroadcast, isJidStatusBroadcast, isJidNewsletter,
+  isJidGroup, isJidBroadcast, isJidStatusBroadcast, isJidNewsletter, generateMessageIDV2,
 } from '@whiskeysockets/baileys';
 import { useEncryptedAuthState, readSealedJson, writeSealedJson } from './auth-state.mjs';
 
@@ -512,9 +512,14 @@ function sendMessage(s, { to, text, media }) {
     if (!s.sock) throw new GwError('not_connected', 409);
     await typeLikeAPerson(s, jid, text, !!media);
     const content = media ? mediaContent(media, text) : { text };
-    const sent = await s.sock.sendMessage(jid, content);
+    // Choose the id ourselves and remember it BEFORE sending. Baileys emits our own message
+    // (messages.upsert) before sendMessage resolves; registering the id only afterwards let
+    // onMessages forward it to the website as a second, "outgoing" copy.
+    const messageId = generateMessageIDV2(s.sock.user?.id);
+    s.sentIds.set(messageId, Date.now());
+    const sent = await s.sock.sendMessage(jid, content, { messageId });
     s.lastSendAt = Date.now();
-    s.sentIds.set(sent.key.id, Date.now());
+    if (sent.key.id !== messageId) s.sentIds.set(sent.key.id, Date.now());
     s.msgCache.set(sent.key.id, sent.message);
     return sent.key.id;
   };

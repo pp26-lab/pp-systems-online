@@ -266,8 +266,15 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
     setMessages(prev => {
       const map = new Map(prev.map(m => [m.id, m]));
       for (const m of rows) map.set(m.id, m);
-      // Drop optimistic temp rows once the server copy arrives.
-      return [...map.values()].filter(m => !(replaceTail && String(m.id).startsWith('tmp'))).sort((a, b) => Number(a.id) - Number(b.id));
+      // On a refresh of the newest page, the server's list is the truth for that range: drop
+      // optimistic temp rows, and any message the server no longer has (e.g. a duplicate echo
+      // copy it merged away), so a removed row doesn't linger on screen until reload.
+      const keep = new Set(rows.map(m => m.id));
+      const floor = rows.length ? Math.min(...rows.map(m => Number(m.id))) : Infinity;
+      return [...map.values()]
+        .filter(m => !(replaceTail && String(m.id).startsWith('tmp')))
+        .filter(m => !(replaceTail && Number(m.id) >= floor && !keep.has(m.id)))
+        .sort((a, b) => Number(a.id) - Number(b.id));
     });
   }, []);
 
