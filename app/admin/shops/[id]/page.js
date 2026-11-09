@@ -27,6 +27,32 @@ const ERR = {
 
 const PLATFORM = { messenger: 'Facebook Messenger', whatsapp: 'WhatsApp (API)', whatsapp_web: 'WhatsApp (สแกน)' };
 
+const GREEN = 'bg-emerald-50 text-emerald-700';
+const AMBER = 'bg-amber-50 text-amber-800';
+const RED = 'bg-red-50 text-red-700';
+const GREY = 'bg-slate-100 text-slate-600';
+
+// What to show for a channel's connection. For WhatsApp-by-scan this is the LIVE gateway
+// status (ch.live); for the others it is the stored status. needsScan flags a dead session
+// so the button offers "สแกนใหม่".
+function channelState(ch) {
+  if (ch.status === 'disabled') return { label: 'หยุดชั่วคราว', cls: GREY };
+  if (ch.platform === 'whatsapp_web') {
+    switch (ch.live) {
+      case 'connected': return { label: 'เชื่อมต่ออยู่', cls: GREEN };
+      case 'starting': case 'reconnecting': return { label: 'กำลังเชื่อมต่อ…', cls: AMBER };
+      case 'qr': case 'pairing': return { label: 'รอสแกน', cls: AMBER, needsScan: true };
+      case 'logged_out': return { label: 'ถูกออกจากระบบ — สแกนใหม่', cls: RED, needsScan: true };
+      case 'expired': case 'stopped': return { label: 'หลุด — สแกนใหม่', cls: RED, needsScan: true };
+      case 'error': return { label: 'มีปัญหา — ลองสแกนใหม่', cls: RED, needsScan: true };
+      case 'gateway_down': return { label: 'ตัวเชื่อม (pp-wa) ไม่ทำงาน', cls: RED };
+      case 'gateway_off': return { label: 'ยังไม่ตั้งค่าตัวเชื่อม', cls: GREY };
+      default: return { label: 'ไม่ทราบสถานะ', cls: GREY, needsScan: true };
+    }
+  }
+  return { label: ch.status === 'active' ? 'ใช้งาน' : ch.status === 'pending' ? 'รอตั้งค่า' : 'มีปัญหา', cls: ch.status === 'active' ? GREEN : RED };
+}
+
 export default function AdminShopDetail() {
   const { id } = useParams();
   const [data, setData] = useState(null);
@@ -44,6 +70,9 @@ export default function AdminShopDetail() {
   useEffect(() => {
     load();
     fetch('/api/admin/chat-setup').then(r => r.json()).then(setSetup).catch(() => {});
+    // Keep the connection status live while this page is open, so a drop shows up on its own.
+    const t = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 20000);
+    return () => clearInterval(t);
   }, [id]);
 
   function say(ok, text) {
@@ -245,11 +274,11 @@ export default function AdminShopDetail() {
                 </p>
                 {ch.last_error && <p className="text-xs text-red-600">{ERR[ch.last_error] || ch.last_error}</p>}
               </div>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ch.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                {ch.status === 'active' ? 'ใช้งาน' : ch.status === 'disabled' ? 'หยุดชั่วคราว' : ch.status === 'pending' ? 'รอสแกน' : 'มีปัญหา'}
-              </span>
+              {(() => { const s = channelState(ch); return (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
+              ); })()}
               {ch.platform === 'whatsapp_web' ? (
-                <button onClick={() => setScan(ch.id)} className="text-sm text-[#1C3260] font-semibold">{ch.status === 'active' ? 'ดูสถานะ' : 'สแกนใหม่'}</button>
+                <button onClick={() => setScan(ch.id)} className="text-sm text-[#1C3260] font-semibold">{channelState(ch).needsScan ? 'สแกนใหม่' : 'ดูสถานะ'}</button>
               ) : (
                 <button onClick={() => setConnect(ch.platform === 'messenger'
                   ? { platform: 'messenger', token: '', external_id: ch.external_id }

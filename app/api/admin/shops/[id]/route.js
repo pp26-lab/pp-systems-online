@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../../../lib/db';
 import { verifyAdminSession, adminAudit } from '../../../../../lib/admin-auth';
 import { FEATURES, FEATURE_KEYS, getShopFeatures } from '../../../../../lib/features';
+import { waGateway, gatewayConfigured } from '../../../../../lib/chat/waweb';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,19 @@ export async function GET(request, { params }) {
       [shop.id, shop.id, shop.id, shop.id]
     ),
   ]);
+  // For WhatsApp-by-scan, the DB status only changes on a gateway event and can go stale
+  // (e.g. the session was lost while nothing fired). Ask the gateway for the LIVE status so
+  // the back office shows what is really happening right now, not a remembered value.
+  const waChannels = channels.filter(ch => ch.platform === 'whatsapp_web');
+  if (waChannels.length) {
+    const live = gatewayConfigured() ? 'query' : 'gateway_off';
+    await Promise.all(waChannels.map(async ch => {
+      if (live !== 'query') { ch.live = live; return; }
+      try { ch.live = (await waGateway.status(ch.id))?.status || 'unknown'; }
+      catch { ch.live = 'gateway_down'; }
+    }));
+  }
+
   const saved = Object.fromEntries(rows.map(r => [r.feature_key, r]));
   const features = FEATURES.map(f => ({
     key: f.key, name: f.name, core: !!f.core, default: !!f.default,
