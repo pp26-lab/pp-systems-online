@@ -38,7 +38,9 @@ function loadEnv() {
     if (!fs.existsSync(p)) continue;
     for (const line of fs.readFileSync(p, 'utf8').split(/\r?\n/)) {
       const m = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
-      if (!m || process.env[m[1]] !== undefined) continue;
+      // Fill a variable that is missing OR empty. pm2 can inject an empty CHANNEL_ENC_KEY=,
+      // and treating that as "already set" made the gateway ignore the real key in the file.
+      if (!m || (process.env[m[1]] != null && process.env[m[1]] !== '')) continue;
       let v = m[2];
       if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
       process.env[m[1]] = v;
