@@ -63,6 +63,11 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'unknown_platform' }, { status: 400 });
     }
   } catch (e) {
+    const msg = String(e.message || '');
+    // The common cause for Messenger: the page token is missing the message/metadata scopes.
+    if (b.platform === 'messenger' && (e.code === 100 || e.code === 200 || e.code === 190 || /permission|pages_|token/i.test(msg))) {
+      return NextResponse.json({ error: 'page_token_permissions', detail: msg }, { status: 400 });
+    }
     return NextResponse.json({ error: 'meta_rejected', detail: e.message }, { status: 400 });
   }
 

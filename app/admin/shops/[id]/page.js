@@ -12,6 +12,7 @@ const ERR = {
   page_mismatch: 'Token นี้เป็นของเพจอื่น ไม่ตรงกับ Page ID ที่ใส่',
   owned_by_other_shop: 'เพจหรือเบอร์นี้เชื่อมกับร้านอื่นอยู่แล้ว',
   meta_rejected: 'Meta ปฏิเสธ token นี้',
+  page_token_permissions: 'Token เพจยังขาดสิทธิ์ สร้าง Page token ใหม่โดยเลือกสิทธิ์ pages_messaging และ pages_manage_metadata ให้ครบ (ดูวิธีด้านล่าง)',
   core_feature: 'ฟังก์ชันหลักปิดไม่ได้',
   gateway_not_configured: 'เซิร์ฟเวอร์ยังไม่ได้ตั้ง WA_GATEWAY_SECRET',
   gateway_unreachable: 'ติดต่อตัวเชื่อม WhatsApp (pp-wa) ไม่ได้ ตรวจว่ารันอยู่ใน pm2',
