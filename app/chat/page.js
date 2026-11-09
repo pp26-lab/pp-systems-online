@@ -7,6 +7,7 @@ import CustomerForm from '../../components/CustomerForm';
 import { QR_COPY, QuickReplyPicker, QuickReplyManager, useQuickReplies } from '../../components/chat/QuickReplies';
 import { SoundToggle } from '../../components/MessageAlert';
 import { usePush, PushToggle, PushHint } from '../../components/PushSetup';
+import ChatOrderPanel from '../../components/chat/ChatOrderPanel';
 
 const COPY = {
   lo: {
@@ -25,6 +26,9 @@ const COPY = {
     errors: { window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
     replyOnly: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ', replyOnlyText: 'ເພື່ອບໍ່ໃຫ້ເບີຖືກແບນ ລະບົບຕອບໄດ້ສະເພາະລູກຄ້າທີ່ທັກມາກ່ອນ',
     status: { pending: 'ລໍຖ້າຈັດສົ່ງ', shipping: 'ກຳລັງຈັດສົ່ງ', completed: 'ສຳເລັດ', cancelled: 'ຍົກເລີກ' }, details: 'ຂໍ້ມູນລູກຄ້າ', back: 'ກັບ',
+    saveAs: 'ບັນທຶກເປັນ:', asName: 'ຊື່', asPhone: 'ເບີໂທ', asAddress: 'ທີ່ຢູ່', noPhone: 'ບໍ່ພົບເບີໂທໃນຂໍ້ຄວາມນີ້', saveFailed: 'ບັນທຶກບໍ່ສຳເລັດ',
+    savedAs: { name: v => `ບັນທຶກຊື່ແລ້ວ: ${v}`, phone: v => `ບັນທຶກເບີໂທແລ້ວ: ${v}`, address: v => `ບັນທຶກທີ່ຢູ່ແລ້ວ: ${v}` },
+    newOrder: 'ສ້າງອໍເດີ້', orderMade: n => `ສ້າງອໍເດີ້ ${n} ແລ້ວ ສະຕ໋ອກຖືກຕັດແລ້ວ`, summaryFailed: e => `ແຕ່ສົ່ງສະຫຼຸບໃຫ້ລູກຄ້າບໍ່ໄດ້ (${e})`,
   },
   th: {
     search: 'ค้นหาชื่อ, เบอร์, ข้อความ', unread: 'ยังไม่อ่าน', open: 'ต้องจัดการ', done: 'เสร็จแล้ว', all: 'ทั้งหมด', allCh: 'ทุกช่องทาง',
@@ -42,6 +46,9 @@ const COPY = {
     errors: { window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
     replyOnly: 'รอลูกค้าทักมาก่อน', replyOnlyText: 'เพื่อไม่ให้เบอร์ถูกแบน ระบบตอบได้เฉพาะลูกค้าที่ทักมาก่อน',
     status: { pending: 'รอจัดส่ง', shipping: 'กำลังจัดส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' }, details: 'ข้อมูลลูกค้า', back: 'กลับ',
+    saveAs: 'บันทึกเป็น:', asName: 'ชื่อ', asPhone: 'เบอร์โทร', asAddress: 'ที่อยู่', noPhone: 'ไม่พบเบอร์โทรในข้อความนี้', saveFailed: 'บันทึกไม่สำเร็จ',
+    savedAs: { name: v => `บันทึกชื่อแล้ว: ${v}`, phone: v => `บันทึกเบอร์โทรแล้ว: ${v}`, address: v => `บันทึกที่อยู่แล้ว: ${v}` },
+    newOrder: 'สร้างออเดอร์', orderMade: n => `สร้างออเดอร์ ${n} แล้ว ตัดสต็อกแล้ว`, summaryFailed: e => `แต่ส่งสรุปให้ลูกค้าไม่ได้ (${e})`,
   },
   en: {
     search: 'Search name, phone, message', unread: 'Unread', open: 'To do', done: 'Done', all: 'All', allCh: 'All channels',
@@ -59,6 +66,9 @@ const COPY = {
     errors: { window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
     replyOnly: 'Waiting for the customer to write first', replyOnlyText: 'To keep the number from being banned, the system only replies to customers who wrote first.',
     status: { pending: 'To ship', shipping: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' }, details: 'Customer details', back: 'Back',
+    saveAs: 'Save as:', asName: 'Name', asPhone: 'Phone', asAddress: 'Address', noPhone: 'No phone number in this message', saveFailed: "Couldn't save",
+    savedAs: { name: v => `Name saved: ${v}`, phone: v => `Phone saved: ${v}`, address: v => `Address saved: ${v}` },
+    newOrder: 'Create order', orderMade: n => `Order ${n} created, stock taken`, summaryFailed: e => `but the summary couldn't be sent (${e})`,
   },
 };
 
@@ -263,6 +273,37 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   const [error, setError] = useState('');
   const [profileKey, setProfileKey] = useState(0);
   const [slipFor, setSlipFor] = useState(null); // message
+  const [orderOpen, setOrderOpen] = useState(false);
+  const [tagFor, setTagFor] = useState(null); // message id whose "save as" row is open
+  const [info, setInfo] = useState('');
+  const flash = text => { setInfo(text); setTimeout(() => setInfo(''), 5000); };
+
+  // Staff tapped "save as name / phone / address" on a customer message.
+  async function tagMessage(m, field) {
+    setTagFor(null);
+    setError('');
+    try {
+      const res = await fetch(`/api/chat/conversations/${id}/contact`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ field, message_id: m.id }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(d.error === 'no_phone_in_message' ? c.noPhone : c.saveFailed); return; }
+      flash(c.savedAs[field](String(d.value).slice(0, 60)));
+      setProfileKey(k => k + 1);
+      onChanged();
+    } catch {
+      setError(c.saveFailed);
+    }
+  }
+
+  function orderDone(d) {
+    setOrderOpen(false);
+    const failed = d.summary && d.summary.status === 'failed';
+    flash(c.orderMade(d.order.order_number) + (failed ? ` ${c.summaryFailed(c.errors[d.summary.error] || d.summary.error)}` : ''));
+    setProfileKey(k => k + 1);
+    load();
+    onChanged();
+  }
   const [preview, setPreview] = useState(null); // image url
   const [now, setNow] = useState(Date.now());
   // Touch keyboards: Enter makes a new line and the Send button sends, like the WhatsApp app.
@@ -463,6 +504,12 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
           {conv && (winOpen
             ? (win.closesAt ? <span className="hidden sm:inline-flex"><Pill tone="green">{c.windowLeft(remaining(win.closesAt - now))}</Pill></span> : null)
             : <span className="hidden sm:inline-flex"><Pill tone="red">{win.replyOnly ? c.replyOnly : c.windowClosed}</Pill></span>)}
+          {conv && (
+            <>
+              <Button size="sm" tone="ghost" icon="plus" onClick={() => setOrderOpen(true)} className="hidden sm:inline-flex">{c.newOrder}</Button>
+              <IconButton icon="plus" label={c.newOrder} onClick={() => setOrderOpen(true)} className="sm:hidden" />
+            </>
+          )}
           {conv && (conv.status === 'done'
             ? <Button size="sm" tone="ghost" icon="refresh" onClick={() => setStatus('open')}>{c.reopen}</Button>
             : <Button size="sm" tone="gold" icon="check" onClick={() => setStatus('done')}>{c.markDone}</Button>)}
@@ -477,7 +524,8 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
           {grouped.map((m, i) => m.day ? (
             <div key={`d${i}`} className="flex justify-center py-2"><span className="text-[0.7rem] font-semibold text-slate-500 bg-white border border-line rounded-full px-3 py-0.5">{dayLabel(m.day)}</span></div>
           ) : (
-            <Bubble key={m.id} m={m} c={c} locale={locale} onRetry={retry} onPreview={setPreview} onSlip={setSlipFor} />
+            <Bubble key={m.id} m={m} c={c} locale={locale} onRetry={retry} onPreview={setPreview} onSlip={setSlipFor}
+              tagOpen={tagFor === m.id} onTagToggle={() => setTagFor(tagFor === m.id ? null : m.id)} onTag={tagMessage} />
           ))}
         </div>
 
@@ -500,6 +548,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
             </div>
           )}
           {error && <p role="alert" className="mb-2 text-sm text-danger">{error}</p>}
+          {info && <p role="status" className="mb-2 text-sm font-medium text-success">{info}</p>}
           {file && (
             <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-canvas pl-2 pr-1 py-1">
               {file.type.startsWith('image/') ? <img src={URL.createObjectURL(file)} alt="" className="w-10 h-10 rounded-lg object-cover" /> : <Icon name="box" className="w-5 h-5 text-slate-400" />}
@@ -533,6 +582,8 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
 
       {qrManage && <QuickReplyManager c={qc} replies={replies} onClose={() => setQrManage(false)} onChanged={reloadReplies} />}
 
+      {orderOpen && <ChatOrderPanel convId={id} lang={lang} onClose={() => setOrderOpen(false)} onDone={orderDone} />}
+
       {slipFor && <SlipPicker message={slipFor} convId={id} c={c} onClose={() => setSlipFor(null)} onDone={() => { setSlipFor(null); setProfileKey(k => k + 1); load(); }} />}
     </>
   );
@@ -540,11 +591,15 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
 
 const TICKS = { sending: '…', sent: '✓', delivered: '✓✓', read: '✓✓' };
 
-function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
+function Bubble({ m, c, locale, onRetry, onPreview, onSlip, tagOpen, onTagToggle, onTag }) {
   const out = m.direction === 'out';
   const media = m.has_media ? `/api/chat/messages/${m.id}` : null;
   const isImg = media && String(m.media_mime).startsWith('image/');
   const sticker = isImg && m.type === 'sticker' && !m.text;
+  // A customer's text can be saved as their name / phone / address with a tap
+  // (not when the tap was the end of selecting text to copy).
+  const taggable = !out && !!m.text && !media && !String(m.id).startsWith('tmp');
+  const onTextClick = taggable ? () => { if (!window.getSelection?.().toString()) onTagToggle(); } : undefined;
   const time = new Date(m.created_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   return (
     <div className={`flex ${out ? 'justify-end' : 'justify-start'}`}>
@@ -569,9 +624,18 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip }) {
             <p className="px-3.5 py-2 text-sm italic opacity-70">{m.error ? c.mediaMissing : `[${m.type}]`}</p>
           )}
           {m.text && !(media && !isImg && !/^(audio|video)\//.test(String(m.media_mime))) && (
-            <p className="px-3.5 py-2 text-[0.95rem] whitespace-pre-wrap break-words">{m.text}</p>
+            <p onClick={onTextClick} className={`px-3.5 py-2 text-[0.95rem] whitespace-pre-wrap break-words ${taggable ? 'cursor-pointer' : ''} ${tagOpen ? 'bg-gold-soft/60' : ''}`}>{m.text}</p>
           )}
         </div>
+        )}
+        {tagOpen && (
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="text-slate-500">{c.saveAs}</span>
+            {[['name', c.asName], ['phone', c.asPhone], ['address', c.asAddress]].map(([f, l]) => (
+              <button key={f} type="button" onClick={() => onTag(m, f)}
+                className="px-2.5 min-h-8 rounded-full bg-white border border-line font-semibold text-primary-dark hover:border-primary">{l}</button>
+            ))}
+          </div>
         )}
         <div className="mt-0.5 flex items-center gap-2 px-1 text-[0.7rem] text-slate-400">
           <span className="num">{time}</span>

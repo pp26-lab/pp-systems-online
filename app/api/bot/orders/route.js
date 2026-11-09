@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { query, queryOne } from '../../../../lib/db';
+import { queryOne } from '../../../../lib/db';
+import { createOrder, OrderError } from '../../../../lib/orders';
 import { verifyBotKey, botRateLimit, corsHeaders } from '../../../../lib/bot-auth';
 
 export const dynamic = 'force-dynamic';
@@ -8,87 +9,54 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders() });
 }
 
+// An order placed by a bot. Products are found by SKU or id and priced at the shop's retail
+// price; the shared sale core (lib/orders.js) does the stock lock/check and the rest.
 export async function POST(request) {
   const auth = await verifyBotKey(request);
   if (!auth) return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: corsHeaders() });
   if (!botRateLimit(auth.shopId, 30)) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429, headers: corsHeaders() });
 
   const shopId = auth.shopId;
-  const body = await request.json();
-
-  if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
+  const body = await request.json().catch(() => null);
+  if (!body?.items || !Array.isArray(body.items) || body.items.length === 0) {
     return NextResponse.json({ error: 'items required' }, { status: 400, headers: corsHeaders() });
   }
 
-  const orderNumber = 'BOT' + Date.now().toString(36).toUpperCase();
-  const currency = body.currency || 'LAK';
-  let exchangeRate = 1;
+  const currency = String(body.currency || 'LAK').toUpperCase();
+  let rate = 1;
   if (currency !== 'LAK') {
-    const rate = await queryOne('SELECT rate_to_lak FROM currencies WHERE code = ? AND shop_id = ?', [currency, shopId]);
-    exchangeRate = rate?.rate_to_lak || 1;
+    const r = await queryOne('SELECT rate_to_lak FROM currencies WHERE code = ? AND shop_id = ?', [currency, shopId]);
+    if (!r) return NextResponse.json({ error: 'Unknown currency' }, { status: 400, headers: corsHeaders() });
+    rate = Number(r.rate_to_lak) || 1;
   }
 
-  const resolvedItems = [];
-  let subtotal = 0;
+  const items = [];
   for (const item of body.items) {
-    let product;
-    if (item.sku) {
-      product = await queryOne('SELECT id, selling_price_lak FROM products WHERE sku = ? AND shop_id = ?', [item.sku, shopId]);
-    } else if (item.product_id) {
-      product = await queryOne('SELECT id, selling_price_lak FROM products WHERE id = ? AND shop_id = ?', [item.product_id, shopId]);
-    }
-    if (!product) {
-      return NextResponse.json({ error: `Product not found: ${item.sku || item.product_id}` }, { status: 404, headers: corsHeaders() });
-    }
-    const qty = parseInt(item.quantity) || 1;
-    const unitPrice = product.selling_price_lak;
-    const itemTotal = unitPrice * qty;
-    subtotal += itemTotal;
-    resolvedItems.push({
+    let product = null;
+    if (item.sku) product = await queryOne('SELECT id, selling_price_lak FROM products WHERE sku = ? AND shop_id = ?', [String(item.sku), shopId]);
+    else if (item.product_id) product = await queryOne('SELECT id, selling_price_lak FROM products WHERE id = ? AND shop_id = ?', [Number(item.product_id), shopId]);
+    if (!product) return NextResponse.json({ error: `Product not found: ${item.sku || item.product_id}` }, { status: 404, headers: corsHeaders() });
+    items.push({
       product_id: product.id,
       variant_id: item.variant_id || null,
-      quantity: qty,
-      unit_price: currency === 'LAK' ? unitPrice : unitPrice / exchangeRate,
-      total: currency === 'LAK' ? itemTotal : itemTotal / exchangeRate,
+      quantity: parseInt(item.quantity, 10) || 1,
+      unit_price: (Number(product.selling_price_lak) || 0) / rate,
     });
   }
 
-  const total = currency === 'LAK' ? subtotal : subtotal / exchangeRate;
-  const totalInLak = subtotal;
-
-  const orderResult = await query(
-    `INSERT INTO orders (shop_id, order_number, customer_name, customer_phone, customer_address,
-      subtotal, discount, tax, total, currency, exchange_rate_used, total_in_lak,
-      payment_method, order_type, delivery_date, shipping_notes, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [shopId, orderNumber, body.customer_name || '', body.customer_phone || '',
-      body.customer_address || '', currency === 'LAK' ? subtotal : subtotal / exchangeRate, 0, 0, total,
-      currency, exchangeRate, totalInLak,
-      body.payment_method || 'transfer', 'online',
-      body.delivery_date || null, body.shipping_notes || '', 'pending']
-  );
-
-  const orderId = orderResult.insertId;
-
-  for (const item of resolvedItems) {
-    await query(
-      'INSERT INTO order_items (shop_id, order_id, product_id, variant_id, quantity, unit_price, currency, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [shopId, orderId, item.product_id, item.variant_id, item.quantity, item.unit_price, currency, item.total]
-    );
-    if (item.variant_id) {
-      await query('UPDATE product_variants SET quantity = quantity - ? WHERE id = ? AND quantity >= ? AND shop_id = ?', [item.quantity, item.variant_id, item.quantity, shopId]);
-    } else {
-      await query("UPDATE inventory SET quantity = quantity - ? WHERE product_id = ? AND status = 'in_stock' AND quantity >= ? AND shop_id = ?", [item.quantity, item.product_id, item.quantity, shopId]);
-    }
+  try {
+    const order = await createOrder(shopId, {
+      items, currency,
+      customer_name: body.customer_name, customer_phone: body.customer_phone, customer_address: body.customer_address,
+      payment_method: body.payment_method || 'transfer', order_type: 'online',
+      delivery_date: body.delivery_date, shipping_notes: body.shipping_notes, amount_paid: 0,
+    }, { prefix: 'BOT' });
+    return NextResponse.json({ order_number: order.order_number, id: order.id, total: Number(order.total), currency, status: order.status }, { status: 201, headers: corsHeaders() });
+  } catch (e) {
+    if (e instanceof OrderError) return NextResponse.json({ error: e.code, detail: e.detail || null }, { status: e.code === 'out_of_stock' ? 409 : 400, headers: corsHeaders() });
+    console.error('bot order:', e);
+    return NextResponse.json({ error: 'save_failed' }, { status: 500, headers: corsHeaders() });
   }
-
-  return NextResponse.json({
-    order_number: orderNumber,
-    id: orderId,
-    total,
-    currency,
-    status: 'pending',
-  }, { status: 201, headers: corsHeaders() });
 }
 
 export async function GET(request) {

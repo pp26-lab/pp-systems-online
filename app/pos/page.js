@@ -4,6 +4,7 @@ import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
 import { formatCurrency, localToday } from '../../lib/currency';
 import { printReceipt, printShippingLabel } from '../../lib/receipt';
+import { orderErrorText, RELOAD_PRODUCTS } from '../../lib/order-messages';
 import { Icon, IconButton, Button, Segmented, Modal, Field, SearchInput, Chip, Pill, EmptyState, inputCls } from '../../components/ui';
 
 const COPY = {
@@ -329,7 +330,13 @@ export default function POSPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error('save failed');
+      if (!res.ok) {
+        // Refused by the server (stock, price, coupon): say exactly why, and refresh stock/prices.
+        const d = await res.json().catch(() => ({}));
+        setSaveError(orderErrorText(lang, d.error, d.detail));
+        if (RELOAD_PRODUCTS.has(d.error)) loadProducts();
+        return;
+      }
       const order = await res.json();
       order.items = (order.items || []).map((oi, idx) => ({ ...oi, name: lines[idx]?.name, variant_color: lines[idx]?.variant }));
       setLastSale({ order, received: orderType === 'walk_in' && paymentMethod === 'cash' && receivedNum > 0 ? receivedNum : null });
