@@ -31,6 +31,7 @@ export default function AdminLayout({ children }) {
     { href: '/admin/licenses', label: '🔑 Licenses' },
     { href: '/admin/shops', label: '🏪 Shops' },
     { href: '/admin/keys', label: '🤖 API Keys' },
+    { href: '/admin/settings', label: '⚙️ ตั้งค่าแชท' },
   ];
 
   return (

@@ -171,10 +171,10 @@ export default function AdminShopDetail() {
 
         {setup && !setupOk && (
           <div className="mt-4 rounded-lg bg-amber-50 text-amber-900 px-4 py-3 text-sm">
-            เซิร์ฟเวอร์ยังตั้งค่าไม่ครบ:
-            {!setup.app_secret && <span className="ml-2 font-mono">META_APP_SECRET</span>}
-            {!setup.verify_token && <span className="ml-2 font-mono">META_VERIFY_TOKEN</span>}
-            {!setup.encryption_key && <span className="ml-2 font-mono">CHANNEL_ENC_KEY</span>}
+            {(!setup.app_secret || !setup.verify_token) && (
+              <p>ยังตั้งค่าแอป Facebook ไม่ครบ (App Secret / Verify Token) — <a href="/admin/settings" className="font-semibold underline">ไปหน้าตั้งค่าแชท</a></p>
+            )}
+            {!setup.encryption_key && <p className="mt-1">เซิร์ฟเวอร์ยังไม่ได้ตั้ง <span className="font-mono">CHANNEL_ENC_KEY</span></p>}
           </div>
         )}
         {setup && setup.wa_gateway !== 'up' && (
