@@ -6,6 +6,7 @@ import Sidebar from '../components/Layout/Sidebar';
 import Header from '../components/Layout/Header';
 import BottomNav, { NO_PAD } from '../components/Layout/BottomNav';
 import MessageAlert from '../components/MessageAlert';
+import { pushSignOut } from '../components/PushSetup';
 
 export const AppContext = createContext();
 
@@ -15,11 +16,15 @@ export function useApp() {
 
 // Runs before React hydrates: kills stale service workers / caches that could
 // serve old JS chunks, and auto-reloads once if a chunk fails to load so the
-// user never sees the "client-side exception" screen.
+// user never sees the "client-side exception" screen. Our own /sw.js is kept:
+// it only shows chat notifications and never caches or serves pages.
 const bootScript = `(function(){
   try {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});
+      navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){
+        var w = r.active || r.waiting || r.installing;
+        if (!w || !/\\/sw\\.js(\\?|$)/.test(w.scriptURL)) r.unregister();
+      });}).catch(function(){});
     }
     if (window.caches && caches.keys) {
       caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});}).catch(function(){});
@@ -98,6 +103,8 @@ export default function RootLayout({ children }) {
   }
 
   async function handleLogout() {
+    // This phone stops getting the shop's chat notifications once nobody is signed in on it.
+    await pushSignOut();
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
     router.push('/login');
@@ -113,6 +120,9 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#0E1A33" />
         <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
         <link rel="apple-touch-icon" href="/brand/pp-systems-icon-192.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="PP Systems" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -136,6 +146,9 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#0E1A33" />
         <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
         <link rel="apple-touch-icon" href="/brand/pp-systems-icon-192.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="PP Systems" />
         </head>
         <body className="bg-[#F3F5F8] min-h-screen flex items-center justify-center">
           <div className="text-center">
@@ -158,6 +171,9 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#0E1A33" />
         <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
         <link rel="apple-touch-icon" href="/brand/pp-systems-icon-192.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="PP Systems" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />

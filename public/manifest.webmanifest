@@ -1,0 +1,14 @@
+{
+  "name": "PP Systems",
+  "short_name": "PP Systems",
+  "description": "PP Systems — ขายหน้าร้าน ออเดอร์ และแชทลูกค้า",
+  "start_url": "/chat",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#0E1A33",
+  "icons": [
+    { "src": "/brand/pp-systems-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/pp-systems-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

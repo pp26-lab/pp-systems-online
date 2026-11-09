@@ -6,6 +6,7 @@ import { Button, IconButton, Modal, Pill, EmptyState, Icon, SearchInput, inputCl
 import CustomerForm from '../../components/CustomerForm';
 import { QR_COPY, QuickReplyPicker, QuickReplyManager, useQuickReplies } from '../../components/chat/QuickReplies';
 import { SoundToggle } from '../../components/MessageAlert';
+import { usePush, PushToggle, PushHint } from '../../components/PushSetup';
 
 const COPY = {
   lo: {
@@ -112,6 +113,15 @@ export default function ChatPage() {
   const [search, setSearch] = useState('');
   const [activeId, setActiveId] = useState(null);
   const [view, setView] = useState('list'); // mobile: list | thread | profile
+  const push = usePush(lang);
+  const [notice, setNotice] = useState('');
+  const say = text => { setNotice(text); setTimeout(() => setNotice(''), 4000); };
+
+  // Opened from a notification (/chat?c=<id>): go straight to that conversation.
+  useEffect(() => {
+    const id = Number(new URLSearchParams(window.location.search).get('c'));
+    if (id > 0) { setActiveId(id); setView('thread'); }
+  }, []);
 
   // While a conversation is open on a phone, hide the bottom menu so the message box has room.
   useEffect(() => {
@@ -190,7 +200,10 @@ export default function ChatPage() {
               </label>
             )}
             <SoundToggle lang={lang} />
+            <PushToggle lang={lang} push={push} onMessage={say} />
           </div>
+          {notice && <p role="status" className="mb-2 text-xs font-medium text-primary-dark">{notice}</p>}
+          <PushHint lang={lang} push={push} onMessage={say} />
         </div>
         <div className="flex-1 overflow-y-auto">
           {state === 'loading' ? (
