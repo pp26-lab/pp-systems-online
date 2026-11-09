@@ -32,18 +32,24 @@ import { useEncryptedAuthState, readSealedJson, writeSealedJson } from './auth-s
 
 // ------------------------------------------------------------------ config
 
+// .env.local is this gateway's config, so its values win over whatever pm2 injects into the
+// process environment. pm2 has repeatedly passed a stale/empty CHANNEL_ENC_KEY that did not
+// match the key in the file, which crash-looped the gateway; the file is the single source of
+// truth here. (System vars like PATH/HOME are never in the file, so they are untouched.)
+const ENV_FROM_FILE = new Set();
 function loadEnv() {
   for (const f of ['.env.local', '.env']) {
     const p = path.join(process.cwd(), f);
     if (!fs.existsSync(p)) continue;
     for (const line of fs.readFileSync(p, 'utf8').split(/\r?\n/)) {
       const m = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
-      // Fill a variable that is missing OR empty. pm2 can inject an empty CHANNEL_ENC_KEY=,
-      // and treating that as "already set" made the gateway ignore the real key in the file.
-      if (!m || (process.env[m[1]] != null && process.env[m[1]] !== '')) continue;
+      if (!m) continue;
+      // First file to define a key wins (.env.local before .env); the file beats the process env.
+      if (ENV_FROM_FILE.has(m[1])) continue;
       let v = m[2];
       if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
       process.env[m[1]] = v;
+      ENV_FROM_FILE.add(m[1]);
     }
   }
 }
