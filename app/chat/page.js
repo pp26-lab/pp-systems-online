@@ -5,6 +5,7 @@ import { formatCurrency } from '../../lib/currency';
 import { Button, IconButton, Modal, Pill, EmptyState, Icon, SearchInput, inputCls } from '../../components/ui';
 import CustomerForm from '../../components/CustomerForm';
 import { QR_COPY, QuickReplyPicker, QuickReplyManager, useQuickReplies } from '../../components/chat/QuickReplies';
+import { SoundToggle } from '../../components/MessageAlert';
 
 const COPY = {
   lo: {
@@ -188,6 +189,7 @@ export default function ChatPage() {
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
               </label>
             )}
+            <SoundToggle lang={lang} />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">

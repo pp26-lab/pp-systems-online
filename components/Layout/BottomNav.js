@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { t } from '../../lib/i18n';
+import { useBadges } from '../useBadges';
 
 // Phone and tablet navigation: the 4 places a shop uses all day, plus "More" for the rest.
 // Big targets with a label under every icon, so nobody has to guess what an icon means.
@@ -26,19 +27,11 @@ export const NO_PAD = ['/pos', '/chat'];
 
 export default function BottomNav({ lang, onMore }) {
   const pathname = usePathname();
-  const [badges, setBadges] = useState({});
+  const badges = useBadges();
   const [features, setFeatures] = useState(null);
 
   useEffect(() => {
     fetch('/api/features').then(r => (r.ok ? r.json() : null)).then(f => f && setFeatures(f)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    let alive = true;
-    const load = () => fetch('/api/badges').then(r => (r.ok ? r.json() : null)).then(b => { if (alive && b) setBadges(b); }).catch(() => {});
-    load();
-    const id = setInterval(load, 30000);
-    return () => { alive = false; clearInterval(id); };
   }, []);
 
   if (HIDE_ON.some(p => pathname === p || pathname.startsWith(p + '/'))) return null;

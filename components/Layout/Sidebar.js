@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { t } from '../../lib/i18n';
+import { useBadges, refreshBadges } from '../useBadges';
 
 const ICONS = {
   dashboard: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',
@@ -59,7 +60,9 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
   const pathname = usePathname();
   const [shopName, setShopName] = useState('PP Systems');
   const [shopLogo, setShopLogo] = useState('');
-  const [badges, setBadges] = useState({ handoffs: 0, pending_orders: 0, chat_unread: 0 });
+  const badges = useBadges();
+  // Moving to another page (e.g. after reading a chat) refreshes the counts right away.
+  useEffect(() => { refreshBadges(); }, [pathname]);
   const [features, setFeatures] = useState(null);
 
   useEffect(() => {
@@ -72,19 +75,6 @@ export default function Sidebar({ isOpen, onToggle, onClose, lang }) {
       if (data.shop_logo) setShopLogo(data.shop_logo);
     }).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    let alive = true;
-    async function load() {
-      try {
-        const res = await fetch('/api/badges');
-        if (res.ok && alive) setBadges(await res.json());
-      } catch {}
-    }
-    load();
-    const id = setInterval(load, 30000);
-    return () => { alive = false; clearInterval(id); };
-  }, [pathname]);
 
   function handleNavigate() {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose?.();

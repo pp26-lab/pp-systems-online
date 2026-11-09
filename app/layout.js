@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '../components/Layout/Sidebar';
 import Header from '../components/Layout/Header';
 import BottomNav, { NO_PAD } from '../components/Layout/BottomNav';
+import MessageAlert from '../components/MessageAlert';
 
 export const AppContext = createContext();
 
@@ -174,6 +175,7 @@ export default function RootLayout({ children }) {
                 {children}
               </main>
               <BottomNav lang={lang} onMore={() => setSidebarOpen(true)} />
+              <MessageAlert />
             </div>
           </div>
           )}
