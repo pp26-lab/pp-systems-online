@@ -31,6 +31,7 @@ export default function AdminShopDetail() {
   const [setup, setSetup] = useState(null);
   const [flash, setFlash] = useState(null);
   const [connect, setConnect] = useState(null); // { platform, token, external_id, account_id }
+  const [connectErr, setConnectErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [scan, setScan] = useState(null); // channel id being paired by QR / code
 
@@ -65,13 +66,20 @@ export default function AdminShopDetail() {
   async function submitConnect(e) {
     e.preventDefault();
     setBusy(true);
+    setConnectErr('');
     try {
       const res = await fetch(`/api/admin/shops/${id}/channels`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(connect) });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) { say(false, `${ERR[d.error] || d.error}${d.detail ? `: ${d.detail}` : ''}`); return; }
+      if (!res.ok) {
+        // Show the error right inside the form (the top flash is out of view when connecting).
+        setConnectErr(`${ERR[d.error] || d.error || 'เชื่อมต่อไม่สำเร็จ'}${d.detail ? `: ${d.detail}` : ''}`);
+        return;
+      }
       say(true, `เชื่อมต่อ ${d.name || ''} แล้ว`);
       setConnect(null);
       load();
+    } catch {
+      setConnectErr('ติดต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง');
     } finally {
       setBusy(false);
     }
@@ -160,11 +168,11 @@ export default function AdminShopDetail() {
             <p className="text-sm text-slate-500">Token ถูกตรวจกับ Meta ก่อนบันทึก และเก็บแบบเข้ารหัส ไม่มีใครเปิดดูได้อีก</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setConnect({ platform: 'messenger', token: '', external_id: '' })} disabled={!setupOk}
+            <button onClick={() => { setConnectErr(''); setConnect({ platform: 'messenger', token: '', external_id: '' }); }} disabled={!setupOk}
               className="px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-white disabled:opacity-40">เชื่อม Messenger</button>
             <button onClick={startScan} disabled={busy || !setup?.encryption_key || setup?.wa_gateway !== 'up'}
               className="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-40">เชื่อม WhatsApp (สแกน QR)</button>
-            <button onClick={() => setConnect({ platform: 'whatsapp', token: '', external_id: '', account_id: '' })} disabled={!setupOk}
+            <button onClick={() => { setConnectErr(''); setConnect({ platform: 'whatsapp', token: '', external_id: '', account_id: '' }); }} disabled={!setupOk}
               className="px-3 py-2 rounded-lg text-sm font-semibold bg-white border border-slate-300 text-slate-700 disabled:opacity-40">WhatsApp (API ทางการ)</button>
           </div>
         </div>
@@ -208,9 +216,10 @@ export default function AdminShopDetail() {
               <input type="password" autoComplete="off" value={connect.token} onChange={e => setConnect({ ...connect, token: e.target.value })}
                 className="mt-1 w-full border border-slate-300 rounded-md px-3 py-2 font-mono" />
             </label>
+            {connectErr && <p role="alert" className="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm font-medium break-words">{connectErr}</p>}
             <div className="flex gap-2">
               <button type="submit" disabled={busy} className="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white disabled:opacity-40">{busy ? 'กำลังตรวจกับ Meta…' : 'ตรวจและเชื่อมต่อ'}</button>
-              <button type="button" onClick={() => setConnect(null)} className="px-4 py-2 rounded-lg text-sm">ยกเลิก</button>
+              <button type="button" onClick={() => { setConnect(null); setConnectErr(''); }} className="px-4 py-2 rounded-lg text-sm">ยกเลิก</button>
             </div>
           </form>
         )}
