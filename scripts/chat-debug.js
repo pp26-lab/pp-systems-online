@@ -16,7 +16,8 @@ for (const f of ['.env.local', '.env']) {
   }
 }
 
-const short = (v, n = 24) => (v == null ? null : String(v).length > n ? `${String(v).slice(0, n)}…` : String(v));
+// Long ids: keep the start and the end, so a suffix like "#1" stays visible.
+const short = (v, n = 24) => (v == null ? null : String(v).length > n ? `${String(v).slice(0, n - 8)}…${String(v).slice(-6)}` : String(v));
 
 (async () => {
   const db = await mysql.createConnection({
