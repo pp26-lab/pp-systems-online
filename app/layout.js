@@ -14,6 +14,11 @@ export function useApp() {
   return useContext(AppContext);
 }
 
+// Pages anyone can open without signing in. The privacy and data-deletion pages
+// must be publicly reachable for Meta's app review (and to switch the app to Live).
+const PUBLIC_PATHS = ['/login', '/privacy', '/data-deletion'];
+const isPublicPath = p => PUBLIC_PATHS.includes(p);
+
 // Runs before React hydrates: kills stale service workers / caches that could
 // serve old JS chunks, and auto-reloads once if a chunk fails to load so the
 // user never sees the "client-side exception" screen. Our own /sw.js is kept:
@@ -82,7 +87,7 @@ export default function RootLayout({ children }) {
   }, [pathname]);
 
   async function checkAuth() {
-    if (pathname === '/login' || pathname.startsWith('/admin')) {
+    if (isPublicPath(pathname) || pathname.startsWith('/admin')) {
       setLoading(false);
       return;
     }
@@ -110,12 +115,12 @@ export default function RootLayout({ children }) {
     router.push('/login');
   }
 
-  if (pathname === '/login' || pathname.startsWith('/admin')) {
+  if (isPublicPath(pathname) || pathname.startsWith('/admin')) {
     return (
       <html lang={lang}>
         <head>
           <BootScript />
-          <title>PP Systems Online - Login</title>
+          <title>PP Systems Online</title>
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0E1A33" />
         <link rel="icon" type="image/png" sizes="192x192" href="/brand/pp-systems-icon-192.png" />
