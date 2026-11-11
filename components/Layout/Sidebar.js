@@ -37,7 +37,7 @@ const GROUPS = [
   ] },
   { label: { lo: 'ລູກຄ້າ', th: 'ลูกค้า', en: 'Customers' }, items: [
     { key: 'customers', path: '/customers' },
-    { key: 'handoffs', path: '/handoffs', badge: 'handoffs', feature: 'bot_api' },
+    // "Bot handoffs" (/handoffs) is no longer in the menu: the chat page replaced it.
     { key: 'coupons', path: '/coupons', feature: 'coupons' },
   ] },
   { label: { lo: 'ລະບົບ', th: 'ระบบ', en: 'System' }, items: [
