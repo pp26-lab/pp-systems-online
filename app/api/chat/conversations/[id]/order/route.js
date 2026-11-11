@@ -80,7 +80,7 @@ export async function POST(request, { params }) {
   const text = String(body.summary_text || '').replace(/\{order\}/g, order.order_number).trim().slice(0, 2000);
   if (body.send_summary && text) {
     try {
-      summary = await sendMessage({ shopId: g.shopId, conversationId: conv.id, text, orderId: order.id });
+      summary = await sendMessage({ shopId: g.shopId, conversationId: conv.id, text, orderId: order.id, humanAgent: true });
     } catch (e) {
       summary = { status: 'failed', error: e instanceof SendError ? e.code : (e.code || e.message) };
     }

@@ -23,7 +23,10 @@ function productPhoto(url) {
   return { buffer: fs.readFileSync(file), mime, name };
 }
 
-// Body: multipart form with text, file, order_id, product_id, human_agent.
+// Body: multipart form with text, file, order_id, product_id.
+// Everything sent from here is typed or picked by a staff member, so once the free 24-hour
+// window has closed Messenger gets the HUMAN_AGENT tag automatically (allowed up to 7 days).
+// Automated messages (shipping notices) never go through here and never get that tag.
 export async function POST(request, { params }) {
   const g = await chatGuard();
   if (g.response) return g.response;
@@ -37,7 +40,7 @@ export async function POST(request, { params }) {
     if (!reply) return NextResponse.json({ error: 'not_found' }, { status: 404 });
     try {
       const results = await sendQuickReply({
-        shopId: g.shopId, conversationId: params.id, text: reply.text, files: loadReplyFiles(g.shopId, reply), humanAgent: form.get('human_agent') === '1',
+        shopId: g.shopId, conversationId: params.id, text: reply.text, files: loadReplyFiles(g.shopId, reply), humanAgent: true,
       });
       await countUse(g.shopId, quickId);
       const failed = results.some(x => x.status === 'failed');
@@ -74,7 +77,7 @@ export async function POST(request, { params }) {
 
   try {
     const result = await sendMessage({
-      shopId: g.shopId, conversationId: params.id, text, file, orderId, humanAgent: form.get('human_agent') === '1',
+      shopId: g.shopId, conversationId: params.id, text, file, orderId, humanAgent: true,
     });
     return NextResponse.json(result, { status: result.status === 'failed' ? 502 : 200 });
   } catch (e) {

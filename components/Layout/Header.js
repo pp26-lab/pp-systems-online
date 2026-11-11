@@ -22,7 +22,7 @@ export default function Header({ lang, setLang, onMenuToggle, onLogout, user }) 
   });
   const [logoFailed, setLogoFailed] = useState(false);
   // First letters of the shop name, cut by visible characters so Lao/Thai vowels stay whole.
-  const name = (user?.shop_name || 'PP').replace(/s+/g, '');
+  const name = (user?.shop_name || 'PP').replace(/\s+/g, '');
   const initials = (typeof Intl !== 'undefined' && Intl.Segmenter
     ? [...new Intl.Segmenter().segment(name)].slice(0, 2).map(x => x.segment).join('')
     : name.slice(0, 2)).toUpperCase();

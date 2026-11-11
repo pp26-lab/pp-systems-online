@@ -11,13 +11,13 @@ import ChatOrderPanel from '../../components/chat/ChatOrderPanel';
 
 const COPY = {
   lo: {
-    search: 'ຄົ້ນຫາຊື່, ເບີໂທ, ຂໍ້ຄວາມ', unread: 'ຍັງບໍ່ອ່ານ', open: 'ຕ້ອງຈັດການ', done: 'ຈັດການແລ້ວ', all: 'ທັງໝົດ', allCh: 'ທຸກຊ່ອງທາງ',
+    search: 'ຄົ້ນຫາຊື່, ເບີໂທ, ຂໍ້ຄວາມ', all: 'ຂໍ້ຄວາມທັງໝົດ', unread: 'ຍັງບໍ່ໄດ້ອ່ານ', unanswered: 'ຍັງບໍ່ໄດ້ຕອບ', allCh: 'ທຸກຊ່ອງທາງ',
     off: 'ຟັງຊັນແຊັດຍັງບໍ່ໄດ້ເປີດໃຊ້ສຳລັບຮ້ານນີ້', offText: 'ຕິດຕໍ່ PP Systems ເພື່ອເປີດໃຊ້ແຊັດ Facebook ແລະ WhatsApp',
     none: 'ຍັງບໍ່ມີແຊັດ', noneText: 'ເມື່ອລູກຄ້າທັກມາທາງເພຈ ຫຼື WhatsApp ຈະຂຶ້ນຢູ່ນີ້ທັນທີ', noMatch: 'ບໍ່ພົບແຊັດ',
     pick: 'ເລືອກແຊັດທາງຊ້າຍເພື່ອເລີ່ມຕອບ', placeholder: 'ພິມຂໍ້ຄວາມ… (Enter ສົ່ງ, Shift+Enter ຂຶ້ນແຖວໃໝ່)', send: 'ສົ່ງ', attach: 'ແນບຮູບ ຫຼື ໄຟລ໌',
     markDone: 'ຈັດການແລ້ວ', reopen: 'ເປີດຄືນ', older: 'ໂຫຼດຂໍ້ຄວາມເກົ່າ', today: 'ມື້ນີ້', yesterday: 'ມື້ວານ',
     sending: 'ກຳລັງສົ່ງ', sent: 'ສົ່ງແລ້ວ', delivered: 'ຮອດແລ້ວ', read: 'ອ່ານແລ້ວ', failed: 'ສົ່ງບໍ່ສຳເລັດ', retry: 'ສົ່ງໃໝ່',
-    windowLeft: t => `ຕອບໄດ້ອີກ ${t}`, windowClosed: 'ໝົດເວລາຕອບຟຣີ 24 ຊົ່ວໂມງ', windowClosedText: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ ຈຶ່ງຈະສົ່ງຂໍ້ຄວາມໄດ້ອີກ',
+    windowLeft: t => `ຕອບໄດ້ອີກ ${t}`, windowClosed: 'ສົ່ງຂໍ້ຄວາມຫາລູກຄ້ານີ້ບໍ່ໄດ້ແລ້ວ', windowClosedText: 'ລູກຄ້າທັກມາດົນເກີນກວ່າທີ່ລະບົບອະນຸຍາດ ລໍຖ້າລູກຄ້າທັກມາໃໝ່ ຈຶ່ງຈະຕອບໄດ້',
     humanAgent: 'ສົ່ງແບບພະນັກງານຕອບ (ໄດ້ພາຍໃນ 7 ມື້)', mediaMissing: 'ໂຫຼດໄຟລ໌ບໍ່ໄດ້', useSlip: 'ໃຊ້ເປັນສະລິບ', slipFor: 'ແນບສະລິບກັບອໍເດີ້',
     slipSaved: n => `ແນບສະລິບກັບ ${n} ແລ້ວ`, slipUsed: n => `ຮູບນີ້ເປັນສະລິບຂອງ ${n} ແລ້ວ`, needCustomer: 'ຜູກແຊັດກັບລູກຄ້າກ່ອນ ຈຶ່ງຈະເຫັນອໍເດີ້', noOrders: 'ລູກຄ້ານີ້ຍັງບໍ່ມີອໍເດີ້',
     customer: 'ລູກຄ້າ', link: 'ຜູກກັບລູກຄ້າທີ່ມີຢູ່', create: 'ບັນທຶກເປັນລູກຄ້າໃໝ່', unlink: 'ຍົກເລີກການຜູກ', suggest: 'ລູກຄ້າທີ່ເບີໂທກົງກັນ', pickCustomer: 'ເລືອກລູກຄ້າ',
@@ -26,18 +26,18 @@ const COPY = {
     errors: { window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
     replyOnly: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ', replyOnlyText: 'ເພື່ອບໍ່ໃຫ້ເບີຖືກແບນ ລະບົບຕອບໄດ້ສະເພາະລູກຄ້າທີ່ທັກມາກ່ອນ',
     status: { pending: 'ລໍຖ້າຈັດສົ່ງ', shipping: 'ກຳລັງຈັດສົ່ງ', completed: 'ສຳເລັດ', cancelled: 'ຍົກເລີກ' }, details: 'ຂໍ້ມູນລູກຄ້າ', back: 'ກັບ',
-    saveAs: 'ບັນທຶກເປັນ:', asName: 'ຊື່', asPhone: 'ເບີໂທ', asAddress: 'ທີ່ຢູ່', noPhone: 'ບໍ່ພົບເບີໂທໃນຂໍ້ຄວາມນີ້', saveFailed: 'ບັນທຶກບໍ່ສຳເລັດ',
+    saveAs: 'ບັນທຶກເປັນ:', saveInfo: 'ບັນທຶກເປັນຂໍ້ມູນລູກຄ້າ', asName: 'ຊື່', asPhone: 'ເບີໂທ', asAddress: 'ທີ່ຢູ່', noPhone: 'ບໍ່ພົບເບີໂທໃນຂໍ້ຄວາມນີ້', saveFailed: 'ບັນທຶກບໍ່ສຳເລັດ',
     savedAs: { name: v => `ບັນທຶກຊື່ແລ້ວ: ${v}`, phone: v => `ບັນທຶກເບີໂທແລ້ວ: ${v}`, address: v => `ບັນທຶກທີ່ຢູ່ແລ້ວ: ${v}` },
     newOrder: 'ສ້າງອໍເດີ້', orderMade: n => `ສ້າງອໍເດີ້ ${n} ແລ້ວ ສະຕ໋ອກຖືກຕັດແລ້ວ`, summaryFailed: e => `ແຕ່ສົ່ງສະຫຼຸບໃຫ້ລູກຄ້າບໍ່ໄດ້ (${e})`,
   },
   th: {
-    search: 'ค้นหาชื่อ, เบอร์, ข้อความ', unread: 'ยังไม่อ่าน', open: 'ต้องจัดการ', done: 'เสร็จแล้ว', all: 'ทั้งหมด', allCh: 'ทุกช่องทาง',
+    search: 'ค้นหาชื่อ, เบอร์, ข้อความ', all: 'ข้อความทั้งหมด', unread: 'ยังไม่ได้อ่าน', unanswered: 'ยังไม่ได้ตอบ', allCh: 'ทุกช่องทาง',
     off: 'ฟังก์ชันแชทยังไม่ได้เปิดใช้สำหรับร้านนี้', offText: 'ติดต่อ PP Systems เพื่อเปิดใช้แชท Facebook และ WhatsApp',
     none: 'ยังไม่มีแชท', noneText: 'เมื่อลูกค้าทักมาทางเพจหรือ WhatsApp จะขึ้นที่นี่ทันที', noMatch: 'ไม่พบแชท',
     pick: 'เลือกแชททางซ้ายเพื่อเริ่มตอบ', placeholder: 'พิมพ์ข้อความ… (Enter ส่ง, Shift+Enter ขึ้นบรรทัดใหม่)', send: 'ส่ง', attach: 'แนบรูปหรือไฟล์',
     markDone: 'เสร็จแล้ว', reopen: 'เปิดใหม่', older: 'โหลดข้อความเก่า', today: 'วันนี้', yesterday: 'เมื่อวาน',
     sending: 'กำลังส่ง', sent: 'ส่งแล้ว', delivered: 'ถึงแล้ว', read: 'อ่านแล้ว', failed: 'ส่งไม่สำเร็จ', retry: 'ส่งใหม่',
-    windowLeft: t => `ตอบได้อีก ${t}`, windowClosed: 'หมดเวลาตอบฟรี 24 ชั่วโมง', windowClosedText: 'รอลูกค้าทักมาก่อน จึงจะส่งข้อความได้อีก',
+    windowLeft: t => `ตอบได้อีก ${t}`, windowClosed: 'ส่งข้อความหาลูกค้านี้ไม่ได้แล้ว', windowClosedText: 'ลูกค้าทักมานานเกินกว่าที่ระบบอนุญาต รอลูกค้าทักมาใหม่ จึงจะตอบได้',
     humanAgent: 'ส่งแบบพนักงานตอบ (ได้ภายใน 7 วัน)', mediaMissing: 'โหลดไฟล์ไม่ได้', useSlip: 'ใช้เป็นสลิป', slipFor: 'แนบสลิปกับออเดอร์',
     slipSaved: n => `แนบสลิปกับ ${n} แล้ว`, slipUsed: n => `รูปนี้เป็นสลิปของ ${n} แล้ว`, needCustomer: 'ผูกแชทกับลูกค้าก่อน จึงจะเห็นออเดอร์', noOrders: 'ลูกค้านี้ยังไม่มีออเดอร์',
     customer: 'ลูกค้า', link: 'ผูกกับลูกค้าที่มีอยู่', create: 'บันทึกเป็นลูกค้าใหม่', unlink: 'ยกเลิกการผูก', suggest: 'ลูกค้าที่เบอร์ตรงกัน', pickCustomer: 'เลือกลูกค้า',
@@ -46,18 +46,18 @@ const COPY = {
     errors: { window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
     replyOnly: 'รอลูกค้าทักมาก่อน', replyOnlyText: 'เพื่อไม่ให้เบอร์ถูกแบน ระบบตอบได้เฉพาะลูกค้าที่ทักมาก่อน',
     status: { pending: 'รอจัดส่ง', shipping: 'กำลังจัดส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' }, details: 'ข้อมูลลูกค้า', back: 'กลับ',
-    saveAs: 'บันทึกเป็น:', asName: 'ชื่อ', asPhone: 'เบอร์โทร', asAddress: 'ที่อยู่', noPhone: 'ไม่พบเบอร์โทรในข้อความนี้', saveFailed: 'บันทึกไม่สำเร็จ',
+    saveAs: 'บันทึกเป็น:', saveInfo: 'บันทึกเป็นข้อมูลลูกค้า', asName: 'ชื่อ', asPhone: 'เบอร์โทร', asAddress: 'ที่อยู่', noPhone: 'ไม่พบเบอร์โทรในข้อความนี้', saveFailed: 'บันทึกไม่สำเร็จ',
     savedAs: { name: v => `บันทึกชื่อแล้ว: ${v}`, phone: v => `บันทึกเบอร์โทรแล้ว: ${v}`, address: v => `บันทึกที่อยู่แล้ว: ${v}` },
     newOrder: 'สร้างออเดอร์', orderMade: n => `สร้างออเดอร์ ${n} แล้ว ตัดสต็อกแล้ว`, summaryFailed: e => `แต่ส่งสรุปให้ลูกค้าไม่ได้ (${e})`,
   },
   en: {
-    search: 'Search name, phone, message', unread: 'Unread', open: 'To do', done: 'Done', all: 'All', allCh: 'All channels',
+    search: 'Search name, phone, message', all: 'All messages', unread: 'Unread', unanswered: 'Not replied', allCh: 'All channels',
     off: 'Chat is not enabled for this shop', offText: 'Contact PP Systems to turn on Facebook and WhatsApp chat.',
     none: 'No chats yet', noneText: 'Messages to your page or WhatsApp number appear here as they arrive.', noMatch: 'No matching chats',
     pick: 'Pick a chat on the left to reply', placeholder: 'Type a message… (Enter to send, Shift+Enter for a new line)', send: 'Send', attach: 'Attach photo or file',
     markDone: 'Done', reopen: 'Reopen', older: 'Load older messages', today: 'Today', yesterday: 'Yesterday',
     sending: 'Sending', sent: 'Sent', delivered: 'Delivered', read: 'Read', failed: 'Not sent', retry: 'Retry',
-    windowLeft: t => `${t} left to reply`, windowClosed: 'The 24-hour reply window has closed', windowClosedText: 'You can message again once the customer writes to you.',
+    windowLeft: t => `${t} left to reply`, windowClosed: "This customer can't be messaged now", windowClosedText: "Their last message is older than the platform allows. You can reply again once they write to you.",
     humanAgent: 'Send as human agent (allowed within 7 days)', mediaMissing: "File couldn't be loaded", useSlip: 'Use as slip', slipFor: 'Attach slip to order',
     slipSaved: n => `Slip attached to ${n}`, slipUsed: n => `This photo is already the slip of ${n}`, needCustomer: 'Link this chat to a customer to see their orders', noOrders: 'No orders from this customer yet',
     customer: 'Customer', link: 'Link to existing customer', create: 'Save as new customer', unlink: 'Unlink', suggest: 'Customers with this phone', pickCustomer: 'Choose customer',
@@ -66,7 +66,7 @@ const COPY = {
     errors: { window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
     replyOnly: 'Waiting for the customer to write first', replyOnlyText: 'To keep the number from being banned, the system only replies to customers who wrote first.',
     status: { pending: 'To ship', shipping: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' }, details: 'Customer details', back: 'Back',
-    saveAs: 'Save as:', asName: 'Name', asPhone: 'Phone', asAddress: 'Address', noPhone: 'No phone number in this message', saveFailed: "Couldn't save",
+    saveAs: 'Save as:', saveInfo: 'Save as customer details', asName: 'Name', asPhone: 'Phone', asAddress: 'Address', noPhone: 'No phone number in this message', saveFailed: "Couldn't save",
     savedAs: { name: v => `Name saved: ${v}`, phone: v => `Phone saved: ${v}`, address: v => `Address saved: ${v}` },
     newOrder: 'Create order', orderMade: n => `Order ${n} created, stock taken`, summaryFailed: e => `but the summary couldn't be sent (${e})`,
   },
@@ -103,12 +103,6 @@ function shortTime(v, c, locale) {
   return d.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
 
-function remaining(ms) {
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
 export default function ChatPage() {
   const { lang } = useContext(AppContext);
   const c = COPY[lang] || COPY.en;
@@ -118,7 +112,7 @@ export default function ChatPage() {
   const [list, setList] = useState([]);
   const [counts, setCounts] = useState({});
   const [platforms, setPlatforms] = useState([]);
-  const [filter, setFilter] = useState('open');
+  const [filter, setFilter] = useState('all'); // all | unread | unanswered
   const [platform, setPlatform] = useState('');
   const [search, setSearch] = useState('');
   const [activeId, setActiveId] = useState(null);
@@ -176,8 +170,9 @@ export default function ChatPage() {
     <div className={`relative -m-4 lg:-m-6 flex bg-white overflow-hidden ${view === 'list' ? 'h-[calc(100dvh-8rem-env(safe-area-inset-bottom))]' : 'h-[calc(100dvh-4rem)]'} lg:h-[calc(100dvh-4rem)]`}>
       {/* Conversation list */}
       <aside className={`${view === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 xl:w-96 shrink-0 flex-col border-r border-line`}>
-        {/* One search box and one row of tabs. Unread chats stand out in the list itself,
-            so they need no filter of their own; the channel picker only appears when a shop has more than one. */}
+        {/* One search box and one row of tabs: every chat, chats nobody has opened yet, and chats
+            where the customer wrote last and is still waiting for a reply. The channel picker only
+            appears when a shop has more than one. */}
         <div className="px-3 pt-3 border-b border-line">
           <div className="relative">
             <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -186,13 +181,14 @@ export default function ChatPage() {
           </div>
           <div className="mt-1 flex items-end">
             <div role="tablist" aria-label={c.all} className="flex flex-1 min-w-0 overflow-x-auto no-scrollbar">
-              {['open', 'done', 'all'].map(f => {
+              {['all', 'unread', 'unanswered'].map(f => {
                 const on = filter === f;
+                const n = f === 'all' ? 0 : counts[f] || 0;
                 return (
                   <button key={f} role="tab" aria-selected={on} onClick={() => setFilter(f)}
                     className={`relative shrink-0 px-2 sm:px-3 min-h-11 text-sm font-semibold whitespace-nowrap transition-colors ${on ? 'text-primary' : 'text-slate-500 hover:text-ink'}`}>
                     {c[f]}
-                    {f === 'open' && counts.open > 0 && <span className={`ml-1.5 num text-xs ${on ? 'text-primary' : 'text-slate-400'}`}>{counts.open}</span>}
+                    {n > 0 && <span className={`ml-1.5 num text-xs ${on ? 'text-primary' : f === 'unread' ? 'text-danger' : 'text-slate-400'}`}>{n}</span>}
                     {on && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-primary" aria-hidden="true" />}
                   </button>
                 );
@@ -268,7 +264,6 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   const [hasMore, setHasMore] = useState(false);
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
-  const [humanAgent, setHumanAgent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [profileKey, setProfileKey] = useState(0);
@@ -375,9 +370,11 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
     requestAnimationFrame(() => { el.scrollTop = el.scrollHeight - before; });
   }
 
+  // After the free 24 hours, Messenger replies from staff are sent with the "human agent" tag
+  // by the server on its own (up to 7 days), so staff never have to tick anything.
   const win = conv?.window || {};
   const winOpen = win.open && (!win.closesAt || win.closesAt > now);
-  const canSend = winOpen || (win.humanAgent && humanAgent);
+  const canSend = winOpen || (!!win.humanAgent && (!win.closesAt || win.closesAt > now));
 
   async function send(extra = {}) {
     if (sending) return;
@@ -390,7 +387,6 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
       if (file) form.append('file', file);
     }
     if (extra.product_id) form.append('product_id', extra.product_id);
-    if (!winOpen && humanAgent) form.append('human_agent', '1');
     const temp = { id: `tmp${Date.now()}`, direction: 'out', type: file ? 'image' : 'text', text: extra.product_id ? '…' : text, status: 'sending', created_at: new Date().toISOString() };
     atBottom.current = true;
     setMessages(prev => [...prev, temp]);
@@ -420,7 +416,6 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
     setError('');
     const form = new FormData();
     form.append('quick_reply_id', reply.id);
-    if (!winOpen && humanAgent) form.append('human_agent', '1');
     atBottom.current = true;
     setMessages(prev => [...prev, { id: `tmp${Date.now()}`, direction: 'out', type: 'text', text: reply.text || '…', status: 'sending', created_at: new Date().toISOString() }]);
     if (qrOpen === 'typed') setText('');
@@ -443,12 +438,6 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
     const d = await res.json().catch(() => ({}));
     if (!res.ok && d.error) setError(c.errors[d.error] || c.errors.send_failed);
     load();
-  }
-
-  async function setStatus(status) {
-    await fetch(`/api/chat/conversations/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
-    load();
-    onChanged();
   }
 
   function onKey(e) {
@@ -501,18 +490,11 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
               {conv?.phone && <span className="num ml-1">({conv.phone})</span>}
             </p>
           </div>
-          {conv && (winOpen
-            ? (win.closesAt ? <span className="hidden sm:inline-flex"><Pill tone="green">{c.windowLeft(remaining(win.closesAt - now))}</Pill></span> : null)
-            : <span className="hidden sm:inline-flex"><Pill tone="red">{win.replyOnly ? c.replyOnly : c.windowClosed}</Pill></span>)}
+          {/* Create order: just a "+" (its name shows as the tooltip and to screen readers). */}
           {conv && (
-            <>
-              <Button size="sm" tone="ghost" icon="plus" onClick={() => setOrderOpen(true)} className="hidden sm:inline-flex">{c.newOrder}</Button>
-              <IconButton icon="plus" label={c.newOrder} onClick={() => setOrderOpen(true)} className="sm:hidden" />
-            </>
+            <IconButton icon="plus" label={c.newOrder} onClick={() => setOrderOpen(true)}
+              className="!text-primary bg-gold-soft/70 hover:!bg-gold-soft" />
           )}
-          {conv && (conv.status === 'done'
-            ? <Button size="sm" tone="ghost" icon="refresh" onClick={() => setStatus('open')}>{c.reopen}</Button>
-            : <Button size="sm" tone="gold" icon="check" onClick={() => setStatus('done')}>{c.markDone}</Button>)}
           <IconButton icon="user" label={c.details} onClick={() => setView(view === 'profile' ? 'thread' : 'profile')} className="xl:hidden" />
         </header>
 
@@ -536,15 +518,12 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
               onSend={sendQuick} sending={sending} onClose={() => setQrOpen(false)}
               onManage={() => { setQrOpen(false); setQrManage(true); }} />
           )}
-          {conv && !winOpen && (
+          {/* Only when nothing can be sent at all (Messenger past 7 days, or a WhatsApp number
+              the customer never wrote to). Within 7 days the server handles it in the background. */}
+          {conv && !canSend && (
             <div className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-danger">
               <p className="font-semibold">{win.replyOnly ? c.replyOnly : c.windowClosed}</p>
               <p className="text-xs">{win.replyOnly ? c.replyOnlyText : c.windowClosedText}</p>
-              {win.humanAgent && (
-                <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
-                  <input type="checkbox" checked={humanAgent} onChange={e => setHumanAgent(e.target.checked)} className="accent-[#0B63E5]" />{c.humanAgent}
-                </label>
-              )}
             </div>
           )}
           {error && <p role="alert" className="mb-2 text-sm text-danger">{error}</p>}
@@ -596,18 +575,20 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip, tagOpen, onTagToggle
   const media = m.has_media ? `/api/chat/messages/${m.id}` : null;
   const isImg = media && String(m.media_mime).startsWith('image/');
   const sticker = isImg && m.type === 'sticker' && !m.text;
-  // A customer's text can be saved as their name / phone / address with a tap
-  // (not when the tap was the end of selecting text to copy).
+  // A customer's text can be saved onto their customer record (address / phone / name) with the
+  // "+" beside it, or a tap on the text (not when the tap ends a text selection for copying).
+  // The order panel then fills these in for this customer.
   const taggable = !out && !!m.text && !media && !String(m.id).startsWith('tmp');
   const onTextClick = taggable ? () => { if (!window.getSelection?.().toString()) onTagToggle(); } : undefined;
   const time = new Date(m.created_at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   return (
     <div className={`flex ${out ? 'justify-end' : 'justify-start'}`}>
       <div className={`group max-w-[85%] sm:max-w-[70%] flex flex-col ${out ? 'items-end' : 'items-start'}`}>
+        <div className="flex items-center gap-1 max-w-full">
         {sticker ? (
           <img src={media} alt="" loading="lazy" className="w-32 h-32 sm:w-36 sm:h-36 object-contain" />
         ) : (
-        <div className={`rounded-xl overflow-hidden ${out ? 'bg-primary text-white rounded-br-md' : 'bg-white text-ink border border-line rounded-bl-md'}`}>
+        <div className={`min-w-0 rounded-xl overflow-hidden ${out ? 'bg-primary text-white rounded-br-md' : 'bg-white text-ink border border-line rounded-bl-md'}`}>
           {isImg && (
             <button onClick={() => onPreview(media)} className="block">
               <img src={media} alt="" loading="lazy" className="max-h-72 w-auto object-cover" />
@@ -628,12 +609,19 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip, tagOpen, onTagToggle
           )}
         </div>
         )}
+        {taggable && (
+          <button type="button" onClick={onTagToggle} aria-label={c.saveInfo} title={c.saveInfo} aria-expanded={tagOpen}
+            className={`shrink-0 w-9 h-9 lg:w-7 lg:h-7 rounded-full flex items-center justify-center border transition-colors ${tagOpen ? 'bg-primary border-primary text-white' : 'bg-white border-line text-primary hover:border-primary'}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className={`w-4 h-4 transition-transform ${tagOpen ? 'rotate-45' : ''}`} aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+        )}
+        </div>
         {tagOpen && (
-          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
             <span className="text-slate-500">{c.saveAs}</span>
-            {[['name', c.asName], ['phone', c.asPhone], ['address', c.asAddress]].map(([f, l]) => (
+            {[['address', c.asAddress], ['phone', c.asPhone], ['name', c.asName]].map(([f, l]) => (
               <button key={f} type="button" onClick={() => onTag(m, f)}
-                className="px-2.5 min-h-8 rounded-full bg-white border border-line font-semibold text-primary-dark hover:border-primary">{l}</button>
+                className="px-3 min-h-10 lg:min-h-8 rounded-full bg-white border border-line font-semibold text-primary-dark hover:border-primary">{l}</button>
             ))}
           </div>
         )}

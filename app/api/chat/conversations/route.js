@@ -5,6 +5,12 @@ import { chatPlatforms } from '../../../../lib/features';
 
 export const dynamic = 'force-dynamic';
 
+// The customer has written and no reply (other than a failed one) went out after it.
+// Uses the (conversation_id, id) index on chat_messages.
+const UNANSWERED = `(c.last_inbound_at IS NOT NULL AND NOT EXISTS (
+  SELECT 1 FROM chat_messages m WHERE m.conversation_id = c.id AND m.direction = 'out'
+    AND m.status <> 'failed' AND m.created_at >= c.last_inbound_at))`;
+
 // Conversation list for the inbox. Only platforms the shop has bought are shown.
 export async function GET(request) {
   const g = await chatGuard();
@@ -12,7 +18,7 @@ export async function GET(request) {
   const { shopId, features } = g;
 
   const p = new URL(request.url).searchParams;
-  const filter = p.get('filter') || 'open';
+  const filter = p.get('filter') || 'all';
   const platform = p.get('platform');
   const q = (p.get('q') || '').trim();
 
@@ -30,9 +36,10 @@ export async function GET(request) {
     LEFT JOIN customers cu ON cu.id = c.customer_id AND cu.shop_id = c.shop_id
     WHERE c.shop_id = ? AND c.platform IN (${platforms.map(() => '?').join(',')}) AND c.last_message_at IS NOT NULL`;
   const params = [shopId, ...platforms];
+  // all: every chat | unread: has messages nobody opened yet | unanswered: the customer wrote
+  // last and the shop hasn't replied since (a failed send doesn't count as a reply).
   if (filter === 'unread') sql += ' AND c.unread_count > 0';
-  else if (filter === 'open') sql += " AND c.status = 'open'";
-  else if (filter === 'done') sql += " AND c.status = 'done'";
+  else if (filter === 'unanswered') sql += ` AND ${UNANSWERED}`;
   if (q) {
     sql += ' AND (c.name LIKE ? OR c.phone LIKE ? OR cu.name LIKE ? OR cu.phone LIKE ? OR c.last_message_preview LIKE ?)';
     const s = `%${q}%`;
@@ -43,15 +50,15 @@ export async function GET(request) {
   const [conversations, countRows] = await Promise.all([
     query(sql, params),
     query(
-      `SELECT SUM(unread_count > 0) AS unread, SUM(status = 'open') AS open, SUM(status = 'done') AS done, COUNT(*) AS total
-       FROM chat_conversations WHERE shop_id = ? AND platform IN (${platforms.map(() => '?').join(',')}) AND last_message_at IS NOT NULL`,
+      `SELECT SUM(c.unread_count > 0) AS unread, SUM(${UNANSWERED}) AS unanswered, COUNT(*) AS total
+       FROM chat_conversations c WHERE c.shop_id = ? AND c.platform IN (${platforms.map(() => '?').join(',')}) AND c.last_message_at IS NOT NULL`,
       [shopId, ...platforms]
     ),
   ]);
   const cr = countRows[0] || {};
   return NextResponse.json({
     conversations,
-    counts: { unread: Number(cr.unread) || 0, open: Number(cr.open) || 0, done: Number(cr.done) || 0, all: Number(cr.total) || 0 },
+    counts: { unread: Number(cr.unread) || 0, unanswered: Number(cr.unanswered) || 0, all: Number(cr.total) || 0 },
     platforms: families,
   });
 }
