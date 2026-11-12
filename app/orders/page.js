@@ -3,7 +3,7 @@ import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
 import { formatCurrency } from '../../lib/currency';
-import { printReceipt, printShippingLabel } from '../../lib/receipt';
+import { printReceipt, printShippingLabel, printShippingLabels } from '../../lib/receipt';
 import { waNumber, fillTemplate } from '../../lib/whatsapp';
 import { Icon, Button, IconButton, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
 
@@ -21,7 +21,7 @@ const COPY = {
     items: 'ລາຍການສິນຄ້າ', subtotal: 'ລວມຍ່ອຍ', discount: 'ສ່ວນຫຼຸດ', total: 'ຍອດລວມ', paidBy: 'ຊຳລະໂດຍ',
     slip: 'ສະລິບໂອນເງິນ', uploadSlip: 'ອັບໂຫຼດສະລິບ', replace: 'ປ່ຽນຮູບ', internal: 'ໂນດພາຍໃນ (ລູກຄ້າບໍ່ເຫັນ)',
     cod: 'ເກັບປາຍທາງ (COD)', deposit: 'ມັດຈຳ', markPaid: 'ຮັບເງິນຄົບແລ້ວ', paidFull: 'ຊຳລະຄົບແລ້ວ',
-    receipt: 'ພິມໃບບິນ', label: 'ພິມໃບປະໜ້າ', whatsapp: 'ສົ່ງ WhatsApp', noPhone: 'ອໍເດີ້ນີ້ບໍ່ມີເບີໂທລູກຄ້າ',
+    receipt: 'ພິມໃບບິນ', label: 'ພິມໃບບິນສິນຄ້າຈັດສົ່ງ', pickAll: 'ເລືອກທັງໝົດເພື່ອພິມ', pickOne: 'ເລືອກເພື່ອພິມ', printPicked: n => `ພິມໃບບິນຈັດສົ່ງ ${n} ໃບ`, clearPick: 'ລ້າງ', picked: n => `ເລືອກແລ້ວ ${n}`, popup: 'ເບົາເຊີບລັອກໜ້າຕ່າງພິມ ກະລຸນາອະນຸຍາດປັອບອັບ', whatsapp: 'ສົ່ງ WhatsApp', noPhone: 'ອໍເດີ້ນີ້ບໍ່ມີເບີໂທລູກຄ້າ',
     failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ', orders: n => `${n} ອໍເດີ້`,
     copy: 'ຄັດລອກທີ່ຢູ່ສົ່ງ', copied: 'ຄັດລອກແລ້ວ', call: 'ໂທຫາລູກຄ້າ', more: n => `+${n} ລາຍການ`, collect: 'ເກັບເງິນປາຍທາງ', paidVia: m => `ຈ່າຍແລ້ວ (${m})`,
     bill: 'ຮູບບິນຂົນສົ່ງ', addBill: 'ເພີ່ມຮູບບິນ', removeBill: 'ລຶບຮູບ',
@@ -39,7 +39,7 @@ const COPY = {
     items: 'รายการสินค้า', subtotal: 'รวมย่อย', discount: 'ส่วนลด', total: 'ยอดรวม', paidBy: 'ชำระโดย',
     slip: 'สลิปโอนเงิน', uploadSlip: 'อัปโหลดสลิป', replace: 'เปลี่ยนรูป', internal: 'โน้ตภายใน (ลูกค้าไม่เห็น)',
     cod: 'เก็บปลายทาง (COD)', deposit: 'มัดจำ', markPaid: 'รับเงินครบแล้ว', paidFull: 'ชำระครบแล้ว',
-    receipt: 'พิมพ์ใบเสร็จ', label: 'พิมพ์ใบปะหน้า', whatsapp: 'ส่ง WhatsApp', noPhone: 'ออเดอร์นี้ไม่มีเบอร์ลูกค้า',
+    receipt: 'พิมพ์ใบเสร็จ', label: 'พิมพ์ใบบิลสินค้าจัดส่ง', pickAll: 'เลือกทั้งหมดเพื่อพิมพ์', pickOne: 'เลือกเพื่อพิมพ์', printPicked: n => `พิมพ์ใบบิลจัดส่ง ${n} ใบ`, clearPick: 'ล้าง', picked: n => `เลือกแล้ว ${n}`, popup: 'เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป', whatsapp: 'ส่ง WhatsApp', noPhone: 'ออเดอร์นี้ไม่มีเบอร์ลูกค้า',
     failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', orders: n => `${n} ออเดอร์`,
     copy: 'คัดลอกที่อยู่ส่ง', copied: 'คัดลอกแล้ว', call: 'โทรหาลูกค้า', more: n => `+${n} รายการ`, collect: 'เก็บเงินปลายทาง', paidVia: m => `จ่ายแล้ว (${m})`,
     bill: 'รูปบิลขนส่ง', addBill: 'เพิ่มรูปบิล', removeBill: 'ลบรูป',
@@ -57,7 +57,7 @@ const COPY = {
     items: 'Items', subtotal: 'Subtotal', discount: 'Discount', total: 'Total', paidBy: 'Paid by',
     slip: 'Transfer slip', uploadSlip: 'Upload slip', replace: 'Replace', internal: 'Internal note (customer never sees it)',
     cod: 'Collect on delivery (COD)', deposit: 'deposit', markPaid: 'Mark fully paid', paidFull: 'Paid in full',
-    receipt: 'Print receipt', label: 'Print shipping label', whatsapp: 'Send on WhatsApp', noPhone: 'This order has no customer phone',
+    receipt: 'Print receipt', label: 'Print delivery bill', pickAll: 'Select all to print', pickOne: 'Select to print', printPicked: n => `Print ${n} delivery ${n === 1 ? 'bill' : 'bills'}`, clearPick: 'Clear', picked: n => `${n} selected`, popup: 'The browser blocked the print window. Allow pop-ups for this site.', whatsapp: 'Send on WhatsApp', noPhone: 'This order has no customer phone',
     failed: "Couldn't save. Try again.", orders: n => `${n} ${n === 1 ? 'order' : 'orders'}`,
     copy: 'Copy shipping details', copied: 'Copied', call: 'Call customer', more: n => `+${n} more`, collect: 'Collect on delivery', paidVia: m => `Paid (${m})`,
     bill: 'Carrier bill photo', addBill: 'Add bill photo', removeBill: 'Remove photo',
@@ -162,6 +162,8 @@ export default function OrdersPage() {
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const [picked, setPicked] = useState(() => new Set()); // orders ticked for printing delivery bills
+  const [pickMsg, setPickMsg] = useState('');
   const [mobileDetail, setMobileDetail] = useState(false);
 
   const [linked, setLinked] = useState(null); // order number from ?q= (e.g. from a customer's history)
@@ -246,6 +248,26 @@ export default function OrdersPage() {
     setOrders(prev => prev.map(o => (o.id === id ? { ...o, ...fields } : o)));
   }
 
+  // Delivery bills only make sense for online orders that are still going out.
+  const canPrint = o => o.order_type === 'online' && o.status !== 'cancelled';
+  const printable = visible.filter(canPrint);
+  const pickedOrders = orders.filter(o => picked.has(o.id) && canPrint(o));
+  const allPicked = printable.length > 0 && printable.every(o => picked.has(o.id));
+  function togglePick(id) {
+    setPicked(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
+  function togglePickAll() {
+    setPicked(prev => {
+      const n = new Set(prev);
+      printable.forEach(o => (allPicked ? n.delete(o.id) : n.add(o.id)));
+      return n;
+    });
+  }
+  function printPicked() {
+    setPickMsg('');
+    if (!printShippingLabels(pickedOrders, shop, lang)) setPickMsg(c.popup);
+  }
+
   const detail = selected && (
     <OrderDetail key={selected.id} order={selected} c={c} lang={lang} shop={shop} onPatch={patch} onLocal={setLocal} />
   );
@@ -280,6 +302,22 @@ export default function OrdersPage() {
           ) : visible.length === 0 ? (
             <EmptyState icon="ticket" title={c.empty} text={c.emptyText} />
           ) : (
+            <>
+            {printable.length > 0 && (
+              <div className={`sticky top-0 z-10 flex items-center gap-2 pl-2 pr-3 sm:pr-4 min-h-12 border-b border-line ${pickedOrders.length ? 'bg-gold-soft' : 'bg-white'}`}>
+                <label className="w-11 h-11 flex items-center justify-center shrink-0 cursor-pointer" title={c.pickAll}>
+                  <input type="checkbox" checked={allPicked} onChange={togglePickAll} aria-label={c.pickAll} className="w-5 h-5 accent-[#0B63E5] cursor-pointer" />
+                </label>
+                <span className="flex-1 min-w-0 truncate text-sm text-slate-600">{pickedOrders.length ? c.picked(pickedOrders.length) : c.pickAll}</span>
+                {pickedOrders.length > 0 && (
+                  <>
+                    <button type="button" onClick={() => setPicked(new Set())} className="px-2 min-h-10 text-sm font-semibold text-slate-500 hover:text-ink">{c.clearPick}</button>
+                    <Button size="sm" icon="print" onClick={printPicked}>{c.printPicked(pickedOrders.length)}</Button>
+                  </>
+                )}
+              </div>
+            )}
+            {pickMsg && <p role="alert" className="px-4 py-2 text-sm text-danger">{pickMsg}</p>}
             <ul className="divide-y divide-line">
               {visible.map(o => {
                 const active = o.id === selectedId;
@@ -287,9 +325,15 @@ export default function OrdersPage() {
                 const when = new Date(o.created_at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
                 // Who, what, and how it ships come first; the order number is only a small reference.
                 return (
-                  <li key={o.id}>
+                  <li key={o.id} className={`flex items-stretch ${active ? 'bg-gold-soft/60' : picked.has(o.id) ? 'bg-gold-soft/30' : ''}`}>
+                    {printable.length > 0 && (canPrint(o) ? (
+                      <label className="w-11 pl-2 shrink-0 flex items-start pt-4 justify-center cursor-pointer" title={c.pickOne}>
+                        <input type="checkbox" checked={picked.has(o.id)} onChange={() => togglePick(o.id)} aria-label={`${c.pickOne}: ${o.customer_name || o.order_number}`}
+                          className="w-5 h-5 accent-[#0B63E5] cursor-pointer" />
+                      </label>
+                    ) : <span className="w-11 pl-2 shrink-0" aria-hidden="true" />)}
                     <button onClick={() => select(o)} aria-current={active || undefined}
-                      className={`w-full text-left px-4 sm:px-5 py-3 flex gap-3 transition-colors ${active ? 'bg-gold-soft/60' : 'hover:bg-canvas'} ${o.status === 'cancelled' ? 'opacity-60' : ''}`}>
+                      className={`flex-1 min-w-0 text-left ${printable.length > 0 ? 'pl-1 pr-4 sm:pr-5' : 'px-4 sm:px-5'} py-3 flex gap-3 transition-colors ${active ? '' : 'hover:bg-canvas'} ${o.status === 'cancelled' ? 'opacity-60' : ''}`}>
                       <Thumb src={o.items?.[0]?.image_url} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-3">
@@ -315,6 +359,7 @@ export default function OrdersPage() {
                 );
               })}
             </ul>
+            </>
           )}
         </section>
 
