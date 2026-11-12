@@ -7,6 +7,7 @@ import { chatGuard, ERROR_STATUS } from '../../../../../../lib/chat/guard';
 import { sendMessage, sendQuickReply, SendError } from '../../../../../../lib/chat/send';
 import { getReply, loadReplyFiles, countUse } from '../../../../../../lib/chat/quick-replies';
 import { MAX_MEDIA_BYTES, readMedia } from '../../../../../../lib/chat/media';
+import { toVoice, VoiceError } from '../../../../../../lib/chat/voice';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,19 @@ export async function POST(request, { params }) {
   if (upload && typeof upload === 'object' && upload.size > 0) {
     if (upload.size > MAX_MEDIA_BYTES) return NextResponse.json({ error: 'file_too_large' }, { status: 400 });
     file = { buffer: Buffer.from(await upload.arrayBuffer()), mime: upload.type, name: path.basename(upload.name || 'file') };
+    // A voice message recorded in the browser: re-encode it into what this platform plays
+    // as a voice note (WhatsApp: Ogg/Opus, Messenger: MP3).
+    if (form.get('voice') === '1') {
+      const conv = await queryOne('SELECT platform FROM chat_conversations WHERE id = ? AND shop_id = ?', [params.id, g.shopId]);
+      if (!conv) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+      try {
+        file = await toVoice(file.buffer, file.mime, conv.platform);
+      } catch (e) {
+        const code = e instanceof VoiceError ? e.code : 'voice_failed';
+        return NextResponse.json({ error: code }, { status: 400 });
+      }
+      text = '';
+    }
   }
 
   let orderId = parseInt(form.get('order_id')) || null;

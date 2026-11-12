@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Lets instrumentation.js start the background timers (shipping bills) when the server boots.
-  experimental: { instrumentationHook: true },
+  // ffmpeg-static ships a binary next to its code; keep it out of the bundle so its path stays real.
+  experimental: { instrumentationHook: true, serverComponentsExternalPackages: ['ffmpeg-static'] },
   async headers() {
     return [
       {

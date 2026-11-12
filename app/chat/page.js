@@ -14,7 +14,7 @@ const COPY = {
     search: 'ຄົ້ນຫາຊື່, ເບີໂທ, ຂໍ້ຄວາມ', all: 'ຂໍ້ຄວາມທັງໝົດ', unread: 'ຍັງບໍ່ໄດ້ອ່ານ', unanswered: 'ຍັງບໍ່ໄດ້ຕອບ', allCh: 'ທຸກຊ່ອງທາງ',
     off: 'ຟັງຊັນແຊັດຍັງບໍ່ໄດ້ເປີດໃຊ້ສຳລັບຮ້ານນີ້', offText: 'ຕິດຕໍ່ PP Systems ເພື່ອເປີດໃຊ້ແຊັດ Facebook ແລະ WhatsApp',
     none: 'ຍັງບໍ່ມີແຊັດ', noneText: 'ເມື່ອລູກຄ້າທັກມາທາງເພຈ ຫຼື WhatsApp ຈະຂຶ້ນຢູ່ນີ້ທັນທີ', noMatch: 'ບໍ່ພົບແຊັດ',
-    pick: 'ເລືອກແຊັດທາງຊ້າຍເພື່ອເລີ່ມຕອບ', placeholder: 'ພິມຂໍ້ຄວາມ… (Enter ສົ່ງ, Shift+Enter ຂຶ້ນແຖວໃໝ່)', send: 'ສົ່ງ', attach: 'ແນບຮູບ ຫຼື ໄຟລ໌',
+    pick: 'ເລືອກແຊັດທາງຊ້າຍເພື່ອເລີ່ມຕອບ', placeholder: 'ພິມຂໍ້ຄວາມ… (Enter ສົ່ງ, Shift+Enter ຂຶ້ນແຖວໃໝ່)', send: 'ສົ່ງ', attach: 'ແນບຮູບ ຫຼື ໄຟລ໌', record: 'ອັດສຽງ', recording: 'ກຳລັງອັດສຽງ', cancelRec: 'ຍົກເລີກສຽງ', sendVoice: 'ສົ່ງສຽງ', micDenied: 'ໃຊ້ໄມໂຄຣໂຟນບໍ່ໄດ້ ກະລຸນາອະນຸຍາດໃນເບົາເຊີກ່ອນ',
     markDone: 'ຈັດການແລ້ວ', reopen: 'ເປີດຄືນ', older: 'ໂຫຼດຂໍ້ຄວາມເກົ່າ', today: 'ມື້ນີ້', yesterday: 'ມື້ວານ',
     sending: 'ກຳລັງສົ່ງ', sent: 'ສົ່ງແລ້ວ', delivered: 'ຮອດແລ້ວ', read: 'ອ່ານແລ້ວ', failed: 'ສົ່ງບໍ່ສຳເລັດ', retry: 'ສົ່ງໃໝ່',
     windowLeft: t => `ຕອບໄດ້ອີກ ${t}`, windowClosed: 'ສົ່ງຂໍ້ຄວາມຫາລູກຄ້ານີ້ບໍ່ໄດ້ແລ້ວ', windowClosedText: 'ລູກຄ້າທັກມາດົນເກີນກວ່າທີ່ລະບົບອະນຸຍາດ ລໍຖ້າລູກຄ້າທັກມາໃໝ່ ຈຶ່ງຈະຕອບໄດ້',
@@ -23,7 +23,7 @@ const COPY = {
     customer: 'ລູກຄ້າ', link: 'ຜູກກັບລູກຄ້າທີ່ມີຢູ່', create: 'ບັນທຶກເປັນລູກຄ້າໃໝ່', unlink: 'ຍົກເລີກການຜູກ', suggest: 'ລູກຄ້າທີ່ເບີໂທກົງກັນ', pickCustomer: 'ເລືອກລູກຄ້າ',
     spent: 'ຍອດຊື້ລວມ', orders: 'ບິນ', avg: 'ສະເລ່ຍ', bought: 'ສິນຄ້າທີ່ເຄີຍຊື້', sendProduct: 'ກົດເພື່ອສົ່ງສິນຄ້ານີ້ໃຫ້ລູກຄ້າ', recent: 'ອໍເດີ້ຫຼ້າສຸດ',
     openProfile: 'ເປີດໜ້າລູກຄ້າ', blacklisted: 'ລູກຄ້ານີ້ຢູ່ໃນບັນຊີດຳ', vip: 'VIP', regular: 'ລູກຄ້າປະຈຳ', newC: 'ລູກຄ້າໃໝ່',
-    errors: { window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
+    errors: { voice_failed: 'ແປງສຽງບໍ່ສຳເລັດ ລອງອັດໃໝ່', window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
     replyOnly: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ', replyOnlyText: 'ເພື່ອບໍ່ໃຫ້ເບີຖືກແບນ ລະບົບຕອບໄດ້ສະເພາະລູກຄ້າທີ່ທັກມາກ່ອນ',
     status: { pending: 'ລໍຖ້າຈັດສົ່ງ', shipping: 'ກຳລັງຈັດສົ່ງ', completed: 'ສຳເລັດ', cancelled: 'ຍົກເລີກ' }, details: 'ຂໍ້ມູນລູກຄ້າ', back: 'ກັບ',
     saveAs: 'ບັນທຶກເປັນ:', saveInfo: 'ບັນທຶກເປັນຂໍ້ມູນລູກຄ້າ', asName: 'ຊື່', asPhone: 'ເບີໂທ', asAddress: 'ທີ່ຢູ່', noPhone: 'ບໍ່ພົບເບີໂທໃນຂໍ້ຄວາມນີ້', saveFailed: 'ບັນທຶກບໍ່ສຳເລັດ',
@@ -34,7 +34,7 @@ const COPY = {
     search: 'ค้นหาชื่อ, เบอร์, ข้อความ', all: 'ข้อความทั้งหมด', unread: 'ยังไม่ได้อ่าน', unanswered: 'ยังไม่ได้ตอบ', allCh: 'ทุกช่องทาง',
     off: 'ฟังก์ชันแชทยังไม่ได้เปิดใช้สำหรับร้านนี้', offText: 'ติดต่อ PP Systems เพื่อเปิดใช้แชท Facebook และ WhatsApp',
     none: 'ยังไม่มีแชท', noneText: 'เมื่อลูกค้าทักมาทางเพจหรือ WhatsApp จะขึ้นที่นี่ทันที', noMatch: 'ไม่พบแชท',
-    pick: 'เลือกแชททางซ้ายเพื่อเริ่มตอบ', placeholder: 'พิมพ์ข้อความ… (Enter ส่ง, Shift+Enter ขึ้นบรรทัดใหม่)', send: 'ส่ง', attach: 'แนบรูปหรือไฟล์',
+    pick: 'เลือกแชททางซ้ายเพื่อเริ่มตอบ', placeholder: 'พิมพ์ข้อความ… (Enter ส่ง, Shift+Enter ขึ้นบรรทัดใหม่)', send: 'ส่ง', attach: 'แนบรูปหรือไฟล์', record: 'อัดเสียง', recording: 'กำลังอัดเสียง', cancelRec: 'ยกเลิกเสียง', sendVoice: 'ส่งเสียง', micDenied: 'ใช้ไมโครโฟนไม่ได้ กรุณาอนุญาตในเบราว์เซอร์ก่อน',
     markDone: 'เสร็จแล้ว', reopen: 'เปิดใหม่', older: 'โหลดข้อความเก่า', today: 'วันนี้', yesterday: 'เมื่อวาน',
     sending: 'กำลังส่ง', sent: 'ส่งแล้ว', delivered: 'ถึงแล้ว', read: 'อ่านแล้ว', failed: 'ส่งไม่สำเร็จ', retry: 'ส่งใหม่',
     windowLeft: t => `ตอบได้อีก ${t}`, windowClosed: 'ส่งข้อความหาลูกค้านี้ไม่ได้แล้ว', windowClosedText: 'ลูกค้าทักมานานเกินกว่าที่ระบบอนุญาต รอลูกค้าทักมาใหม่ จึงจะตอบได้',
@@ -43,7 +43,7 @@ const COPY = {
     customer: 'ลูกค้า', link: 'ผูกกับลูกค้าที่มีอยู่', create: 'บันทึกเป็นลูกค้าใหม่', unlink: 'ยกเลิกการผูก', suggest: 'ลูกค้าที่เบอร์ตรงกัน', pickCustomer: 'เลือกลูกค้า',
     spent: 'ยอดซื้อรวม', orders: 'บิล', avg: 'เฉลี่ย', bought: 'สินค้าที่เคยซื้อ', sendProduct: 'กดเพื่อส่งสินค้านี้ให้ลูกค้า', recent: 'ออเดอร์ล่าสุด',
     openProfile: 'เปิดหน้าลูกค้า', blacklisted: 'ลูกค้านี้อยู่ในบัญชีดำ', vip: 'VIP', regular: 'ลูกค้าประจำ', newC: 'ลูกค้าใหม่',
-    errors: { window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
+    errors: { voice_failed: 'แปลงเสียงไม่สำเร็จ ลองอัดใหม่', window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
     replyOnly: 'รอลูกค้าทักมาก่อน', replyOnlyText: 'เพื่อไม่ให้เบอร์ถูกแบน ระบบตอบได้เฉพาะลูกค้าที่ทักมาก่อน',
     status: { pending: 'รอจัดส่ง', shipping: 'กำลังจัดส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' }, details: 'ข้อมูลลูกค้า', back: 'กลับ',
     saveAs: 'บันทึกเป็น:', saveInfo: 'บันทึกเป็นข้อมูลลูกค้า', asName: 'ชื่อ', asPhone: 'เบอร์โทร', asAddress: 'ที่อยู่', noPhone: 'ไม่พบเบอร์โทรในข้อความนี้', saveFailed: 'บันทึกไม่สำเร็จ',
@@ -54,7 +54,7 @@ const COPY = {
     search: 'Search name, phone, message', all: 'All messages', unread: 'Unread', unanswered: 'Not replied', allCh: 'All channels',
     off: 'Chat is not enabled for this shop', offText: 'Contact PP Systems to turn on Facebook and WhatsApp chat.',
     none: 'No chats yet', noneText: 'Messages to your page or WhatsApp number appear here as they arrive.', noMatch: 'No matching chats',
-    pick: 'Pick a chat on the left to reply', placeholder: 'Type a message… (Enter to send, Shift+Enter for a new line)', send: 'Send', attach: 'Attach photo or file',
+    pick: 'Pick a chat on the left to reply', placeholder: 'Type a message… (Enter to send, Shift+Enter for a new line)', send: 'Send', attach: 'Attach photo or file', record: 'Record voice', recording: 'Recording', cancelRec: 'Discard recording', sendVoice: 'Send voice', micDenied: "Can't use the microphone. Allow it in the browser first.",
     markDone: 'Done', reopen: 'Reopen', older: 'Load older messages', today: 'Today', yesterday: 'Yesterday',
     sending: 'Sending', sent: 'Sent', delivered: 'Delivered', read: 'Read', failed: 'Not sent', retry: 'Retry',
     windowLeft: t => `${t} left to reply`, windowClosed: "This customer can't be messaged now", windowClosedText: "Their last message is older than the platform allows. You can reply again once they write to you.",
@@ -63,7 +63,7 @@ const COPY = {
     customer: 'Customer', link: 'Link to existing customer', create: 'Save as new customer', unlink: 'Unlink', suggest: 'Customers with this phone', pickCustomer: 'Choose customer',
     spent: 'Lifetime', orders: 'Orders', avg: 'Average', bought: 'Bought before', sendProduct: 'Tap to send this product', recent: 'Recent orders',
     openProfile: 'Open customer page', blacklisted: 'This customer is blacklisted', vip: 'VIP', regular: 'Regular', newC: 'New customer',
-    errors: { window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
+    errors: { voice_failed: "Couldn't prepare the voice message. Record it again.", window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
     replyOnly: 'Waiting for the customer to write first', replyOnlyText: 'To keep the number from being banned, the system only replies to customers who wrote first.',
     status: { pending: 'To ship', shipping: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' }, details: 'Customer details', back: 'Back',
     saveAs: 'Save as:', saveInfo: 'Save as customer details', asName: 'Name', asPhone: 'Phone', asAddress: 'Address', noPhone: 'No phone number in this message', saveFailed: "Couldn't save",
@@ -328,6 +328,24 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
   const [qrFilter, setQrFilter] = useState('');
   const [qrManage, setQrManage] = useState(false);
 
+  // Voice messages: tap the mic, talk, then send or discard. The server converts the recording
+  // into what Messenger / WhatsApp play as a voice message. Up to 5 minutes.
+  const recRef = useRef(null); // { recorder, chunks, stream, started, type }
+  const [recording, setRecording] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
+  const [canRecord, setCanRecord] = useState(false);
+  useEffect(() => { setCanRecord(!!(window.MediaRecorder && navigator.mediaDevices?.getUserMedia)); }, []);
+  useEffect(() => () => recRef.current?.stream.getTracks().forEach(t => t.stop()), []);
+  useEffect(() => {
+    if (!recording) return;
+    const t = setInterval(() => {
+      const s = Math.floor((Date.now() - (recRef.current?.started || Date.now())) / 1000);
+      setRecSecs(s);
+      if (s >= 300) stopRec(true);
+    }, 250);
+    return () => clearInterval(t);
+  }, [recording]);
+
   const merge = useCallback((rows, replaceTail) => {
     setMessages(prev => {
       const map = new Map(prev.map(m => [m.id, m]));
@@ -410,6 +428,54 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
       const res = await fetch(`/api/chat/conversations/${id}/send`, { method: 'POST', body: form });
       const d = await res.json().catch(() => ({}));
       if (!res.ok && d.error) setError(c.errors[d.error] || c.errors.send_failed);
+    } finally {
+      setSending(false);
+      await load();
+      onChanged();
+    }
+  }
+
+  async function startRec() {
+    setError('');
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch { setError(c.micDenied); return; }
+    const type = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4', 'audio/webm'].find(x => MediaRecorder.isTypeSupported?.(x)) || '';
+    const recorder = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    recorder.start(250);
+    recRef.current = { recorder, chunks, stream, started: Date.now(), type: recorder.mimeType || type || 'audio/webm' };
+    setRecSecs(0);
+    setRecording(true);
+  }
+
+  function stopRec(sendIt) {
+    const cur = recRef.current;
+    if (!cur) return;
+    recRef.current = null;
+    cur.recorder.onstop = () => {
+      cur.stream.getTracks().forEach(t => t.stop());
+      const secs = Math.round((Date.now() - cur.started) / 1000);
+      // Under a second is almost always a mis-tap; don't send it.
+      if (sendIt && Date.now() - cur.started >= 800) sendVoice(new Blob(cur.chunks, { type: cur.type }), secs);
+    };
+    cur.recorder.stop();
+    setRecording(false);
+  }
+
+  async function sendVoice(blob, secs) {
+    setSending(true);
+    setError('');
+    const mime = blob.type.split(';')[0] || 'audio/webm';
+    const form = new FormData();
+    form.append('file', new File([blob], `voice${mime === 'audio/mp4' ? '.m4a' : mime === 'audio/ogg' ? '.ogg' : '.webm'}`, { type: mime }));
+    form.append('voice', '1');
+    atBottom.current = true;
+    setMessages(prev => [...prev, { id: `tmp${Date.now()}`, direction: 'out', type: 'text', text: `🎤 ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`, status: 'sending', created_at: new Date().toISOString() }]);
+    try {
+      const res = await fetch(`/api/chat/conversations/${id}/send`, { method: 'POST', body: form });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) setError(c.errors[d.error] || c.errors.send_failed);
     } finally {
       setSending(false);
       await load();
@@ -550,6 +616,17 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
               <IconButton icon="close" label="Remove" onClick={() => setFile(null)} />
             </div>
           )}
+          {recording ? (
+            <div className="flex items-center gap-2">
+              <IconButton icon="trash" label={c.cancelRec} onClick={() => stopRec(false)} className="!text-danger" />
+              <div role="status" className="flex-1 min-w-0 h-11 rounded-xl bg-red-50 px-4 flex items-center gap-3 text-sm">
+                <span className="w-2.5 h-2.5 rounded-full bg-danger motion-safe:animate-pulse shrink-0" aria-hidden="true" />
+                <span className="font-semibold text-danger truncate">{c.recording}</span>
+                <span className="ml-auto num font-bold text-ink">{Math.floor(recSecs / 60)}:{String(recSecs % 60).padStart(2, '0')}</span>
+              </div>
+              <Button onClick={() => stopRec(true)} className="h-11">{c.send}</Button>
+            </div>
+          ) : (
           <div className="flex items-end gap-2">
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" className="hidden"
               onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
@@ -560,8 +637,14 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
             <textarea rows={1} data-qr-toggle="1" value={text} onChange={e => onType(e.target.value)} onKeyDown={onKey} onPaste={onPaste} disabled={!canSend}
               placeholder={canSend ? (touch ? c.placeholder.split(' (')[0] : c.placeholder) : (win.replyOnly ? c.replyOnly : c.windowClosed)} aria-label={c.placeholder.split(' (')[0]}
               className={`${inputCls} resize-none max-h-40 min-h-[2.75rem] disabled:bg-canvas`} style={{ fieldSizing: 'content' }} />
-            <Button onClick={() => send()} disabled={!canSend || sending || (!text.trim() && !file)} className="h-11">{c.send}</Button>
+            {canRecord && !text.trim() && !file ? (
+              <IconButton icon="mic" label={c.record} onClick={startRec} disabled={!canSend || sending}
+                className="!w-11 !h-11 shrink-0 !rounded-xl !bg-primary !text-white hover:!bg-primary-dark disabled:!opacity-40" />
+            ) : (
+              <Button onClick={() => send()} disabled={!canSend || sending || (!text.trim() && !file)} className="h-11">{c.send}</Button>
+            )}
           </div>
+          )}
         </div>
       </section>
 

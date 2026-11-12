@@ -493,6 +493,8 @@ function mediaContent(media, caption) {
   if (media.sticker && mimetype === 'image/webp') return { sticker: buffer, mimetype };
   if (mimetype.startsWith('image/')) return { image: buffer, mimetype, caption: caption || undefined };
   if (mimetype.startsWith('video/')) return { video: buffer, mimetype, caption: caption || undefined };
+  // A voice note (Ogg/Opus) shows with the waveform and plays like one recorded on the phone.
+  if (media.ptt && mimetype === 'audio/ogg') return { audio: buffer, mimetype: 'audio/ogg; codecs=opus', ptt: true };
   if (mimetype.startsWith('audio/')) return { audio: buffer, mimetype };
   return { document: buffer, mimetype, fileName: media.filename || 'file', caption: caption || undefined };
 }
