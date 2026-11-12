@@ -365,7 +365,12 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const num = k => e => set(k, parseFloat(e.target.value) || 0);
 
-  const rate = form.cost_currency === 'LAK' ? 1 : Number(currencies.find(x => x.code === form.cost_currency)?.rate_to_lak) || 1;
+  // Same rate the server will use: a saved product keeps the rate it was created with (until its
+  // currency is changed); a new product, or a new currency, takes today's rate.
+  const keepsRate = id && form.cost_currency === initial.form.cost_currency && Number(initial.form.exchange_rate_used) > 0;
+  const rate = form.cost_currency === 'LAK' ? 1
+    : keepsRate ? Number(initial.form.exchange_rate_used)
+    : Number(currencies.find(x => x.code === form.cost_currency)?.rate_to_lak) || 1;
   const foreign = ['cost_price', 'freight_cost', 'customs_duty', 'proxy_fee', 'transfer_fee'].reduce((s, k) => s + (Number(form[k]) || 0), 0);
   const landed = foreign * rate;
   const margin = calculateMargin(Number(form.selling_price_lak) || 0, landed);
