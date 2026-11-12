@@ -151,7 +151,8 @@ export default function ProductsPage() {
         variant_label_2: p.variant_label_2 === 'size' ? '' : p.variant_label_2 || '',
       },
       id: p.id,
-      variants: (p.variants || []).map(v => ({ ...v })),
+      // _q0: the stock when the form opened, so saving a name/colour change doesn't overwrite sales made meanwhile.
+      variants: (p.variants || []).map(v => ({ ...v, _q0: v.quantity })),
       images: Array.isArray(images) ? images : [],
     });
   }
@@ -444,7 +445,10 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
         }
       }
       for (const v of rows) {
-        const payload = { ...v, quantity: parseInt(v.quantity) || 0, product_id: productId };
+        const { _q0, ...rest } = v;
+        const payload = { ...rest, quantity: parseInt(v.quantity) || 0, product_id: productId };
+        // Stock not touched in this form: only update the option names, keep the live stock.
+        if (typeof v.id === 'number' && payload.quantity === Number(_q0)) { delete payload.quantity; payload.keep_quantity = true; }
         await fetch('/api/variants', {
           method: typeof v.id === 'number' ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },

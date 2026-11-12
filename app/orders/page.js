@@ -251,7 +251,8 @@ export default function OrdersPage() {
   // Delivery bills only make sense for online orders that are still going out.
   const canPrint = o => o.order_type === 'online' && o.status !== 'cancelled';
   const printable = visible.filter(canPrint);
-  const pickedOrders = orders.filter(o => picked.has(o.id) && canPrint(o));
+  // Only what is on screen gets printed: a ticked order hidden by a filter or search is left out.
+  const pickedOrders = printable.filter(o => picked.has(o.id));
   const allPicked = printable.length > 0 && printable.every(o => picked.has(o.id));
   function togglePick(id) {
     setPicked(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });

@@ -257,7 +257,12 @@ function StockEditor({ product, products, batches, c, lang, nameOf, onClose, onC
     const changed = target.variants.filter(v => newQty(v) !== Number(v.quantity));
     if (!changed.length) throw new Error(c.unchanged);
     for (const v of changed) {
-      await call('/api/variants', 'PUT', { ...v, quantity: newQty(v), reason, note });
+      const n = Math.max(0, parseInt(variantQty[v.id]) || 0);
+      // Received / damaged go to the server as a change, applied to the live stock (a sale made
+      // meanwhile isn't overwritten). A count sets the total.
+      await call('/api/variants', 'PUT', mode === 'set'
+        ? { ...v, quantity: newQty(v), reason, note }
+        : { id: v.id, change: mode === 'add' ? n : -n, reason, note });
     }
     // Clear the boxes so a second tap on save can't add the same delivery twice.
     setVariantQty(startQty(changed.reduce((all, v) => all.map(x => (x.id === v.id ? { ...x, quantity: newQty(v) } : x)), target.variants), mode));

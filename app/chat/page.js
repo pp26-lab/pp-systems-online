@@ -175,7 +175,7 @@ export default function ChatPage() {
   return (
     <div className={`relative -m-4 lg:-m-6 flex bg-white overflow-hidden ${view === 'list' ? 'h-[calc(100dvh-8rem-env(safe-area-inset-bottom))]' : 'h-[calc(100dvh-4rem)]'} lg:h-[calc(100dvh-4rem)]`}>
       {/* Conversation list */}
-      <aside className={`${view === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 xl:w-96 shrink-0 flex-col border-r border-line`}>
+      <aside className={`${view === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-96 shrink-0 flex-col border-r border-line`}>
         {/* One search box and one row of tabs: every chat, chats nobody has opened yet, and chats
             where the customer wrote last and is still waiting for a reply. The channel picker only
             appears when a shop has more than one. */}
@@ -208,7 +208,7 @@ export default function ChatPage() {
                 const n = f === 'all' ? 0 : counts[f] || 0;
                 return (
                   <button key={f} role="tab" aria-selected={on} onClick={() => setFilter(f)}
-                    className={`relative shrink-0 px-2 sm:px-3 min-h-11 text-sm font-semibold whitespace-nowrap transition-colors ${on ? 'text-primary' : 'text-slate-500 hover:text-ink'}`}>
+                    className={`relative shrink-0 px-2 xl:px-3 min-h-11 text-sm font-semibold whitespace-nowrap transition-colors ${on ? 'text-primary' : 'text-slate-500 hover:text-ink'}`}>
                     {c[f]}
                     {n > 0 && <span className={`ml-1.5 num text-xs ${on ? 'text-primary' : f === 'unread' ? 'text-danger' : 'text-slate-400'}`}>{n}</span>}
                     {on && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-primary" aria-hidden="true" />}

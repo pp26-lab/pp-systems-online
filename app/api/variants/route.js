@@ -49,15 +49,35 @@ export async function PUT(request) {
   const before = await queryOne('SELECT product_id, quantity FROM product_variants WHERE id = ? AND shop_id = ?', [body.id, shopId]);
   if (!before) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  const quantity = Math.max(0, parseInt(body.quantity) || 0);
-  await query(
-    'UPDATE product_variants SET color = ?, size = ?, sku_suffix = ?, quantity = ? WHERE id = ? AND shop_id = ?',
-    [body.color || '', body.size || '', body.sku_suffix || '', quantity, body.id, shopId]
-  );
-  if (before.quantity !== quantity) {
+  // Product form saved without touching stock: rename the option only.
+  if (body.keep_quantity) {
+    await query('UPDATE product_variants SET color = ?, size = ?, sku_suffix = ? WHERE id = ? AND shop_id = ?',
+      [body.color || '', body.size || '', body.sku_suffix || '', body.id, shopId]);
+    return NextResponse.json({ success: true });
+  }
+
+  // "change" (received +5, damaged -2) is applied to the stock as it is NOW in the database, so a
+  // sale made while the stock screen was open isn't overwritten. "quantity" sets a counted total.
+  // The write only lands if nothing changed since it was read (retried a few times).
+  const delta = body.change !== undefined ? parseInt(body.change) : null;
+  if (body.change !== undefined && !Number.isFinite(delta)) return NextResponse.json({ error: 'Invalid change' }, { status: 400 });
+  let oldQty = Number(before.quantity), quantity;
+  for (let attempt = 0; ; attempt++) {
+    quantity = delta !== null ? Math.max(0, oldQty + delta) : Math.max(0, parseInt(body.quantity) || 0);
+    const r = delta !== null
+      ? await query('UPDATE product_variants SET quantity = ? WHERE id = ? AND shop_id = ? AND quantity = ?', [quantity, body.id, shopId, oldQty])
+      : await query(
+          'UPDATE product_variants SET color = ?, size = ?, sku_suffix = ?, quantity = ? WHERE id = ? AND shop_id = ? AND quantity = ?',
+          [body.color || '', body.size || '', body.sku_suffix || '', quantity, body.id, shopId, oldQty]
+        );
+    if (r.affectedRows) break;
+    if (attempt >= 4) return NextResponse.json({ error: 'busy' }, { status: 409 });
+    oldQty = Number((await queryOne('SELECT quantity FROM product_variants WHERE id = ? AND shop_id = ?', [body.id, shopId]))?.quantity ?? 0);
+  }
+  if (oldQty !== quantity) {
     await logStockMovement({
       shopId, productId: before.product_id, variantId: body.id,
-      change: quantity - before.quantity, reason: body.reason || 'adjustment', note: body.note || '',
+      change: quantity - oldQty, reason: body.reason || 'adjustment', note: body.note || '',
       referenceType: 'variant', referenceId: body.id,
     });
   }

@@ -6,7 +6,7 @@ import { fillTemplate, TEMPLATE_KEYS } from '../../lib/whatsapp';
 
 const COPY = {
   lo: {
-    shop: 'ຂໍ້ມູນຮ້ານ', shopNote: 'ສະແດງຢູ່ຫົວໃບບິນ ແລະ ໃບປະໜ້າພັດສະດຸ', name: 'ຊື່ຮ້ານ', phone: 'ເບີໂທຮ້ານ', address: 'ທີ່ຢູ່ຮ້ານ',
+    shop: 'ຂໍ້ມູນຮ້ານ', shopNote: 'ສະແດງຢູ່ໃບບິນ ແລະ ໃບບິນສິນຄ້າຈັດສົ່ງ', name: 'ຊື່ຮ້ານ', phone: 'ເບີໂທຮ້ານ', address: 'ທີ່ຢູ່ຮ້ານ',
     logo: 'ໂລໂກ້', upload: 'ອັບໂຫຼດໂລໂກ້', replace: 'ປ່ຽນໂລໂກ້', removeLogo: 'ເອົາອອກ', footer: 'ຂໍ້ຄວາມທ້າຍໃບບິນ', footerPh: 'ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ',
     sell: 'ການຂາຍ', orderType: 'ປະເພດການຂາຍເລີ່ມຕົ້ນ', walkin: 'ໜ້າຮ້ານ', online: 'ອອນລາຍ', low: 'ແຈ້ງເຕືອນສະຕ໋ອກໃກ້ໝົດເມື່ອເຫຼືອ', units: 'ຊິ້ນ ຫຼື ໜ້ອຍກວ່າ',
     options: 'ຊື່ຕົວເລືອກສິນຄ້າເລີ່ມຕົ້ນ', optionsNote: 'ໃຊ້ກັບສິນຄ້າໃໝ່ ເຊັ່ນ ສີ ແລະ ຂະໜາດ', opt1: 'ຕົວເລືອກທີ 1', opt2: 'ຕົວເລືອກທີ 2',
@@ -19,7 +19,7 @@ const COPY = {
     uploadFail: 'ອັບໂຫຼດບໍ່ສຳເລັດ',
   },
   th: {
-    shop: 'ข้อมูลร้าน', shopNote: 'แสดงที่หัวใบเสร็จและใบปะหน้าพัสดุ', name: 'ชื่อร้าน', phone: 'เบอร์โทรร้าน', address: 'ที่อยู่ร้าน',
+    shop: 'ข้อมูลร้าน', shopNote: 'แสดงที่ใบเสร็จและใบบิลสินค้าจัดส่ง', name: 'ชื่อร้าน', phone: 'เบอร์โทรร้าน', address: 'ที่อยู่ร้าน',
     logo: 'โลโก้', upload: 'อัปโหลดโลโก้', replace: 'เปลี่ยนโลโก้', removeLogo: 'เอาออก', footer: 'ข้อความท้ายใบเสร็จ', footerPh: 'ขอบคุณที่ใช้บริการ',
     sell: 'การขาย', orderType: 'ประเภทการขายเริ่มต้น', walkin: 'หน้าร้าน', online: 'ออนไลน์', low: 'แจ้งเตือนสต็อกใกล้หมดเมื่อเหลือ', units: 'ชิ้นหรือน้อยกว่า',
     options: 'ชื่อตัวเลือกสินค้าเริ่มต้น', optionsNote: 'ใช้กับสินค้าใหม่ เช่น สี และ ขนาด', opt1: 'ตัวเลือกที่ 1', opt2: 'ตัวเลือกที่ 2',
@@ -32,7 +32,7 @@ const COPY = {
     uploadFail: 'อัปโหลดไม่สำเร็จ',
   },
   en: {
-    shop: 'Shop details', shopNote: 'Printed at the top of receipts and shipping labels', name: 'Shop name', phone: 'Shop phone', address: 'Shop address',
+    shop: 'Shop details', shopNote: 'Printed on receipts and delivery bills', name: 'Shop name', phone: 'Shop phone', address: 'Shop address',
     logo: 'Logo', upload: 'Upload logo', replace: 'Replace logo', removeLogo: 'Remove', footer: 'Receipt footer', footerPh: 'Thank you for shopping with us',
     sell: 'Selling', orderType: 'Default sale type', walkin: 'In store', online: 'Online', low: 'Warn me when stock is at', units: 'units or fewer',
     options: 'Default option names', optionsNote: 'Used for new products, for example colour and size', opt1: 'First option', opt2: 'Second option',
