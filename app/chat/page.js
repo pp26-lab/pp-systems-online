@@ -112,8 +112,9 @@ export default function ChatPage() {
   const [list, setList] = useState([]);
   const [counts, setCounts] = useState({});
   const [platforms, setPlatforms] = useState([]);
+  const [channels, setChannels] = useState([]); // the shop's pages / numbers
   const [filter, setFilter] = useState('all'); // all | unread | unanswered
-  const [platform, setPlatform] = useState('');
+  const [platform, setPlatform] = useState(''); // '' | 'messenger' | 'whatsapp' | 'ch:<channel id>'
   const [search, setSearch] = useState('');
   const [activeId, setActiveId] = useState(null);
   const [view, setView] = useState('list'); // mobile: list | thread | profile
@@ -136,7 +137,8 @@ export default function ChatPage() {
 
   const loadList = useCallback(async () => {
     const p = new URLSearchParams({ filter });
-    if (platform) p.set('platform', platform);
+    if (platform.startsWith('ch:')) p.set('channel', platform.slice(3));
+    else if (platform) p.set('platform', platform);
     if (search.trim()) p.set('q', search.trim());
     const res = await fetch(`/api/chat/conversations?${p}`);
     if (res.status === 403) { setState('off'); return; }
@@ -145,6 +147,7 @@ export default function ChatPage() {
     setList(d.conversations || []);
     setCounts(d.counts || {});
     setPlatforms(d.platforms || []);
+    setChannels(d.channels || []);
     setState('ready');
   }, [filter, platform, search]);
 
@@ -174,10 +177,26 @@ export default function ChatPage() {
             where the customer wrote last and is still waiting for a reply. The channel picker only
             appears when a shop has more than one. */}
         <div className="px-3 pt-3 border-b border-line">
-          <div className="relative">
-            <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={c.search} aria-label={c.search}
-              className="w-full min-h-11 lg:min-h-10 pl-10 pr-3 rounded-lg bg-canvas border border-transparent text-base lg:text-sm text-ink placeholder:text-slate-400 focus:bg-white focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15" />
+          <div className="flex gap-2">
+            <div className="relative flex-1 min-w-0">
+              <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder={c.search} aria-label={c.search}
+                className="w-full min-h-11 lg:min-h-10 pl-10 pr-3 rounded-lg bg-canvas border border-transparent text-base lg:text-sm text-ink placeholder:text-slate-400 focus:bg-white focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15" />
+            </div>
+            {(platforms.length > 1 || channels.length > 1) && (
+                <label className="relative shrink-0">
+                  <span className="sr-only">{c.allCh}</span>
+                  <select value={platform} onChange={e => setPlatform(e.target.value)}
+                    className="appearance-none w-[6.5rem] sm:w-28 truncate min-h-11 lg:min-h-10 pl-2.5 pr-7 rounded-lg text-xs font-semibold text-slate-600 bg-canvas hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary/30">
+                    <option value="">{c.allCh}</option>
+                    {/* With several pages / numbers, each one can be picked on its own. */}
+                    {channels.length > 1
+                      ? channels.map(ch => <option key={ch.id} value={`ch:${ch.id}`}>{PLATFORM[ch.platform]?.label}: {ch.name}</option>)
+                      : platforms.map(p => <option key={p} value={p}>{PLATFORM[p].label}</option>)}
+                  </select>
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </label>
+              )}
           </div>
           <div className="mt-1 flex items-end">
             <div role="tablist" aria-label={c.all} className="flex flex-1 min-w-0 overflow-x-auto no-scrollbar">
@@ -194,17 +213,6 @@ export default function ChatPage() {
                 );
               })}
             </div>
-            {platforms.length > 1 && (
-              <label className="relative mb-1.5 shrink-0">
-                <span className="sr-only">{c.allCh}</span>
-                <select value={platform} onChange={e => setPlatform(e.target.value)}
-                  className="appearance-none min-h-8 pl-2.5 pr-7 rounded-md text-xs font-semibold text-slate-600 bg-canvas hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  <option value="">{c.allCh}</option>
-                  {platforms.map(p => <option key={p} value={p}>{PLATFORM[p].label}</option>)}
-                </select>
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-              </label>
-            )}
             <SoundToggle lang={lang} />
             <PushToggle lang={lang} push={push} onMessage={say} />
           </div>
@@ -236,6 +244,13 @@ export default function ChatPage() {
                           <span className={`text-sm truncate ${unread ? 'text-ink font-medium' : 'text-slate-500'}`}>{conv.last_message_preview || ' '}</span>
                           {unread && <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-primary text-white text-[0.7rem] font-bold flex items-center justify-center num">{conv.unread_count > 99 ? '99+' : conv.unread_count}</span>}
                         </span>
+                        {/* Which page / number this customer wrote to; only shown when the shop has more than one. */}
+                        {channels.length > 1 && conv.channel_name && (
+                          <span className="mt-0.5 flex items-center gap-1 text-[0.7rem] text-slate-400 min-w-0">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${PLATFORM[conv.platform]?.dot}`} aria-hidden="true" />
+                            <span className="truncate">{conv.channel_name}</span>
+                          </span>
+                        )}
                       </span>
                     </button>
                   </li>

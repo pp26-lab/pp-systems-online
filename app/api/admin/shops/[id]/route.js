@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
     query('SELECT feature_key, enabled, expires_at, note, updated_at FROM shop_features WHERE shop_id = ?', [shop.id]),
     getShopFeatures(shop.id),
     query(
-      `SELECT ch.id, ch.platform, ch.external_id, ch.account_id, ch.name, ch.status, ch.last_error, ch.created_at,
+      `SELECT ch.id, ch.platform, ch.external_id, ch.account_id, ch.name, ch.label, ch.status, ch.last_error, ch.created_at,
          (SELECT COUNT(*) FROM chat_conversations c WHERE c.channel_id = ch.id) AS conversations,
          (SELECT MAX(m.created_at) FROM chat_messages m WHERE m.channel_id = ch.id AND m.direction = 'in') AS last_inbound
        FROM chat_channels ch WHERE ch.shop_id = ? ORDER BY ch.platform`, [shop.id]

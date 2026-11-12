@@ -22,19 +22,19 @@ export async function GET(request) {
   let rows = [];
   if (o.customer_id) {
     rows = await query(
-      `SELECT id, platform, name, last_inbound_at FROM chat_conversations
-       WHERE shop_id = ? AND customer_id = ? AND platform IN (${platforms.map(() => '?').join(',')})`,
+      `SELECT c.id, c.platform, c.name, c.last_inbound_at, COALESCE(NULLIF(ch.label, ''), NULLIF(ch.name, ''), ch.external_id) AS channel_name FROM chat_conversations c JOIN chat_channels ch ON ch.id = c.channel_id
+       WHERE c.shop_id = ? AND c.customer_id = ? AND c.platform IN (${platforms.map(() => '?').join(',')})`,
       [shopId, o.customer_id, ...platforms]
     );
   }
   // Fall back to a WhatsApp chat with the same phone number.
   const d = digits(o.customer_phone);
   if (!rows.length && d.length >= 8 && platforms.includes('whatsapp')) {
-    const cands = await query("SELECT id, platform, name, phone, last_inbound_at FROM chat_conversations WHERE shop_id = ? AND platform IN ('whatsapp','whatsapp_web') AND phone LIKE ?", [shopId, `%${d.slice(-4)}`]);
+    const cands = await query(`SELECT c.id, c.platform, c.name, c.phone, c.last_inbound_at, COALESCE(NULLIF(ch.label, ''), NULLIF(ch.name, ''), ch.external_id) AS channel_name FROM chat_conversations c JOIN chat_channels ch ON ch.id = c.channel_id WHERE c.shop_id = ? AND c.platform IN ('whatsapp','whatsapp_web') AND c.phone LIKE ?`, [shopId, `%${d.slice(-4)}`]);
     rows = cands.filter(c => digits(c.phone).endsWith(d.slice(-8)));
   }
   return NextResponse.json({
     enabled: true,
-    conversations: rows.map(r => ({ id: r.id, platform: r.platform, name: r.name, window: windowState(r) })),
+    conversations: rows.map(r => ({ id: r.id, platform: r.platform, name: r.name, channel_name: r.channel_name, window: windowState(r) })),
   });
 }

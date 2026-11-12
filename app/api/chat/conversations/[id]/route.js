@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 async function load(shopId, id) {
   return queryOne(
-    `SELECT c.*, ch.name AS channel_name FROM chat_conversations c JOIN chat_channels ch ON ch.id = c.channel_id
+    `SELECT c.*, COALESCE(NULLIF(ch.label, ''), NULLIF(ch.name, ''), ch.external_id) AS channel_name FROM chat_conversations c JOIN chat_channels ch ON ch.id = c.channel_id
      WHERE c.id = ? AND c.shop_id = ?`, [id, shopId]
   );
 }

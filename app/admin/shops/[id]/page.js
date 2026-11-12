@@ -134,6 +134,14 @@ export default function AdminShopDetail() {
     load();
   }
 
+  async function renameChannel(ch) {
+    const label = window.prompt('ชื่อที่ร้านเห็นในหน้าแชท (เช่น ชื่อเพจ หรือ "WhatsApp ร้าน 2")', ch.label || ch.name || '');
+    if (label === null) return;
+    const res = await fetch(`/api/admin/shops/${id}/channels`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel_id: ch.id, label }) });
+    say(res.ok, res.ok ? 'บันทึกชื่อแล้ว' : 'บันทึกชื่อไม่สำเร็จ');
+    load();
+  }
+
   async function removeChannel(ch) {
     if (!window.confirm(`ยกเลิกการเชื่อมต่อ ${ch.name || PLATFORM[ch.platform]}?\nประวัติแชททั้งหมดของช่องทางนี้จะถูกลบ และกู้คืนไม่ได้`)) return;
     await fetch(`/api/admin/shops/${id}/channels?channel_id=${ch.id}`, { method: 'DELETE' });
@@ -196,9 +204,9 @@ export default function AdminShopDetail() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="font-bold">การเชื่อมต่อแชท</h2>
-            <p className="text-sm text-slate-500">Token ถูกตรวจกับ Meta ก่อนบันทึก และเก็บแบบเข้ารหัส ไม่มีใครเปิดดูได้อีก</p>
+            <p className="text-sm text-slate-500">เชื่อมได้หลายเพจและหลายเบอร์ต่อร้าน กดปุ่มซ้ำเพื่อเพิ่มอีกอัน Token ถูกตรวจกับ Meta ก่อนบันทึก และเก็บแบบเข้ารหัส</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button onClick={() => { setConnectErr(''); setConnect({ platform: 'messenger', token: '', external_id: '' }); }} disabled={!setupOk}
               className="px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-white disabled:opacity-40">เชื่อม Messenger</button>
             <button onClick={startScan} disabled={busy || !setup?.encryption_key || setup?.wa_gateway !== 'up'}
@@ -243,6 +251,11 @@ export default function AdminShopDetail() {
                 </label>
               </div>
             )}
+            <label className="block text-sm">ชื่อที่ร้านเห็นในหน้าแชท (ไม่บังคับ)
+              <input value={connect.label || ''} onChange={e => setConnect({ ...connect, label: e.target.value })} maxLength={100}
+                placeholder={connect.platform === 'messenger' ? 'เช่น ชื่อเพจ PP Store' : 'เช่น WhatsApp ร้าน 2'} className="mt-1 w-full border border-slate-300 rounded-md px-3 py-2" />
+              <span className="block mt-1 text-xs text-slate-500">เว้นว่างได้ ระบบจะลองดึงชื่อเพจ/ชื่อเบอร์จาก Meta ให้เอง</span>
+            </label>
             {connect.platform === 'messenger' && (
               <label className="block text-sm">Page ID (แนะนำให้ใส่ — เลขของเพจ)
                 <input value={connect.external_id} onChange={e => setConnect({ ...connect, external_id: e.target.value.trim() })} inputMode="numeric"
@@ -267,9 +280,9 @@ export default function AdminShopDetail() {
           {channels.map(ch => (
             <li key={ch.id} className="py-3 flex flex-wrap items-center gap-3">
               <div className="flex-1 min-w-[14rem]">
-                <p className="font-semibold">{PLATFORM[ch.platform]}: {ch.name || ch.external_id}</p>
+                <p className="font-semibold">{PLATFORM[ch.platform]}: {ch.label || ch.name || ch.external_id}</p>
                 <p className="text-xs text-slate-500">
-                  ID {ch.external_id}, {ch.conversations} แชท
+                  {ch.label && ch.name && ch.label !== ch.name ? `${ch.name}, ` : ''}ID {ch.external_id}, {ch.conversations} แชท
                   {ch.last_inbound ? `, ข้อความล่าสุด ${new Date(ch.last_inbound).toLocaleString()}` : ', ยังไม่มีข้อความเข้า'}
                 </p>
                 {ch.last_error && <p className="text-xs text-red-600">{ERR[ch.last_error] || ch.last_error}</p>}
@@ -281,10 +294,11 @@ export default function AdminShopDetail() {
                 <button onClick={() => setScan(ch.id)} className="text-sm text-[#1C3260] font-semibold">{channelState(ch).needsScan ? 'สแกนใหม่' : 'ดูสถานะ'}</button>
               ) : (
                 <button onClick={() => setConnect(ch.platform === 'messenger'
-                  ? { platform: 'messenger', token: '', external_id: ch.external_id }
-                  : { platform: 'whatsapp', token: '', external_id: ch.external_id, account_id: ch.account_id })}
+                  ? { platform: 'messenger', token: '', external_id: ch.external_id, label: ch.label }
+                  : { platform: 'whatsapp', token: '', external_id: ch.external_id, account_id: ch.account_id, label: ch.label })}
                   className="text-sm text-[#1C3260] font-semibold">เปลี่ยน token</button>
               )}
+              <button onClick={() => renameChannel(ch)} className="text-sm text-[#1C3260] font-semibold">ตั้งชื่อ</button>
               <button onClick={() => channelStatus(ch, ch.status === 'disabled' ? 'active' : 'disabled')} className="text-sm text-slate-600 font-semibold">
                 {ch.status === 'disabled' ? 'เปิดใช้' : 'หยุดชั่วคราว'}
               </button>

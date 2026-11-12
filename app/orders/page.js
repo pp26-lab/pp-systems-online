@@ -737,7 +737,7 @@ function OrderChatSend({ order, lang, bill, onPickBill, billBusy, initialText })
         className="w-full flex items-center gap-2 px-4 min-h-12 text-left">
         <Icon name="chat" className="w-4 h-4 text-primary shrink-0" />
         <span className="flex-1 font-semibold text-ink text-sm">{c.title}</span>
-        <Pill tone={isWa ? 'green' : 'navy'}>{isWa ? 'WhatsApp' : 'Messenger'}</Pill>
+        <Pill tone={isWa ? 'green' : 'navy'}><span className="max-w-[9rem] truncate inline-block align-bottom">{conv.channel_name || (isWa ? 'WhatsApp' : 'Messenger')}</span></Pill>
         <Icon name="down" className={`w-4 h-4 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
       {expanded && (
@@ -745,7 +745,7 @@ function OrderChatSend({ order, lang, bill, onPickBill, billBusy, initialText })
       <div className="flex flex-wrap items-center justify-end gap-2">
           {chats.length > 1 && (
             <select value={conv.id} onChange={e => setConvId(Number(e.target.value))} className={`${inputCls} py-1.5 text-sm w-auto`}>
-              {chats.map(x => <option key={x.id} value={x.id}>{x.platform.startsWith('whatsapp') ? 'WhatsApp' : 'Messenger'} {x.name}</option>)}
+              {chats.map(x => <option key={x.id} value={x.id}>{x.name || (x.platform.startsWith('whatsapp') ? 'WhatsApp' : 'Messenger')} ({x.channel_name})</option>)}
             </select>
           )}
           <a href={`/chat?c=${conv.id}`} className="text-sm font-semibold text-primary hover:text-gold-dark">{c.openChat}</a>

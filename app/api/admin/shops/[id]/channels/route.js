@@ -41,6 +41,7 @@ export async function POST(request, { params }) {
     }
   }
 
+  const label = String(b.label || '').trim().slice(0, 100);
   const token = String(b.token || '').trim();
   if (!token || token.length > 1000) return NextResponse.json({ error: 'token_required' }, { status: 400 });
 
@@ -53,7 +54,9 @@ export async function POST(request, { params }) {
         // pages_read_engagement; only pages_messaging + pages_manage_metadata (on the token) remain.
         if (!ID.test(providedId)) return NextResponse.json({ error: 'bad_page_id' }, { status: 400 });
         externalId = providedId;
-        name = '';
+        // Best effort: a page token can usually read its own page's public name. If Meta
+        // refuses, the admin's label below is what staff see.
+        name = await meta.messengerPageName(providedId, token);
       } else {
         const page = await meta.messengerPage(token);
         externalId = String(page.id);
@@ -84,20 +87,28 @@ export async function POST(request, { params }) {
   if (existing && existing.shop_id !== shop.id) return NextResponse.json({ error: 'owned_by_other_shop' }, { status: 409 });
 
   if (existing) {
-    await query("UPDATE chat_channels SET token_enc = ?, account_id = ?, name = ?, status = 'active', last_error = NULL WHERE id = ?",
-      [seal(token), accountId, name || '', existing.id]);
+    // Keep a name we already know when Meta doesn't give one this time; keep the label unless a new one is typed.
+    await query("UPDATE chat_channels SET token_enc = ?, account_id = ?, name = IF(? = '', name, ?), label = IF(? = '', label, ?), status = 'active', last_error = NULL WHERE id = ?",
+      [seal(token), accountId, name || '', name || '', label, label, existing.id]);
   } else {
-    await query('INSERT INTO chat_channels (shop_id, platform, external_id, account_id, name, token_enc) VALUES (?, ?, ?, ?, ?, ?)',
-      [shop.id, b.platform, externalId, accountId, name || '', seal(token)]);
+    await query('INSERT INTO chat_channels (shop_id, platform, external_id, account_id, name, label, token_enc) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [shop.id, b.platform, externalId, accountId, name || '', label, seal(token)]);
   }
   await adminAudit(request, existing ? 'channel.token_updated' : 'channel.connected', shop.id, { platform: b.platform, external_id: externalId, name });
-  return NextResponse.json({ success: true, name, external_id: externalId });
+  return NextResponse.json({ success: true, name: label || name, external_id: externalId });
 }
 
-// Pause / resume a channel.
+// Pause / resume a channel, or rename it.
 export async function PATCH(request, { params }) {
   if (!(await verifyAdminSession())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const b = await request.json();
+  if (b.label !== undefined) {
+    const label = String(b.label || '').trim().slice(0, 100);
+    const r = await query('UPDATE chat_channels SET label = ? WHERE id = ? AND shop_id = ?', [label, b.channel_id, params.id]);
+    if (!r.affectedRows) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    await adminAudit(request, 'channel.renamed', Number(params.id), { channel_id: Number(b.channel_id), label });
+    return NextResponse.json({ success: true });
+  }
   if (!['active', 'disabled'].includes(b.status)) return NextResponse.json({ error: 'invalid_status' }, { status: 400 });
   const ch = await queryOne('SELECT id, platform FROM chat_channels WHERE id = ? AND shop_id = ?', [b.channel_id, params.id]);
   if (!ch) return NextResponse.json({ error: 'not_found' }, { status: 404 });
