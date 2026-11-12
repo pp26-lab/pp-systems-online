@@ -48,9 +48,18 @@ export async function GET(request) {
     const s = `%${q}%`;
     params.push(s, s, s, s, s);
   }
-  sql += ' ORDER BY c.last_message_at DESC LIMIT 300';
+  // Newest first, a page at a time. The next page is "older than the last chat shown"
+  // (time, then id for ties), so chats moving up while you scroll are never skipped twice.
+  const limit = Math.min(100, Math.max(1, parseInt(p.get('limit')) || 30));
+  const beforeAt = p.get('before_at') ? new Date(p.get('before_at')) : null;
+  const beforeId = parseInt(p.get('before_id')) || 0;
+  if (beforeAt && !Number.isNaN(beforeAt.getTime()) && beforeId) {
+    sql += ' AND (c.last_message_at < ? OR (c.last_message_at = ? AND c.id < ?))';
+    params.push(beforeAt, beforeAt, beforeId);
+  }
+  sql += ` ORDER BY c.last_message_at DESC, c.id DESC LIMIT ${limit + 1}`;
 
-  const [conversations, countRows, channels] = await Promise.all([
+  const [rows, countRows, channels] = await Promise.all([
     query(sql, params),
     query(
       `SELECT SUM(c.unread_count > 0) AS unread, SUM(${UNANSWERED}) AS unanswered, COUNT(*) AS total
@@ -66,9 +75,12 @@ export async function GET(request) {
   ]);
   // A page still shown by its id: look its name up in the background (rate-limited).
   if (channels.some(ch => ch.platform === 'messenger' && /^\d+$/.test(ch.name))) fillMissingPageNames(shopId);
+  const conversations = rows.slice(0, limit);
+  const hasMore = rows.length > limit;
   const cr = countRows[0] || {};
   return NextResponse.json({
     conversations,
+    hasMore,
     counts: { unread: Number(cr.unread) || 0, unanswered: Number(cr.unanswered) || 0, all: Number(cr.total) || 0 },
     platforms: families,
     channels,

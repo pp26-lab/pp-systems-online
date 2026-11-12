@@ -35,16 +35,25 @@ export async function GET(request) {
     params.push(s, s, s, s);
   }
 
-  sql += ' GROUP BY p.id ORDER BY p.created_at DESC';
+  sql += ' GROUP BY p.id ORDER BY p.created_at DESC, p.id DESC';
 
   const products = await query(sql, params);
 
-  for (const p of products) {
-    if (p.has_variants) {
-      p.variants = await query(
-        'SELECT * FROM product_variants WHERE product_id = ? AND shop_id = ? ORDER BY color, size',
-        [p.id, shopId]
-      );
+  // All options of these products in one query (was one query per product).
+  const withVariants = products.filter(p => p.has_variants).map(p => p.id);
+  if (withVariants.length) {
+    const rows = await query(
+      `SELECT * FROM product_variants WHERE shop_id = ? AND product_id IN (${withVariants.map(() => '?').join(',')}) ORDER BY color, size`,
+      [shopId, ...withVariants]
+    );
+    const byProduct = new Map();
+    for (const v of rows) {
+      if (!byProduct.has(v.product_id)) byProduct.set(v.product_id, []);
+      byProduct.get(v.product_id).push(v);
+    }
+    for (const p of products) {
+      if (!p.has_variants) continue;
+      p.variants = byProduct.get(p.id) || [];
       p.variant_total_qty = p.variants.reduce((s, v) => s + v.quantity, 0);
       p.stock_in_stock = p.variant_total_qty;
     }

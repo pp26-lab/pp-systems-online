@@ -26,35 +26,64 @@ export async function GET(request) {
   const to = searchParams.get('to');
   const orderType = searchParams.get('order_type');
 
-  let sql = 'SELECT * FROM orders WHERE shop_id = ?';
-  const params = [shopId];
+  const q = (searchParams.get('q') || '').trim();
 
-  if (status) { sql += ' AND status = ?'; params.push(status); }
+  // Filters shared by the list and the per-status counts (the status itself is left out of
+  // the counts, so every status chip shows its own number).
+  let where = 'shop_id = ?';
+  const base = [shopId];
   await getPool(); // shopDay() needs the detected DB timezone
-  if (date) { sql += ` AND ${shopDay('created_at')} = ?`; params.push(date); }
+  if (date) { where += ` AND ${shopDay('created_at')} = ?`; base.push(date); }
   // from/to are UTC instants; passing Date objects lets mysql2 convert them to the DB's timezone.
   const fromDate = parseUtc(from);
   const toDate = parseUtc(to);
-  if (fromDate) { sql += ' AND created_at >= ?'; params.push(fromDate); }
-  if (toDate) { sql += ' AND created_at <= ?'; params.push(toDate); }
-  if (orderType) { sql += ' AND order_type = ?'; params.push(orderType); }
+  if (fromDate) { where += ' AND created_at >= ?'; base.push(fromDate); }
+  if (toDate) { where += ' AND created_at <= ?'; base.push(toDate); }
+  if (orderType) { where += ' AND order_type = ?'; base.push(orderType); }
+  if (q) {
+    where += ' AND (order_number LIKE ? OR customer_name LIKE ? OR customer_phone LIKE ?)';
+    const s = `%${q}%`;
+    base.push(s, s, s);
+  }
 
-  sql += ' ORDER BY created_at DESC';
+  let sql = `SELECT * FROM orders WHERE ${where}`;
+  const params = [...base];
+  if (status) { sql += ' AND status = ?'; params.push(status); }
 
-  const orders = await query(sql, params);
+  // Paged (orders page): ?limit=40&before=<id of the last order shown> -> { orders, hasMore, counts }.
+  // Newest first by id, so an order created while scrolling never shifts the pages.
+  const paged = !!searchParams.get('limit');
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit')) || 40));
+  const before = parseInt(searchParams.get('before')) || 0;
+  if (paged && before) { sql += ' AND id < ?'; params.push(before); }
+  sql += ' ORDER BY id DESC';
+  if (paged) sql += ` LIMIT ${limit + 1}`;
 
-  for (const order of orders) {
-    order.items = await query(`
+  let orders = await query(sql, params);
+  const hasMore = paged && orders.length > limit;
+  if (paged) orders = orders.slice(0, limit);
+
+  // Items of all these orders in one query (was one query per order).
+  for (const o of orders) o.items = [];
+  if (orders.length) {
+    const byOrder = new Map(orders.map(o => [o.id, o]));
+    const items = await query(`
       SELECT oi.*, p.name_lo, p.name_th, p.name_en, p.sku, p.image_url,
         COALESCE(oi.item_color, pv.color) as variant_color, COALESCE(oi.item_size, pv.size) as variant_size
       FROM order_items oi
-      JOIN products p ON oi.product_id = p.id
+      LEFT JOIN products p ON oi.product_id = p.id
       LEFT JOIN product_variants pv ON oi.variant_id = pv.id
-      WHERE oi.order_id = ?
-    `, [order.id]);
+      WHERE oi.shop_id = ? AND oi.order_id IN (${orders.map(() => '?').join(',')})
+      ORDER BY oi.id
+    `, [shopId, ...orders.map(o => o.id)]);
+    for (const it of items) byOrder.get(it.order_id)?.items.push(it);
   }
 
-  return NextResponse.json(orders);
+  if (!paged) return NextResponse.json(orders);
+  const counts = before ? null : Object.fromEntries(
+    (await query(`SELECT status, COUNT(*) AS n FROM orders WHERE ${where} GROUP BY status`, base)).map(r => [r.status, Number(r.n)])
+  );
+  return NextResponse.json({ orders, hasMore, counts });
 }
 
 // A sale from the checkout screen. All the rules (shop ownership, real prices, stock

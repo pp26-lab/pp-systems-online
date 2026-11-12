@@ -1,11 +1,14 @@
 'use client';
-import { useState, useEffect, useContext, useMemo, useRef } from 'react';
+import { useState, useEffect, useContext, useMemo, useRef, useCallback } from 'react';
 import { AppContext } from '../layout';
 import { t } from '../../lib/i18n';
 import { formatCurrency, calculateMargin, localToday } from '../../lib/currency';
 import { compressImage } from '../../lib/image';
 import CameraCapture from '../../components/CameraCapture';
 import { Icon, IconButton, Button, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
+import LoadMore from '../../components/LoadMore';
+
+const PAGE = 30;
 
 const EMPTY = {
   sku: '', barcode: '', name_lo: '', name_th: '', name_en: '', description: '', category: '',
@@ -135,6 +138,13 @@ export default function ProductsPage() {
     });
   }, [products, search, filter, threshold]);
 
+  // Long catalogues: draw 30 at a time, more as the list is scrolled to the end. Search and
+  // the status chips still look at every product. Starts over when the filter changes.
+  const [shown, setShown] = useState(PAGE);
+  useEffect(() => { setShown(PAGE); }, [search, filter]);
+  const page = visible.slice(0, shown);
+  const showMore = useCallback(() => setShown(n => n + PAGE), []);
+
   const categories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))].sort(), [products]);
 
   async function openEditor(p) {
@@ -230,7 +240,7 @@ export default function ProductsPage() {
           <>
           {/* Phones: one tappable card per product, the numbers people check first on the right. */}
           <ul className="md:hidden divide-y divide-line">
-            {visible.map(p => {
+            {page.map(p => {
               const stock = stockOf(p);
               return (
                 <li key={p.id} className={`flex items-center gap-3 pl-4 pr-1 py-3 ${p.status === 'hidden' ? 'opacity-60' : ''}`}>
@@ -273,7 +283,7 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {visible.map(p => {
+                {page.map(p => {
                   const margin = calculateMargin(Number(p.selling_price_lak) || 0, Number(p.landed_cost_lak) || 0);
                   const stock = stockOf(p);
                   const expired = isExpired(p);
@@ -314,6 +324,7 @@ export default function ProductsPage() {
               </tbody>
             </table>
           </div>
+          <LoadMore hasMore={shown < visible.length} loading={false} onMore={showMore} lang={lang} />
           </>
         )}
       </section>

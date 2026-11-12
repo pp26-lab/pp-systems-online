@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useRef, useMemo, useCallback } from 'r
 import { AppContext } from '../layout';
 import { formatCurrency } from '../../lib/currency';
 import { Button, IconButton, Modal, Pill, EmptyState, Icon, SearchInput, inputCls } from '../../components/ui';
+import LoadMore from '../../components/LoadMore';
 import CustomerForm from '../../components/CustomerForm';
 import { QR_COPY, QuickReplyPicker, QuickReplyManager, useQuickReplies } from '../../components/chat/QuickReplies';
 import { SoundToggle } from '../../components/MessageAlert';
@@ -138,21 +139,67 @@ export default function ChatPage() {
     return () => { delete document.documentElement.dataset.chatThread; };
   }, [view]);
 
-  const loadList = useCallback(async () => {
-    const p = new URLSearchParams({ filter });
+  // The inbox loads 30 chats; more come when the list is scrolled to the end. The refresh
+  // every few seconds only asks for the newest 30 and merges them in, so a long inbox costs
+  // the same as a short one.
+  const listKey = useRef('');
+  const [hasMore, setHasMore] = useState(false);
+  const [more, setMore] = useState(false);
+  const query = useCallback(extra => {
+    const p = new URLSearchParams({ filter, limit: 30, ...extra });
     if (platform.startsWith('ch:')) p.set('channel', platform.slice(3));
     else if (platform) p.set('platform', platform);
     if (search.trim()) p.set('q', search.trim());
-    const res = await fetch(`/api/chat/conversations?${p}`);
+    return fetch(`/api/chat/conversations?${p}`);
+  }, [filter, platform, search]);
+
+  const loadList = useCallback(async () => {
+    const key = `${filter}|${platform}|${search.trim()}`;
+    const res = await query({});
     if (res.status === 403) { setState('off'); return; }
     if (!res.ok) return;
     const d = await res.json();
-    setList(d.conversations || []);
+    const rows = d.conversations || [];
+    const fresh = listKey.current !== key; // filter / search changed: start over
+    listKey.current = key;
+    if (fresh) {
+      setList(rows);
+      setHasMore(!!d.hasMore);
+    } else {
+      // Keep the older chats already loaded below the newest page; chats inside the newest
+      // page's time range come from the server as they are now (moved, read, or gone).
+      const oldest = rows[rows.length - 1];
+      const older = x => oldest && (Date.parse(x.last_message_at) < Date.parse(oldest.last_message_at)
+        || (Date.parse(x.last_message_at) === Date.parse(oldest.last_message_at) && x.id < oldest.id));
+      setList(prev => {
+        const ids = new Set(rows.map(r => r.id));
+        const tail = d.hasMore ? prev.filter(x => !ids.has(x.id) && older(x)) : [];
+        return [...rows, ...tail];
+      });
+      if (!d.hasMore) setHasMore(false);
+    }
     setCounts(d.counts || {});
     setPlatforms(d.platforms || []);
     setChannels(d.channels || []);
     setState('ready');
-  }, [filter, platform, search]);
+  }, [query, filter, platform, search]);
+
+  const loadMore = useCallback(async () => {
+    const last = list[list.length - 1];
+    if (more || !last) return;
+    const key = listKey.current;
+    setMore(true);
+    try {
+      const res = await query({ before_at: last.last_message_at, before_id: last.id });
+      if (!res.ok) return;
+      const d = await res.json();
+      if (listKey.current !== key) return;
+      setList(prev => { const ids = new Set(prev.map(x => x.id)); return [...prev, ...(d.conversations || []).filter(x => !ids.has(x.id))]; });
+      setHasMore(!!d.hasMore);
+    } finally {
+      setMore(false);
+    }
+  }, [more, list, query]);
 
   useEffect(() => {
     const t = setTimeout(loadList, search ? 250 : 0);
@@ -258,6 +305,7 @@ export default function ChatPage() {
               })}
             </ul>
           )}
+          {state === 'ready' && list.length > 0 && <LoadMore hasMore={hasMore} loading={more} onMore={loadMore} lang={lang} />}
         </div>
       </aside>
 

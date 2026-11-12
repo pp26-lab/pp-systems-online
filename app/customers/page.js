@@ -1,10 +1,13 @@
 'use client';
-import { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppContext } from '../layout';
 import { formatCurrency } from '../../lib/currency';
 import { Button, Modal, SearchInput, Chip, Pill, EmptyState, Toolbar, Icon, card } from '../../components/ui';
 import CustomerForm from '../../components/CustomerForm';
+import LoadMore from '../../components/LoadMore';
+
+const PAGE = 30;
 
 const COPY = {
   lo: {
@@ -33,27 +36,55 @@ export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('recent');
   const [adding, setAdding] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [more, setMore] = useState(false);
+  const [stats, setStats] = useState(null); // whole shop, from the server
+  const seq = useRef(0);
 
-  // Debounced so typing doesn't fire a request per keystroke.
+  // Loads 30 at a time; the next 30 come when the list is scrolled to the end.
+  const fetchPage = useCallback(async (offset) => {
+    const params = new URLSearchParams({ sort, limit: PAGE, offset });
+    if (search.trim()) params.set('search', search.trim());
+    const d = await fetch(`/api/customers?${params}`).then(r => r.json());
+    return { rows: Array.isArray(d.customers) ? d.customers : [], hasMore: !!d.hasMore, stats: d.stats };
+  }, [search, sort]);
+
+  // First page; debounced so typing doesn't fire a request per keystroke. An older answer
+  // arriving after a newer search is ignored.
   useEffect(() => {
+    const my = ++seq.current;
     const id = setTimeout(async () => {
-      const params = new URLSearchParams({ sort });
-      if (search.trim()) params.set('search', search.trim());
       try {
-        const data = await fetch(`/api/customers?${params}`).then(r => r.json());
-        setCustomers(Array.isArray(data) ? data : []);
+        const d = await fetchPage(0);
+        if (my !== seq.current) return;
+        setCustomers(d.rows);
+        setHasMore(d.hasMore);
+        if (d.stats) setStats(d.stats);
+      } catch {
+        if (my === seq.current) { setCustomers([]); setHasMore(false); }
       } finally {
-        setLoading(false);
+        if (my === seq.current) setLoading(false);
       }
     }, search ? 250 : 0);
     return () => clearTimeout(id);
-  }, [search, sort]);
+  }, [fetchPage, search]);
 
-  const stats = useMemo(() => ({
-    total: customers.length,
-    repeat: customers.filter(x => Number(x.order_count) > 1).length,
-    spent: customers.reduce((s, x) => s + (Number(x.total_spent) || 0), 0),
-  }), [customers]);
+  const loadMore = useCallback(async () => {
+    if (more) return;
+    const my = seq.current;
+    setMore(true);
+    try {
+      const d = await fetchPage(customers.length);
+      if (my !== seq.current) return;
+      // A customer who moved up the list since page 1 could appear twice; keep the first.
+      setCustomers(prev => { const ids = new Set(prev.map(x => x.id)); return [...prev, ...d.rows.filter(x => !ids.has(x.id))]; });
+      setHasMore(d.hasMore);
+    } catch { /* the button stays, so it can be tapped again */ } finally {
+      setMore(false);
+    }
+  }, [more, fetchPage, customers.length]);
+
+  const total = Number(stats?.total) || 0;
 
   const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
@@ -64,11 +95,11 @@ export default function CustomersPage() {
         {['recent', 'top', 'frequent'].map(s => <Chip key={s} active={sort === s} onClick={() => setSort(s)}>{c[s]}</Chip>)}
       </Toolbar>
 
-      {!search && customers.length > 0 && (
+      {!search && total > 0 && (
         <section className="grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-line bg-line mb-5">
-          <Stat label={c.customers} value={stats.total.toLocaleString()} />
-          <Stat label={c.repeat} value={stats.total ? `${Math.round(stats.repeat / stats.total * 100)}%` : '0%'} />
-          <Stat label={c.lifetime} value={formatCurrency(stats.spent, 'LAK')} gold />
+          <Stat label={c.customers} value={total.toLocaleString()} />
+          <Stat label={c.repeat} value={`${Math.round((Number(stats.repeat_count) || 0) / total * 100)}%`} />
+          <Stat label={c.lifetime} value={formatCurrency(Number(stats.spent) || 0, 'LAK')} gold />
         </section>
       )}
 
@@ -104,6 +135,7 @@ export default function CustomersPage() {
             ))}
           </ul>
         )}
+        {!loading && customers.length > 0 && <LoadMore hasMore={hasMore} loading={more} onMore={loadMore} lang={lang} />}
       </section>
 
       <Modal open={adding} onClose={() => setAdding(false)} title={c.add} size="lg">

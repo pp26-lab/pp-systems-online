@@ -1,7 +1,10 @@
 'use client';
-import { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext, useMemo, useRef, useCallback } from 'react';
 import { AppContext } from '../layout';
 import { SearchInput, Chip, Pill, EmptyState, Toolbar, card } from '../../components/ui';
+import LoadMore from '../../components/LoadMore';
+
+const PAGE = 50;
 
 const REASONS = {
   lo: { sale: 'ຂາຍ', cancel: 'ຍົກເລີກບິນ', stock_in: 'ຮັບເຂົ້າ', count: 'ນັບໃໝ່', damaged: 'ເສຍຫາຍ', return: 'ສົ່ງຄືນ', initial: 'ສະຕ໋ອກເລີ່ມຕົ້ນ', adjustment: 'ປັບ' },
@@ -24,13 +27,48 @@ export default function StockLogPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [reason, setReason] = useState('');
+  const [counts, setCounts] = useState({}); // per reason, whole history (from the server)
+  const [hasMore, setHasMore] = useState(false);
+  const [more, setMore] = useState(false);
+  const seq = useRef(0);
+
+  // 50 newest first; scrolling to the end loads the next 50. Search and the reason tabs are
+  // answered by the server, so they cover the whole history, not only what is on screen.
+  const fetchPage = useCallback(async before => {
+    const p = new URLSearchParams({ limit: PAGE });
+    if (reason) p.set('reason', reason);
+    if (search.trim()) p.set('q', search.trim());
+    if (before) p.set('before', before);
+    return fetch(`/api/stock-movements?${p}`).then(r => r.json());
+  }, [reason, search]);
 
   useEffect(() => {
-    fetch('/api/stock-movements').then(r => r.json())
-      .then(d => setRows(Array.isArray(d) ? d : []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    const my = ++seq.current;
+    const t = setTimeout(async () => {
+      try {
+        const d = await fetchPage(0);
+        if (my !== seq.current) return;
+        setRows(d.rows || []);
+        setHasMore(!!d.hasMore);
+        if (d.counts) setCounts(d.counts);
+      } catch { if (my === seq.current) setRows([]); } finally {
+        if (my === seq.current) setLoading(false);
+      }
+    }, search ? 300 : 0);
+    return () => clearTimeout(t);
+  }, [fetchPage, search]);
+
+  const loadMore = useCallback(async () => {
+    if (more || !rows.length) return;
+    const my = seq.current;
+    setMore(true);
+    try {
+      const d = await fetchPage(rows[rows.length - 1].id);
+      if (my !== seq.current) return;
+      setRows(prev => [...prev, ...(d.rows || [])]);
+      setHasMore(!!d.hasMore);
+    } catch { /* tap again */ } finally { setMore(false); }
+  }, [more, rows, fetchPage]);
 
   function nameOf(m) {
     if (lang === 'lo') return m.name_lo || m.name_en || m.name_th;
@@ -38,20 +76,8 @@ export default function StockLogPage() {
     return m.name_en || m.name_lo || m.name_th;
   }
 
-  const counts = useMemo(() => {
-    const m = {};
-    for (const r of rows) m[r.reason] = (m[r.reason] || 0) + 1;
-    return m;
-  }, [rows]);
-
-  const visible = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return rows.filter(r => {
-      if (reason && r.reason !== reason) return false;
-      if (!q) return true;
-      return [r.name_lo, r.name_th, r.name_en, r.sku, r.note].some(v => v && String(v).toLowerCase().includes(q));
-    });
-  }, [rows, search, reason]);
+  const allCount = Object.values(counts).reduce((s, n) => s + n, 0);
+  const visible = rows;
 
   // Group by local calendar day so the list reads like a ledger.
   const groups = useMemo(() => {
@@ -71,7 +97,7 @@ export default function StockLogPage() {
     <div className="max-w-5xl">
       <Toolbar>
         <SearchInput value={search} onChange={setSearch} placeholder={c.search} className="w-full sm:w-72" />
-        <Chip active={!reason} onClick={() => setReason('')} count={rows.length}>{c.all}</Chip>
+        <Chip active={!reason} onClick={() => setReason('')} count={allCount}>{c.all}</Chip>
         {Object.keys(reasons).filter(k => counts[k]).map(k => (
           <Chip key={k} active={reason === k} onClick={() => setReason(k)} count={counts[k]}>{reasons[k]}</Chip>
         ))}
@@ -81,14 +107,16 @@ export default function StockLogPage() {
         {loading ? (
           <div className="p-6 space-y-3" aria-busy="true">{[0, 1, 2, 3].map(i => <div key={i} className="h-12 rounded-xl bg-canvas animate-pulse" />)}</div>
         ) : groups.length === 0 ? (
-          <EmptyState icon="history" title={rows.length ? c.noMatch : c.empty} />
-        ) : groups.map(g => {
+          <EmptyState icon="history" title={allCount || search ? c.noMatch : c.empty} />
+        ) : groups.map((g, gi) => {
           const net = g.items.reduce((s, r) => s + Number(r.quantity_change || 0), 0);
+          // The oldest day on screen may continue on the next page: don't show a half total.
+          const partial = hasMore && gi === groups.length - 1;
           return (
             <div key={g.key}>
               <div className="flex items-center justify-between px-5 py-2.5 bg-canvas border-y border-line first:border-t-0">
                 <h2 className="text-sm font-bold text-ink">{g.date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</h2>
-                <span className={`text-xs font-bold num ${net > 0 ? 'text-success' : net < 0 ? 'text-danger' : 'text-slate-400'}`}>{net > 0 ? '+' : ''}{net}</span>
+                {!partial && <span className={`text-xs font-bold num ${net > 0 ? 'text-success' : net < 0 ? 'text-danger' : 'text-slate-400'}`}>{net > 0 ? '+' : ''}{net}</span>}
               </div>
               <ul className="divide-y divide-line">
                 {g.items.map(m => {
@@ -114,8 +142,8 @@ export default function StockLogPage() {
             </div>
           );
         })}
+        {!loading && rows.length > 0 && <LoadMore hasMore={hasMore} loading={more} onMore={loadMore} lang={lang} showEnd />}
       </section>
-      {rows.length >= 500 && <p className="mt-3 text-xs text-slate-500">{c.limit}</p>}
     </div>
   );
 }

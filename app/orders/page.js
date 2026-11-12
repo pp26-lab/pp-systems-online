@@ -5,6 +5,7 @@ import { t } from '../../lib/i18n';
 import { formatCurrency } from '../../lib/currency';
 import { printReceipt, printShippingLabel, printShippingLabels } from '../../lib/receipt';
 import { waNumber, fillTemplate } from '../../lib/whatsapp';
+import LoadMore from '../../components/LoadMore';
 import { Icon, Button, IconButton, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
 
 const COPY = {
@@ -107,6 +108,8 @@ async function shrinkPhoto(file) {
   }
 }
 
+const PAGE = 40;
+
 const STATUS_TONE = { pending: 'gold', shipping: 'navy', completed: 'green', cancelled: 'gray' };
 
 function toMysqlUtc(d) {
@@ -165,6 +168,13 @@ export default function OrdersPage() {
   const [picked, setPicked] = useState(() => new Set()); // orders ticked for printing delivery bills
   const [pickMsg, setPickMsg] = useState('');
   const [mobileDetail, setMobileDetail] = useState(false);
+  // 40 orders at a time, newest first; scrolling to the end loads the next 40. Search and the
+  // status chips are answered by the server, so they cover every order, not just those loaded.
+  const [q, setQ] = useState(''); // search, sent to the server a moment after typing stops
+  useEffect(() => { const t = setTimeout(() => setQ(search.trim()), 300); return () => clearTimeout(t); }, [search]);
+  const [counts, setCounts] = useState({ pending: 0, shipping: 0, completed: 0, cancelled: 0 });
+  const [hasMore, setHasMore] = useState(false);
+  const [more, setMore] = useState(false);
 
   const [linked, setLinked] = useState(null); // order number from ?q= (e.g. from a customer's history)
 
@@ -185,7 +195,7 @@ export default function OrdersPage() {
       window.removeEventListener('focus', refresh);
       document.removeEventListener('visibilitychange', refresh);
     };
-  }, [preset, channel]);
+  }, [preset, channel, status, q]);
   useEffect(() => {
     if (!linked) return;
     const hit = orders.find(o => o.order_number === linked);
@@ -193,18 +203,35 @@ export default function OrdersPage() {
   }, [orders, linked]);
 
   const loadSeq = useRef(0);
-  async function load(quiet = false) {
-    const seq = ++loadSeq.current;
-    if (!quiet) setLoading(true);
-    const params = new URLSearchParams();
+  function listParams(extra = {}) {
+    const params = new URLSearchParams({ limit: PAGE, ...extra });
     if (channel) params.set('order_type', channel);
+    if (status) params.set('status', status);
+    if (q) params.set('q', q);
     const [from, to] = rangeFor(preset);
     if (from) params.set('from', toMysqlUtc(from));
     if (to) params.set('to', toMysqlUtc(to));
+    return params;
+  }
+  // quiet = the background refresh: merge the newest page into what is already loaded
+  // (new orders on top, changed ones updated) instead of jumping back to the top.
+  async function load(quiet = false) {
+    const seq = ++loadSeq.current;
+    if (!quiet) setLoading(true);
     try {
-      const res = await fetch(`/api/orders?${params}`);
+      const res = await fetch(`/api/orders?${listParams()}`);
       const data = await res.json();
-      if (seq === loadSeq.current) setOrders(Array.isArray(data) ? data : []);
+      if (seq !== loadSeq.current) return;
+      const rows = Array.isArray(data.orders) ? data.orders : [];
+      if (!quiet) {
+        setOrders(rows);
+        setHasMore(!!data.hasMore);
+      } else {
+        const oldest = rows.length ? Math.min(...rows.map(o => o.id)) : Infinity;
+        setOrders(prev => [...rows, ...(data.hasMore ? prev.filter(o => o.id < oldest) : [])]);
+        if (!data.hasMore) setHasMore(false);
+      }
+      if (data.counts) setCounts({ pending: 0, shipping: 0, completed: 0, cancelled: 0, ...data.counts });
     } catch {
       if (seq === loadSeq.current && !quiet) setOrders([]);
     } finally {
@@ -212,20 +239,25 @@ export default function OrdersPage() {
     }
   }
 
-  const counts = useMemo(() => {
-    const m = { pending: 0, shipping: 0, completed: 0, cancelled: 0 };
-    for (const o of orders) m[o.status] = (m[o.status] || 0) + 1;
-    return m;
-  }, [orders]);
+  async function loadMore() {
+    const last = orders[orders.length - 1];
+    if (more || !last) return;
+    const seq = loadSeq.current;
+    setMore(true);
+    try {
+      const data = await fetch(`/api/orders?${listParams({ before: last.id })}`).then(r => r.json());
+      if (seq !== loadSeq.current) return;
+      setOrders(prev => { const ids = new Set(prev.map(o => o.id)); return [...prev, ...(data.orders || []).filter(o => !ids.has(o.id))]; });
+      setHasMore(!!data.hasMore);
+    } catch { /* the button stays; tap again */ } finally {
+      setMore(false);
+    }
+  }
 
-  const visible = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return orders.filter(o => {
-      if (status && o.status !== status) return false;
-      if (!q) return true;
-      return [o.order_number, o.customer_name, o.customer_phone].some(v => v && String(v).toLowerCase().includes(q));
-    });
-  }, [orders, status, search]);
+  // Already filtered by the server; an order whose status was just changed here leaves the
+  // current status tab straight away.
+  const visible = useMemo(() => (status ? orders.filter(o => o.status === status) : orders), [orders, status]);
+  const allCount = Object.values(counts).reduce((n, x) => n + (Number(x) || 0), 0);
 
   const selected = orders.find(o => o.id === selectedId) || null;
 
@@ -241,6 +273,10 @@ export default function OrdersPage() {
       body: JSON.stringify({ id, ...body }),
     });
     if (!res.ok) throw new Error('failed');
+    const before = orders.find(o => o.id === id);
+    if (body.status && before && before.status !== body.status) {
+      setCounts(m => ({ ...m, [before.status]: Math.max(0, (m[before.status] || 0) - 1), [body.status]: (m[body.status] || 0) + 1 }));
+    }
     setOrders(prev => prev.map(o => (o.id === id ? { ...o, ...body } : o)));
   }
   // For changes the server already saved through its own route (the bill photo).
@@ -288,7 +324,7 @@ export default function OrdersPage() {
       </Toolbar>
 
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
-        <Chip active={!status} onClick={() => setStatus('')} count={orders.length}>{c.all}</Chip>
+        <Chip active={!status} onClick={() => setStatus('')} count={allCount}>{c.all}</Chip>
         {['pending', 'shipping', 'completed', 'cancelled'].map(s => (
           <Chip key={s} active={status === s} onClick={() => setStatus(s)} count={counts[s] || 0}>{c[s]}</Chip>
         ))}
@@ -360,6 +396,7 @@ export default function OrdersPage() {
                 );
               })}
             </ul>
+            <LoadMore hasMore={hasMore} loading={more} onMore={loadMore} lang={lang} />
             </>
           )}
         </section>

@@ -19,13 +19,26 @@ export async function GET(request) {
     const s = `%${search}%`;
     params.push(s, s, s, s, s);
   }
-  if (sort === 'top') sql += ' ORDER BY total_spent DESC';
-  else if (sort === 'frequent') sql += ' ORDER BY order_count DESC';
-  else sql += ' ORDER BY last_order_at DESC, created_at DESC';
-  sql += ' LIMIT 500';
+  // id last, so the order is fixed and page 2 never repeats or skips someone from page 1.
+  if (sort === 'top') sql += ' ORDER BY total_spent DESC, id DESC';
+  else if (sort === 'frequent') sql += ' ORDER BY order_count DESC, id DESC';
+  else sql += ' ORDER BY last_order_at DESC, created_at DESC, id DESC';
 
-  const customers = await query(sql, params);
-  return NextResponse.json(customers);
+  // Paged (customers page): ?limit=30&offset=60 -> { customers, hasMore, stats }.
+  // Without limit (quick lookups from the sell and chat screens): the first 50 matches as before.
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit')) || 0));
+  if (!searchParams.get('limit')) {
+    sql += ' LIMIT 50';
+    return NextResponse.json(await query(sql, params));
+  }
+  const offset = Math.max(0, parseInt(searchParams.get('offset')) || 0);
+  const rows = await query(`${sql} LIMIT ${limit + 1} OFFSET ${offset}`, params);
+  const hasMore = rows.length > limit;
+  // The summary covers every customer of the shop, not just the rows loaded so far.
+  const stats = offset === 0 && !search
+    ? await queryOne('SELECT COUNT(*) AS total, SUM(order_count > 1) AS repeat_count, COALESCE(SUM(total_spent), 0) AS spent FROM customers WHERE shop_id = ?', [shopId])
+    : null;
+  return NextResponse.json({ customers: rows.slice(0, limit), hasMore, stats });
 }
 
 export async function POST(request) {
