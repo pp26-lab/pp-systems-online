@@ -13,18 +13,19 @@ export async function GET(request) {
   const toDate = searchParams.get('to');
 
   await getPool(); // shopDay() needs the detected DB timezone
-  const day = shopDay('created_at');
-  const dayO = shopDay('o.created_at');
+  // Sales are dated by when they counted (completed_at), not when the order was created.
+  const day = shopDay('completed_at');
+  const dayO = shopDay('o.completed_at');
   const today = shopToday();
   const dateFrom = fromDate || today;
   const dateTo = toDate || today;
   const monthStart = dateTo.substring(0, 7) + '-01';
 
-  // A sale counts once it is completed (in store) or shipped (online). Pending online orders
-  // count when they are marked shipped; cancelled orders never count. Everything on the
-  // dashboard uses this same rule, so the numbers add up with each other.
-  const statusFilter = "status IN ('completed','shipping')";
-  const statusFilterO = "o.status IN ('completed','shipping')";
+  // The shop's rule: a sale counts when it is completed. In store that is at once; an online
+  // order counts on the day it is marked delivered (not when created or shipped). Cancelled
+  // orders never count. Everything on the dashboard uses this same rule.
+  const statusFilter = "status = 'completed'";
+  const statusFilterO = "o.status = 'completed'";
   // One sold line in LAK, after the order's discount / coupon. Lines are stored in the order's
   // currency and before the order-level discount, so both are applied here; the sum over an
   // order equals that order's total_in_lak.

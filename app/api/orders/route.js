@@ -179,7 +179,12 @@ export async function PUT(request) {
     }
   } else {
     // A cancelled order stays cancelled even if a status change from another screen arrives late.
-    await query("UPDATE orders SET status = ? WHERE id = ? AND shop_id = ? AND status <> 'cancelled'", [body.status, body.id, shopId]);
+    // Marked delivered = the moment the sale counts in reports (kept if it is set again).
+    await query(
+      `UPDATE orders SET status = ?, completed_at = ${body.status === 'completed' ? 'COALESCE(completed_at, NOW())' : 'NULL'}
+       WHERE id = ? AND shop_id = ? AND status <> 'cancelled'`,
+      [body.status, body.id, shopId]
+    );
   }
   fireWebhooks(shopId, 'order.status_changed', { order_id: body.id, old_status: current.status, new_status: body.status });
   return NextResponse.json({ success: true });

@@ -28,9 +28,10 @@ export async function GET(request) {
       await getPool(); // shopDay() needs the detected DB timezone
       let sql = "SELECT * FROM orders WHERE status = 'completed' AND shop_id = ?";
       const params = [shopId];
-      if (from) { sql += ` AND ${shopDay('created_at')} >= ?`; params.push(from); }
-      if (to) { sql += ` AND ${shopDay('created_at')} <= ?`; params.push(to); }
-      sql += ' ORDER BY created_at DESC';
+      // Same rule as the dashboard: dated by when the sale was completed.
+      if (from) { sql += ` AND ${shopDay('completed_at')} >= ?`; params.push(from); }
+      if (to) { sql += ` AND ${shopDay('completed_at')} <= ?`; params.push(to); }
+      sql += ' ORDER BY completed_at DESC';
       data = await query(sql, params);
       for (const order of data) {
         order.items = await query(`

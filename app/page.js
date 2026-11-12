@@ -38,6 +38,7 @@ const COPY = {
     title: { today: 'ຍອດຂາຍມື້ນີ້', week: 'ຍອດຂາຍ 7 ມື້ຫຼ້າສຸດ', month: 'ຍອດຂາຍເດືອນນີ້', custom: 'ຍອດຂາຍຊ່ວງທີ່ເລືອກ' },
     vs: { today: 'ມື້ວານ', week: '7 ມື້ກ່ອນໜ້າ', month: 'ຊ່ວງດຽວກັນເດືອນກ່ອນ' },
     up: (p, w) => `ຂຶ້ນ ${p}% ຈາກ${w}`, down: (p, w) => `ລົງ ${p}% ຈາກ${w}`, same: w => `ເທົ່າກັບ${w}`, prevNone: w => `${w}ຍັງບໍ່ມີຍອດຂາຍ`,
+    rule: 'ອໍເດີ້ອອນລາຍນັບເປັນຍອດຂາຍເມື່ອກົດສົ່ງສຳເລັດ',
     bills: 'ຈຳນວນບິນ', profit: 'ກຳໄລໂດຍປະມານ', sell: 'ຂາຍສິນຄ້າ',
     todo: 'ຕ້ອງເຮັດ', allDone: 'ຮຽບຮ້ອຍທຸກຢ່າງ ບໍ່ມີວຽກຄ້າງ',
     toShip: n => `${n} ອໍເດີ້ອອນລາຍລໍຖ້າຈັດສົ່ງ`, lowStock: n => `${n} ສິນຄ້າໃກ້ໝົດ`, outStock: n => `${n} ສິນຄ້າໝົດແລ້ວ`, unread: n => `${n} ແຊັດລູກຄ້າຍັງບໍ່ໄດ້ອ່ານ`,
@@ -49,6 +50,7 @@ const COPY = {
     title: { today: 'ยอดขายวันนี้', week: 'ยอดขาย 7 วันล่าสุด', month: 'ยอดขายเดือนนี้', custom: 'ยอดขายช่วงที่เลือก' },
     vs: { today: 'เมื่อวาน', week: '7 วันก่อนหน้า', month: 'ช่วงเดียวกันเดือนก่อน' },
     up: (p, w) => `ขึ้น ${p}% จาก${w}`, down: (p, w) => `ลดลง ${p}% จาก${w}`, same: w => `เท่ากับ${w}`, prevNone: w => `${w}ยังไม่มียอดขาย`,
+    rule: 'ออเดอร์ออนไลน์นับเป็นยอดขายเมื่อกดส่งสำเร็จ',
     bills: 'จำนวนบิล', profit: 'กำไรโดยประมาณ', sell: 'ขายสินค้า',
     todo: 'ต้องทำ', allDone: 'เรียบร้อยทุกอย่าง ไม่มีงานค้าง',
     toShip: n => `${n} ออเดอร์ออนไลน์รอจัดส่ง`, lowStock: n => `${n} สินค้าใกล้หมด`, outStock: n => `${n} สินค้าหมดแล้ว`, unread: n => `${n} แชทลูกค้ายังไม่ได้อ่าน`,
@@ -60,6 +62,7 @@ const COPY = {
     title: { today: 'Sales today', week: 'Sales, last 7 days', month: 'Sales this month', custom: 'Sales in selected dates' },
     vs: { today: 'yesterday', week: 'the 7 days before', month: 'the same days last month' },
     up: (p, w) => `Up ${p}% on ${w}`, down: (p, w) => `Down ${p}% on ${w}`, same: w => `Same as ${w}`, prevNone: w => `No sales ${w}`,
+    rule: 'Online orders count as sales once marked delivered',
     bills: 'Bills', profit: 'Estimated profit', sell: 'Sell',
     todo: 'To do', allDone: 'All caught up, nothing waiting',
     toShip: n => `${n} online ${n === 1 ? 'order' : 'orders'} to ship`, lowStock: n => `${n} ${n === 1 ? 'product is' : 'products are'} running low`, outStock: n => `${n} ${n === 1 ? 'product is' : 'products are'} sold out`, unread: n => `${n} unread customer ${n === 1 ? 'chat' : 'chats'}`,
@@ -223,6 +226,7 @@ export default function Dashboard() {
                   <dd className="mt-1 text-xl font-bold num">{formatCurrency(profit, 'LAK')}</dd>
                 </div>
               </dl>
+              <p className="mt-3 text-xs text-slate-400">{c.rule}</p>
               {daily.length > 1 && (
                 <div className="mt-6">
                   <div className="flex items-end gap-1 h-14" aria-hidden="true">
