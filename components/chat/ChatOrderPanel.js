@@ -15,7 +15,7 @@ const COPY = {
     customer: 'ລູກຄ້າ ແລະ ການຈັດສົ່ງ', name: 'ຊື່ ແລະ ນາມສະກຸນ', phone: 'ເບີໂທ', address: 'ທີ່ຢູ່ຈັດສົ່ງ', carrier: 'ຂົນສົ່ງ', notes: 'ໝາຍເຫດ',
     tip: 'ເຄັດລັບ: ແຕະຂໍ້ຄວາມຂອງລູກຄ້າໃນແຊັດ ແລ້ວເລືອກ ຊື່ / ເບີໂທ / ທີ່ຢູ່ ລະບົບຈະຈື່ໄວ້ໃຊ້ຄັ້ງຕໍ່ໄປ',
     payment: 'ການຊຳລະ', discount: 'ສ່ວນຫຼຸດ', paid: 'ຮັບເງິນແລ້ວ (ໂອນ/ມັດຈຳ)', method: 'ຊ່ອງທາງ', transfer: 'ໂອນ', cash: 'ເງິນສົດ',
-    subtotal: 'ລວມສິນຄ້າ', total: 'ຍອດລວມ', cod: 'ເກັບປາຍທາງ (COD)',
+    subtotal: 'ລວມສິນຄ້າ', total: 'ຍອດລວມ', cod: 'ເກັບປາຍທາງ (COD)', payCod: 'ເກັບເງິນປາຍທາງ', payFull: 'ຈ່າຍເຕັມແລ້ວ', fullPaid: 'ຈ່າຍເຕັມແລ້ວ ບໍ່ເກັບປາຍທາງ',
     sendSummary: 'ສົ່ງສະຫຼຸບອໍເດີ້ໃຫ້ລູກຄ້າໃນແຊັດນີ້', summaryNote: 'ແກ້ຂໍ້ຄວາມໄດ້ກ່ອນສົ່ງ',
     cancel: 'ຍົກເລີກ', confirm: total => `ຢືນຢັນການຂາຍ ${total}`, saving: 'ກຳລັງບັນທຶກ…', loading: 'ກຳລັງໂຫຼດ…',
     needName: 'ໃສ່ຊື່ລູກຄ້າ', needPhone: 'ໃສ່ເບີໂທລູກຄ້າ', needAddress: 'ໃສ່ທີ່ຢູ່ຈັດສົ່ງ', needItems: 'ເພີ່ມສິນຄ້າຢ່າງໜ້ອຍ 1 ລາຍການ',
@@ -31,7 +31,7 @@ const COPY = {
     customer: 'ลูกค้าและการจัดส่ง', name: 'ชื่อและนามสกุล', phone: 'เบอร์โทร', address: 'ที่อยู่จัดส่ง', carrier: 'ขนส่ง', notes: 'หมายเหตุ',
     tip: 'เคล็ดลับ: แตะข้อความของลูกค้าในแชท แล้วเลือก ชื่อ / เบอร์โทร / ที่อยู่ ระบบจะจำไว้ใช้ครั้งต่อไป',
     payment: 'การชำระ', discount: 'ส่วนลด', paid: 'รับเงินแล้ว (โอน/มัดจำ)', method: 'ช่องทาง', transfer: 'โอน', cash: 'เงินสด',
-    subtotal: 'รวมสินค้า', total: 'ยอดรวม', cod: 'เก็บปลายทาง (COD)',
+    subtotal: 'รวมสินค้า', total: 'ยอดรวม', cod: 'เก็บปลายทาง (COD)', payCod: 'เก็บเงินปลายทาง', payFull: 'จ่ายเต็มแล้ว', fullPaid: 'จ่ายเต็มแล้ว ไม่เก็บปลายทาง',
     sendSummary: 'ส่งสรุปออเดอร์ให้ลูกค้าในแชทนี้', summaryNote: 'แก้ข้อความได้ก่อนส่ง',
     cancel: 'ยกเลิก', confirm: total => `ยืนยันการขาย ${total}`, saving: 'กำลังบันทึก…', loading: 'กำลังโหลด…',
     needName: 'ใส่ชื่อลูกค้า', needPhone: 'ใส่เบอร์โทรลูกค้า', needAddress: 'ใส่ที่อยู่จัดส่ง', needItems: 'เพิ่มสินค้าอย่างน้อย 1 รายการ',
@@ -47,7 +47,7 @@ const COPY = {
     customer: 'Customer and delivery', name: 'Full name', phone: 'Phone', address: 'Delivery address', carrier: 'Carrier', notes: 'Notes',
     tip: 'Tip: tap a customer message in the chat and choose Name / Phone / Address. It is remembered for next time.',
     payment: 'Payment', discount: 'Discount', paid: 'Already paid (transfer/deposit)', method: 'Method', transfer: 'Transfer', cash: 'Cash',
-    subtotal: 'Items', total: 'Total', cod: 'Cash on delivery',
+    subtotal: 'Items', total: 'Total', cod: 'Cash on delivery', payCod: 'Collect on delivery', payFull: 'Paid in full', fullPaid: 'Paid in full, nothing to collect',
     sendSummary: 'Send the order summary to the customer in this chat', summaryNote: 'You can edit it before sending',
     cancel: 'Cancel', confirm: total => `Confirm sale ${total}`, saving: 'Saving…', loading: 'Loading…',
     needName: "Enter the customer's name", needPhone: "Enter the customer's phone", needAddress: 'Enter the delivery address', needItems: 'Add at least 1 product',
@@ -83,6 +83,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
   const [cust, setCust] = useState({ name: '', phone: '', address: '', carrier: '', notes: '' });
   const [discount, setDiscount] = useState('');
   const [paid, setPaid] = useState('');
+  const [payFull, setPayFull] = useState(false); // customer already paid everything: no COD on the order or the bill
   const [method, setMethod] = useState('transfer');
   const [send, setSend] = useState(true);
   const [summary, setSummary] = useState('');
@@ -152,7 +153,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
   const subtotal = cart.reduce((s, i) => s + i.unit * i.quantity, 0);
   const disc = Math.min(Math.max(0, Number(discount) || 0), subtotal);
   const total = subtotal - disc;
-  const paidNum = Math.min(Math.max(0, Number(paid) || 0), total);
+  const paidNum = payFull ? total : Math.min(Math.max(0, Number(paid) || 0), total);
   const cod = total - paidNum;
 
   // The summary follows the order until the staff edits it by hand.
@@ -304,15 +305,25 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
             <datalist id="chat-order-carriers">{(prefill.carriers || []).map(x => <option key={x} value={x} />)}</datalist>
 
             <h3 className="font-bold text-ink pt-2">{c.payment}</h3>
-            <div className="grid grid-cols-2 gap-3">
+            {/* Collect on delivery (with an optional deposit) or already paid in full. */}
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-canvas" role="radiogroup" aria-label={c.payment}>
+              {[[false, c.payCod], [true, c.payFull]].map(([v, l]) => (
+                <button key={l} type="button" role="radio" aria-checked={payFull === v} onClick={() => setPayFull(v)}
+                  className={`min-h-11 lg:min-h-10 rounded-lg text-sm font-bold transition-colors ${payFull === v
+                    ? (v ? 'bg-[#0B7A53] text-white shadow-sm' : 'bg-white text-[#8A4B00] shadow-sm') : 'text-slate-500 hover:text-ink'}`}>{l}</button>
+              ))}
+            </div>
+            <div className={`grid ${payFull ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
               <label className="block">
                 <span className="block text-xs font-semibold text-slate-600 mb-1">{c.discount}</span>
                 <input type="number" min="0" inputMode="numeric" value={discount} onChange={e => setDiscount(e.target.value)} placeholder="0" className={`${inputCls} border-line num`} />
               </label>
-              <label className="block">
-                <span className="block text-xs font-semibold text-slate-600 mb-1">{c.paid}</span>
-                <input type="number" min="0" inputMode="numeric" value={paid} onChange={e => setPaid(e.target.value)} placeholder="0" className={`${inputCls} border-line num`} />
-              </label>
+              {!payFull && (
+                <label className="block">
+                  <span className="block text-xs font-semibold text-slate-600 mb-1">{c.paid}</span>
+                  <input type="number" min="0" inputMode="numeric" value={paid} onChange={e => setPaid(e.target.value)} placeholder="0" className={`${inputCls} border-line num`} />
+                </label>
+              )}
             </div>
             <div className="flex gap-2 text-sm" role="radiogroup" aria-label={c.method}>
               {[['transfer', c.transfer], ['cash', c.cash]].map(([v, l]) => (
@@ -324,7 +335,9 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
               <div className="flex justify-between"><dt className="text-slate-600">{c.subtotal}</dt><dd className="num">{money(subtotal)}</dd></div>
               {disc > 0 && <div className="flex justify-between"><dt className="text-slate-600">{c.discount}</dt><dd className="num">−{money(disc)}</dd></div>}
               <div className="flex justify-between font-bold text-ink"><dt>{c.total}</dt><dd className="num">{money(total)}</dd></div>
-              <div className="flex justify-between font-bold text-[#8A4B00]"><dt>{c.cod}</dt><dd className="num">{money(cod)}</dd></div>
+              {payFull || cod <= 0
+                ? <div className="flex justify-between font-bold text-[#0B7A53]"><dt>{c.fullPaid}</dt><dd className="num">✓</dd></div>
+                : <div className="flex justify-between font-bold text-[#8A4B00]"><dt>{c.cod}</dt><dd className="num">{money(cod)}</dd></div>}
             </dl>
 
             <label className="flex items-start gap-2 text-sm text-ink pt-1">
