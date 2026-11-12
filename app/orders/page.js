@@ -24,6 +24,7 @@ const COPY = {
     receipt: 'ພິມໃບບິນ', label: 'ພິມໃບປະໜ້າ', whatsapp: 'ສົ່ງ WhatsApp', noPhone: 'ອໍເດີ້ນີ້ບໍ່ມີເບີໂທລູກຄ້າ',
     failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ', orders: n => `${n} ອໍເດີ້`,
     copy: 'ຄັດລອກທີ່ຢູ່ສົ່ງ', copied: 'ຄັດລອກແລ້ວ', call: 'ໂທຫາລູກຄ້າ', more: n => `+${n} ລາຍການ`, collect: 'ເກັບເງິນປາຍທາງ', paidVia: m => `ຈ່າຍແລ້ວ (${m})`,
+    bill: 'ຮູບບິນຂົນສົ່ງ', addBill: 'ເພີ່ມຮູບບິນ', removeBill: 'ລຶບຮູບ',
   },
   th: {
     search: 'ค้นหาเลขออเดอร์ ชื่อ หรือเบอร์โทร', today: 'วันนี้', week: 'สัปดาห์นี้', month: 'เดือนนี้', all: 'ทั้งหมด',
@@ -41,6 +42,7 @@ const COPY = {
     receipt: 'พิมพ์ใบเสร็จ', label: 'พิมพ์ใบปะหน้า', whatsapp: 'ส่ง WhatsApp', noPhone: 'ออเดอร์นี้ไม่มีเบอร์ลูกค้า',
     failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', orders: n => `${n} ออเดอร์`,
     copy: 'คัดลอกที่อยู่ส่ง', copied: 'คัดลอกแล้ว', call: 'โทรหาลูกค้า', more: n => `+${n} รายการ`, collect: 'เก็บเงินปลายทาง', paidVia: m => `จ่ายแล้ว (${m})`,
+    bill: 'รูปบิลขนส่ง', addBill: 'เพิ่มรูปบิล', removeBill: 'ลบรูป',
   },
   en: {
     search: 'Search order number, name or phone', today: 'Today', week: 'This week', month: 'This month', all: 'All time',
@@ -58,8 +60,52 @@ const COPY = {
     receipt: 'Print receipt', label: 'Print shipping label', whatsapp: 'Send on WhatsApp', noPhone: 'This order has no customer phone',
     failed: "Couldn't save. Try again.", orders: n => `${n} ${n === 1 ? 'order' : 'orders'}`,
     copy: 'Copy shipping details', copied: 'Copied', call: 'Call customer', more: n => `+${n} more`, collect: 'Collect on delivery', paidVia: m => `Paid (${m})`,
+    bill: 'Carrier bill photo', addBill: 'Add bill photo', removeBill: 'Remove photo',
   },
 };
+
+// Why a photo or message didn't go through, in words staff can act on.
+const BILL_ERR = {
+  lo: {
+    file_too_large: 'ຮູບໃຫຍ່ເກີນໄປ', unsupported_type: 'ໃຊ້ໄດ້ສະເພາະຮູບ JPG ຫຼື PNG', file_content_invalid: 'ໄຟລ໌ນີ້ບໍ່ແມ່ນຮູບ',
+    file_missing: 'ບໍ່ພົບຮູບບິນ ອັບໂຫຼດໃໝ່', window_closed: 'ລູກຄ້າທັກມາເກີນ 7 ມື້ແລ້ວ ລໍຖ້າລູກຄ້າທັກມາໃໝ່',
+    not_connected: 'WhatsApp ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', channel_disabled: 'ຊ່ອງທາງແຊັດນີ້ຖືກປິດ',
+  },
+  th: {
+    file_too_large: 'รูปใหญ่เกินไป', unsupported_type: 'ใช้ได้เฉพาะรูป JPG หรือ PNG', file_content_invalid: 'ไฟล์นี้ไม่ใช่รูป',
+    file_missing: 'ไม่พบรูปบิล อัปโหลดใหม่', window_closed: 'ลูกค้าทักมาเกิน 7 วันแล้ว รอลูกค้าทักมาใหม่',
+    not_connected: 'WhatsApp ยังไม่ได้เชื่อมต่อ', channel_disabled: 'ช่องทางแชทนี้ถูกปิด',
+  },
+  en: {
+    file_too_large: 'The photo is too large', unsupported_type: 'Use a JPG or PNG photo', file_content_invalid: 'This file is not a photo',
+    file_missing: 'The bill photo is missing. Upload it again.', window_closed: "The customer's last message is over 7 days old. Wait for them to write again.",
+    not_connected: 'WhatsApp is not connected', channel_disabled: 'This chat channel is turned off',
+  },
+};
+
+// Phone photos are often 5-10 MB (or HEIC). Re-encode to a JPEG of at most 1600 px so the
+// upload is quick and every chat platform accepts it. Falls back to the original file.
+async function shrinkPhoto(file) {
+  if (!file?.type?.startsWith('image/') || file.type === 'image/gif') return file;
+  try {
+    const url = URL.createObjectURL(file);
+    const img = await new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = url; });
+    URL.revokeObjectURL(url);
+    const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    if (scale === 1 && file.size < 1.5e6 && ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return file;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(ok => canvas.toBlob(ok, 'image/jpeg', 0.85));
+    return blob ? new File([blob], 'bill.jpg', { type: 'image/jpeg' }) : file;
+  } catch {
+    return file;
+  }
+}
 
 const STATUS_TONE = { pending: 'gold', shipping: 'navy', completed: 'green', cancelled: 'gray' };
 
@@ -195,9 +241,13 @@ export default function OrdersPage() {
     if (!res.ok) throw new Error('failed');
     setOrders(prev => prev.map(o => (o.id === id ? { ...o, ...body } : o)));
   }
+  // For changes the server already saved through its own route (the bill photo).
+  function setLocal(id, fields) {
+    setOrders(prev => prev.map(o => (o.id === id ? { ...o, ...fields } : o)));
+  }
 
   const detail = selected && (
-    <OrderDetail key={selected.id} order={selected} c={c} lang={lang} shop={shop} onPatch={patch} />
+    <OrderDetail key={selected.id} order={selected} c={c} lang={lang} shop={shop} onPatch={patch} onLocal={setLocal} />
   );
 
   return (
@@ -280,7 +330,7 @@ export default function OrdersPage() {
   );
 }
 
-function OrderDetail({ order, c, lang, shop, onPatch }) {
+function OrderDetail({ order, c, lang, shop, onPatch, onLocal }) {
   const [tracking, setTracking] = useState({ carrier: order.shipping_carrier || '', number: order.tracking_number || '' });
   const [note, setNote] = useState(order.internal_notes || '');
   const [busy, setBusy] = useState('');
@@ -307,18 +357,33 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
     }
   }
 
-  async function uploadSlip(file) {
-    setBusy('slip');
+  // The carrier's bill photo stays on the order (privately) until someone replaces or removes it.
+  const bill = order.shipping_bill_file || null;
+  async function uploadBill(picked) {
+    setBusy('bill');
     setError('');
     try {
       const fd = new FormData();
-      fd.append('file', file);
-      const up = await fetch('/api/upload', { method: 'POST', body: fd });
-      const data = await up.json();
-      if (!up.ok || !data.url) throw new Error(data.error || 'upload');
-      await onPatch(order.id, { payment_slip_url: data.url });
+      fd.append('file', await shrinkPhoto(picked));
+      const res = await fetch(`/api/orders/${order.id}/bill`, { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.shipping_bill_file) throw new Error(data.error || 'failed');
+      onLocal(order.id, { shipping_bill_file: data.shipping_bill_file });
     } catch (e) {
-      setError(e.message && e.message !== 'upload' && e.message !== 'failed' ? e.message : c.failed);
+      setError(BILL_ERR[lang]?.[e.message] || c.failed);
+    } finally {
+      setBusy('');
+    }
+  }
+  async function removeBill() {
+    setBusy('bill');
+    setError('');
+    try {
+      const res = await fetch(`/api/orders/${order.id}/bill`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      onLocal(order.id, { shipping_bill_file: null });
+    } catch {
+      setError(c.failed);
     } finally {
       setBusy('');
     }
@@ -522,28 +587,35 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
             <Button tone="primary" disabled={!trackingDirty || !!busy}
               onClick={() => run('tracking', { shipping_carrier: tracking.carrier, tracking_number: tracking.number }, c.saved)}>{c.save}</Button>
           </div>
-        </div>
-      )}
-
-      {!cancelled && <OrderChatSend key={order.id} order={order} lang={lang} />}
-
-      {order.payment_method === 'transfer' && (
-        <div className="mt-6">
-          <h3 className="font-bold text-ink text-sm">{c.slip}</h3>
-          <div className="mt-2 flex items-center gap-3">
-            {order.payment_slip_url && (
-              <a href={order.payment_slip_url} target="_blank" rel="noopener noreferrer" className="block">
-                <img src={order.payment_slip_url} alt={c.slip} className="w-16 h-20 object-cover rounded-lg border border-line" />
+          <div className="mt-3 flex items-center gap-3">
+            {bill ? (
+              <a href={`/api/orders/${order.id}/bill?f=${bill}`} target="_blank" rel="noopener noreferrer" title={c.bill} className="block shrink-0">
+                <img src={`/api/orders/${order.id}/bill?f=${bill}`} alt={c.bill} className="w-16 h-20 object-cover rounded-lg border border-line" />
               </a>
+            ) : (
+              <span className="w-16 h-20 shrink-0 rounded-lg border-2 border-dashed border-line flex items-center justify-center text-slate-300">
+                <Icon name="image" className="w-6 h-6" />
+              </span>
             )}
-            <label className={`${busy === 'slip' ? 'opacity-50 pointer-events-none' : ''} inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-line text-sm font-semibold text-ink hover:bg-canvas cursor-pointer`}>
-              <Icon name="upload" className="w-4 h-4" />
-              {order.payment_slip_url ? c.replace : c.uploadSlip}
-              <input type="file" accept="image/*" className="sr-only" onChange={e => e.target.files?.[0] && uploadSlip(e.target.files[0])} />
-            </label>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-ink">{c.bill}</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                <label className={`${busy === 'bill' ? 'opacity-50 pointer-events-none' : ''} inline-flex items-center gap-2 px-3 min-h-10 lg:min-h-9 rounded-xl border border-line text-sm font-semibold text-ink hover:bg-canvas cursor-pointer`}>
+                  <Icon name="upload" className="w-4 h-4" />
+                  {bill ? c.replace : c.addBill}
+                  <input type="file" accept="image/*" className="sr-only" onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) uploadBill(f); }} />
+                </label>
+                {bill && (
+                  <button type="button" onClick={removeBill} disabled={busy === 'bill'}
+                    className="px-2 min-h-10 lg:min-h-9 text-sm font-semibold text-slate-500 hover:text-danger">{c.removeBill}</button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
+
+      {!cancelled && <OrderChatSend key={order.id} order={order} lang={lang} bill={bill} onPickBill={uploadBill} billBusy={busy === 'bill'} />}
 
       <div className="mt-6">
         <Field label={c.internal}>
@@ -577,28 +649,31 @@ function OrderDetail({ order, c, lang, shop, onPatch }) {
 
 const CHAT_COPY = {
   lo: {
-    title: 'ສົ່ງໃຫ້ລູກຄ້າທາງແຊັດ', photo: 'ເລືອກຮູບບິນ ຫຼື ຮູບພັດສະດຸ', change: 'ປ່ຽນຮູບ', send: 'ສົ່ງ', sent: 'ສົ່ງໃຫ້ລູກຄ້າແລ້ວ',
+    title: 'ສົ່ງໃຫ້ລູກຄ້າທາງແຊັດ', photo: 'ເລືອກຮູບບິນ ຫຼື ຮູບພັດສະດຸ', change: 'ປ່ຽນຮູບ', skip: 'ບໍ່ແນບຮູບນີ້', send: 'ສົ່ງ', sent: 'ສົ່ງໃຫ້ລູກຄ້າແລ້ວ',
     closed: 'ລູກຄ້າທັກມາດົນເກີນກວ່າທີ່ລະບົບອະນຸຍາດ ລໍຖ້າລູກຄ້າທັກມາໃໝ່', failed: 'ສົ່ງບໍ່ສຳເລັດ', openChat: 'ເປີດແຊັດ',
     text: o => `ອໍເດີ້ ${o.order_number}${o.tracking_number ? `\nເລກພັດສະດຸ: ${o.tracking_number}${o.shipping_carrier ? ` (${o.shipping_carrier})` : ''}` : ''}\nຂໍຂອບໃຈທີ່ອຸດໜູນ`,
   },
   th: {
-    title: 'ส่งให้ลูกค้าทางแชท', photo: 'เลือกรูปบิลหรือรูปพัสดุ', change: 'เปลี่ยนรูป', send: 'ส่ง', sent: 'ส่งให้ลูกค้าแล้ว',
+    title: 'ส่งให้ลูกค้าทางแชท', photo: 'เลือกรูปบิลหรือรูปพัสดุ', change: 'เปลี่ยนรูป', skip: 'ไม่แนบรูปนี้', send: 'ส่ง', sent: 'ส่งให้ลูกค้าแล้ว',
     closed: 'ลูกค้าทักมานานเกินกว่าที่ระบบอนุญาต รอลูกค้าทักมาใหม่', failed: 'ส่งไม่สำเร็จ', openChat: 'เปิดแชท',
     text: o => `ອໍເດີ້ ${o.order_number}${o.tracking_number ? `\nເລກພັດສະດຸ: ${o.tracking_number}${o.shipping_carrier ? ` (${o.shipping_carrier})` : ''}` : ''}\nຂໍຂອບໃຈທີ່ອຸດໜູນ`,
   },
   en: {
-    title: 'Send to customer by chat', photo: 'Choose bill or parcel photo', change: 'Change photo', send: 'Send', sent: 'Sent to the customer',
+    title: 'Send to customer by chat', photo: 'Choose bill or parcel photo', change: 'Change photo', skip: "Don't attach this photo", send: 'Send', sent: 'Sent to the customer',
     closed: "The customer's last message is too old to reply to. Wait for them to write again.", failed: "Couldn't send", openChat: 'Open chat',
     text: o => `ອໍເດີ້ ${o.order_number}${o.tracking_number ? `\nເລກພັດສະດຸ: ${o.tracking_number}${o.shipping_carrier ? ` (${o.shipping_carrier})` : ''}` : ''}\nຂໍຂອບໃຈທີ່ອຸດໜູນ`,
   },
 };
 
-// Send a bill / parcel photo to this order's customer through their Messenger or WhatsApp chat.
-function OrderChatSend({ order, lang }) {
+// Send the order's bill photo (saved on the order) and a note to the customer through their
+// Messenger or WhatsApp chat. Picking a photo here saves it on the order too, so it is still
+// there after leaving the page.
+function OrderChatSend({ order, lang, bill, onPickBill, billBusy }) {
   const c = CHAT_COPY[lang] || CHAT_COPY.en;
+  const errs = BILL_ERR[lang] || BILL_ERR.en;
   const [chats, setChats] = useState(null);
   const [convId, setConvId] = useState(null);
-  const [file, setFile] = useState(null);
+  const [attach, setAttach] = useState(true); // send the saved bill with this message
   const [text, setText] = useState(() => c.text(order));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -617,6 +692,13 @@ function OrderChatSend({ order, lang }) {
   // Staff messages on Messenger go out with the "human agent" tag after 24 hours (up to 7 days).
   const open = !!(conv.window?.open || conv.window?.humanAgent);
   const isWa = conv.platform.startsWith('whatsapp');
+  const withBill = !!bill && attach;
+
+  async function pick(f) {
+    setMsg(null);
+    setAttach(true);
+    await onPickBill(f);
+  }
 
   async function send() {
     setBusy(true);
@@ -624,15 +706,18 @@ function OrderChatSend({ order, lang }) {
     const form = new FormData();
     form.append('text', text);
     form.append('order_id', order.id);
-    if (file) form.append('file', file);
+    if (withBill) form.append('use_bill', '1');
     try {
       const res = await fetch(`/api/chat/conversations/${conv.id}/send`, { method: 'POST', body: form });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok || d.status === 'failed') throw new Error();
+      if (!res.ok || d.status === 'failed') {
+        const code = d.error || (res.status === 413 ? 'file_too_large' : '');
+        // Unknown reasons (e.g. Facebook's own message) are shown as-is so they can be looked into.
+        throw new Error(errs[code] || (code ? `${c.failed}: ${String(code).slice(0, 140)}` : c.failed));
+      }
       setMsg({ ok: true, text: c.sent });
-      setFile(null);
-    } catch {
-      setMsg({ ok: false, text: c.failed });
+    } catch (e) {
+      setMsg({ ok: false, text: e.message || c.failed });
     } finally {
       setBusy(false);
     }
@@ -661,16 +746,24 @@ function OrderChatSend({ order, lang }) {
         <p className="mt-2 text-sm text-danger">{c.closed}</p>
       ) : (
         <div className="mt-3 flex flex-col sm:flex-row gap-3">
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { setFile(e.target.files?.[0] || null); e.target.value = ''; }} />
-          <button type="button" onClick={() => fileRef.current?.click()}
-            className="w-full sm:w-28 h-28 shrink-0 rounded-xl border-2 border-dashed border-line hover:border-gold flex items-center justify-center overflow-hidden text-xs text-slate-500 text-center px-2">
-            {file ? <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" /> : c.photo}
-          </button>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) pick(f); }} />
+          <div className="relative w-28 h-28 shrink-0">
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={billBusy} title={withBill ? c.change : c.photo}
+              className={`w-full h-full rounded-xl border-2 border-dashed ${withBill ? 'border-transparent' : 'border-line hover:border-gold'} flex items-center justify-center overflow-hidden text-xs text-slate-500 text-center px-2 ${billBusy ? 'opacity-50 animate-pulse' : ''}`}>
+              {withBill ? <img src={`/api/orders/${order.id}/bill?f=${bill}`} alt="" className="w-full h-full object-cover rounded-lg" /> : c.photo}
+            </button>
+            {withBill && (
+              <button type="button" onClick={() => setAttach(false)} title={c.skip} aria-label={c.skip}
+                className="absolute top-1 right-1 w-8 h-8 rounded-full bg-ink/70 text-white flex items-center justify-center hover:bg-ink">
+                <Icon name="close" className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           <div className="flex-1 flex flex-col gap-2">
             <textarea rows={3} value={text} onChange={e => setText(e.target.value)} className={`${inputCls} text-sm`} />
             <div className="flex items-center justify-between gap-2">
               {msg ? <span role="status" className={`text-sm ${msg.ok ? 'text-success font-semibold' : 'text-danger'}`}>{msg.text}</span> : <span />}
-              <Button icon="chat" onClick={send} disabled={busy || (!file && !text.trim())}>{c.send}</Button>
+              <Button icon="chat" onClick={send} disabled={busy || billBusy || (!withBill && !text.trim())}>{c.send}</Button>
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { formatCurrency } from '../../../../../../lib/currency';
 import { chatGuard, ERROR_STATUS } from '../../../../../../lib/chat/guard';
 import { sendMessage, sendQuickReply, SendError } from '../../../../../../lib/chat/send';
 import { getReply, loadReplyFiles, countUse } from '../../../../../../lib/chat/quick-replies';
-import { MAX_MEDIA_BYTES } from '../../../../../../lib/chat/media';
+import { MAX_MEDIA_BYTES, readMedia } from '../../../../../../lib/chat/media';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,8 +62,15 @@ export async function POST(request, { params }) {
 
   let orderId = parseInt(form.get('order_id')) || null;
   if (orderId) {
-    const o = await queryOne('SELECT id FROM orders WHERE id = ? AND shop_id = ?', [orderId, g.shopId]);
+    const o = await queryOne('SELECT id, shipping_bill_file FROM orders WHERE id = ? AND shop_id = ?', [orderId, g.shopId]);
     if (!o) return NextResponse.json({ error: 'order_not_found' }, { status: 404 });
+    // The bill photo saved on the order (orders page), read from this shop's private folder.
+    if (!file && form.get('use_bill') === '1') {
+      const buffer = o.shipping_bill_file ? readMedia(g.shopId, o.shipping_bill_file) : null;
+      if (!buffer) return NextResponse.json({ error: 'file_missing' }, { status: 410 });
+      const ext = o.shipping_bill_file.split('.').pop();
+      file = { buffer, mime: ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg', name: o.shipping_bill_file };
+    }
   }
 
   const productId = parseInt(form.get('product_id')) || null;
