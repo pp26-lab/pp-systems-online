@@ -42,7 +42,8 @@ const GROUPS = [
   ] },
   { label: { lo: 'ລະບົບ', th: 'ระบบ', en: 'System' }, items: [
     { key: 'currencies', path: '/currencies' },
-    { key: 'webhooks', path: '/webhooks', feature: 'webhooks' },
+    // Webhooks (/webhooks) is hidden from the menu: shops no longer need to send order data
+    // to an outside system, and the page let a shop point a webhook at an internal address.
     { key: 'settings', path: '/settings' },
   ] },
 ];
