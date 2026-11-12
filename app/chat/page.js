@@ -72,10 +72,11 @@ const COPY = {
   },
 };
 
+// tag: the word under a customer's photo. Facebook blue / WhatsApp green, dark enough to read at 10px.
 const PLATFORM = {
-  messenger: { label: 'Messenger', dot: 'bg-[#2B4A85]' },
-  whatsapp: { label: 'WhatsApp', dot: 'bg-[#0E8A5F]' },
-  whatsapp_web: { label: 'WhatsApp', dot: 'bg-[#0E8A5F]' },
+  messenger: { label: 'Messenger', tag: 'Facebook', dot: 'bg-[#1565D8]', text: 'text-[#1565D8]' },
+  whatsapp: { label: 'WhatsApp', tag: 'WhatsApp', dot: 'bg-[#0E8A5F]', text: 'text-[#0B7A53]' },
+  whatsapp_web: { label: 'WhatsApp', tag: 'WhatsApp', dot: 'bg-[#0E8A5F]', text: 'text-[#0B7A53]' },
 };
 const ORDER_TONE = { pending: 'gold', shipping: 'navy', completed: 'green', cancelled: 'gray' };
 
@@ -83,13 +84,15 @@ function initials(s) {
   return (s || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 }
 
+// The customer's photo with where they wrote from underneath: "Facebook" or "WhatsApp".
 function Avatar({ conv, size = 'w-10 h-10' }) {
+  const pf = PLATFORM[conv.platform];
   return (
-    <span className={`relative ${size} shrink-0`}>
+    <span className="shrink-0 w-14 flex flex-col items-center gap-0.5">
       {conv.avatar_url
         ? <img src={conv.avatar_url} alt="" className={`${size} rounded-full object-cover bg-canvas`} referrerPolicy="no-referrer" />
         : <span className={`${size} rounded-full bg-gold-soft text-[#0950C2] flex items-center justify-center text-sm font-bold`}>{initials(conv.customer_name || conv.name || conv.phone)}</span>}
-      <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-white ${PLATFORM[conv.platform]?.dot}`} title={PLATFORM[conv.platform]?.label} />
+      {pf && <span className={`text-[0.625rem] leading-none font-bold ${pf.text}`}>{pf.tag}</span>}
     </span>
   );
 }
@@ -191,8 +194,8 @@ export default function ChatPage() {
                     <option value="">{c.allCh}</option>
                     {/* With several pages / numbers, each one can be picked on its own. */}
                     {channels.length > 1
-                      ? channels.map(ch => <option key={ch.id} value={`ch:${ch.id}`}>{PLATFORM[ch.platform]?.label}: {ch.name}</option>)
-                      : platforms.map(p => <option key={p} value={p}>{PLATFORM[p].label}</option>)}
+                      ? channels.map(ch => <option key={ch.id} value={`ch:${ch.id}`}>{PLATFORM[ch.platform]?.tag}: {ch.name}</option>)
+                      : platforms.map(p => <option key={p} value={p}>{PLATFORM[p].tag}</option>)}
                   </select>
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                 </label>
@@ -232,7 +235,7 @@ export default function ChatPage() {
                 return (
                   <li key={conv.id}>
                     <button onClick={() => openChat(conv.id)} aria-current={selected}
-                      className={`w-full text-left flex items-center gap-3 pl-4 ${selected ? 'bg-gold-soft/70' : 'hover:bg-canvas/70'}`}>
+                      className={`w-full text-left flex items-center gap-2 pl-2 ${selected ? 'bg-gold-soft/70' : 'hover:bg-canvas/70'}`}>
                       <Avatar conv={conv} />
                       {/* Divider starts after the photo, so rows read as people rather than table cells. */}
                       <span className="flex-1 min-w-0 py-3 pr-4 border-b border-line/70">
@@ -246,10 +249,7 @@ export default function ChatPage() {
                         </span>
                         {/* Which page / number this customer wrote to; only shown when the shop has more than one. */}
                         {channels.length > 1 && conv.channel_name && (
-                          <span className="mt-0.5 flex items-center gap-1 text-[0.7rem] text-slate-400 min-w-0">
-                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${PLATFORM[conv.platform]?.dot}`} aria-hidden="true" />
-                            <span className="truncate">{conv.channel_name}</span>
-                          </span>
+                          <span className="mt-0.5 block truncate text-[0.7rem] text-slate-400">{conv.channel_name}</span>
                         )}
                       </span>
                     </button>
@@ -501,7 +501,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
           <div className="min-w-0 flex-1">
             <p className="font-bold text-ink truncate">{name}</p>
             <p className="text-xs text-slate-500 truncate">
-              {conv && PLATFORM[conv.platform].label}{conv?.channel_name && <span>, {conv.channel_name}</span>}
+              {conv && (conv.channel_name || PLATFORM[conv.platform].label)}
               {conv?.phone && <span className="num ml-1">({conv.phone})</span>}
             </p>
           </div>
