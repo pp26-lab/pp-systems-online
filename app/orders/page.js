@@ -340,6 +340,14 @@ function OrderDetail({ order, c, lang, shop, onPatch, onLocal }) {
 
   const online = order.order_type === 'online';
   const cancelled = order.status === 'cancelled';
+  // The shop's saved chat message, filled in for this order (Settings → chat message). Empty = use the built-in default.
+  const chatTemplate = (shop.order_chat_template || '').trim()
+    ? fillTemplate(shop.order_chat_template, {
+        name: order.customer_name || '', order_number: order.order_number || '',
+        total: formatCurrency(order.total, order.currency), status: c[order.status] || order.status || '',
+        tracking: order.tracking_number || '', carrier: order.shipping_carrier || '', shop: shop.shop_name || '',
+      })
+    : null;
   const trackingDirty = tracking.carrier !== (order.shipping_carrier || '') || tracking.number !== (order.tracking_number || '');
   const noteDirty = note !== (order.internal_notes || '');
   const discount = Number(order.discount) || 0;
@@ -615,7 +623,7 @@ function OrderDetail({ order, c, lang, shop, onPatch, onLocal }) {
         </div>
       )}
 
-      {!cancelled && <OrderChatSend key={order.id} order={order} lang={lang} bill={bill} onPickBill={uploadBill} billBusy={busy === 'bill'} />}
+      {!cancelled && <OrderChatSend key={order.id} order={order} lang={lang} bill={bill} onPickBill={uploadBill} billBusy={busy === 'bill'} initialText={chatTemplate} />}
 
       <div className="mt-6">
         <Field label={c.internal}>
@@ -668,13 +676,13 @@ const CHAT_COPY = {
 // Send the order's bill photo (saved on the order) and a note to the customer through their
 // Messenger or WhatsApp chat. Picking a photo here saves it on the order too, so it is still
 // there after leaving the page.
-function OrderChatSend({ order, lang, bill, onPickBill, billBusy }) {
+function OrderChatSend({ order, lang, bill, onPickBill, billBusy, initialText }) {
   const c = CHAT_COPY[lang] || CHAT_COPY.en;
   const errs = BILL_ERR[lang] || BILL_ERR.en;
   const [chats, setChats] = useState(null);
   const [convId, setConvId] = useState(null);
   const [attach, setAttach] = useState(true); // send the saved bill with this message
-  const [text, setText] = useState(() => c.text(order));
+  const [text, setText] = useState(() => initialText ?? c.text(order));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [expanded, setExpanded] = useState(false); // folded to one line until staff want it

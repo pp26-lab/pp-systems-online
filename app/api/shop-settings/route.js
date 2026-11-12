@@ -26,6 +26,7 @@ export async function PUT(request) {
   const variantLabel1 = body.variant_label_1 || 'color';
   const variantLabel2 = body.variant_label_2 || 'size';
   const whatsappTemplate = body.whatsapp_template || '';
+  const orderChatTemplate = (body.order_chat_template || '').slice(0, 2000);
   const whatsappCountryCode = (body.whatsapp_country_code || '856').replace(/\D/g, '') || '856';
   const staffPin = (body.staff_pin || '').replace(/\D/g, '').slice(0, 20);
   const parsedThreshold = parseInt(body.low_stock_threshold);
@@ -36,13 +37,13 @@ export async function PUT(request) {
   const existing = await queryOne('SELECT id FROM shop_settings WHERE shop_id = ?', [shopId]);
   if (existing) {
     await query(
-      'UPDATE shop_settings SET shop_name=?, shop_phone=?, shop_address=?, shop_logo=?, receipt_footer=?, default_order_type=?, variant_label_1=?, variant_label_2=?, whatsapp_template=?, whatsapp_country_code=?, staff_pin=?, low_stock_threshold=?, shipping_carriers=? WHERE shop_id=?',
-      [body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shippingCarriers, shopId]
+      'UPDATE shop_settings SET shop_name=?, shop_phone=?, shop_address=?, shop_logo=?, receipt_footer=?, default_order_type=?, variant_label_1=?, variant_label_2=?, whatsapp_template=?, order_chat_template=?, whatsapp_country_code=?, staff_pin=?, low_stock_threshold=?, shipping_carriers=? WHERE shop_id=?',
+      [body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, orderChatTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shippingCarriers, shopId]
     );
   } else {
     await query(
-      'INSERT INTO shop_settings (shop_id, shop_name, shop_phone, shop_address, shop_logo, receipt_footer, default_order_type, variant_label_1, variant_label_2, whatsapp_template, whatsapp_country_code, staff_pin, low_stock_threshold, shipping_carriers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [shopId, body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shippingCarriers]
+      'INSERT INTO shop_settings (shop_id, shop_name, shop_phone, shop_address, shop_logo, receipt_footer, default_order_type, variant_label_1, variant_label_2, whatsapp_template, order_chat_template, whatsapp_country_code, staff_pin, low_stock_threshold, shipping_carriers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [shopId, body.shop_name || 'My Shop', body.shop_phone || '', body.shop_address || '', body.shop_logo || '', body.receipt_footer || '', defaultOrderType, variantLabel1, variantLabel2, whatsappTemplate, orderChatTemplate, whatsappCountryCode, staffPin, lowStockThreshold, shippingCarriers]
     );
   }
 

@@ -12,6 +12,7 @@ const COPY = {
     options: 'ຊື່ຕົວເລືອກສິນຄ້າເລີ່ມຕົ້ນ', optionsNote: 'ໃຊ້ກັບສິນຄ້າໃໝ່ ເຊັ່ນ ສີ ແລະ ຂະໜາດ', opt1: 'ຕົວເລືອກທີ 1', opt2: 'ຕົວເລືອກທີ 2',
     carriers: 'ຂົນສົ່ງທີ່ຮ້ານໃຊ້', carriersNote: 'ພິມໜຶ່ງຊື່ຕໍ່ໜຶ່ງແຖວ ຈະຂຶ້ນໃຫ້ເລືອກຕອນອອກອໍເດີ້ອອນລາຍ', carriersPh: 'Anousith\nHAL\nMixay Express',
     wa: 'ຂໍ້ຄວາມ WhatsApp', waNote: 'ໃຊ້ເມື່ອກົດ "ສົ່ງ WhatsApp" ໃນໜ້າອໍເດີ້ ປ່ອຍວ່າງເພື່ອໃຊ້ຂໍ້ຄວາມມາດຕະຖານ', cc: 'ລະຫັດປະເທດ', template: 'ແມ່ແບບຂໍ້ຄວາມ',
+    chat: 'ຂໍ້ຄວາມສົ່ງຮູບບິນທາງແຊັດ', chatNote: 'ຂໍ້ຄວາມເລີ່ມຕົ້ນຕອນສົ່ງຮູບບິນ/ພັດສະດຸໃຫ້ລູກຄ້າໃນໜ້າອໍເດີ້ ແກ້ເທື່ອດຽວ ຄັ້ງຕໍ່ໄປບໍ່ຕ້ອງພິມໃໝ່ (ຍັງແກ້ຕອນສົ່ງໄດ້)', chatPh: 'ອໍເດີ້ {order_number} · ເລກພັດສະດຸ {tracking} ({carrier})',
     insert: 'ກົດເພື່ອແຊກຂໍ້ມູນ', keys: { name: 'ຊື່ລູກຄ້າ', order_number: 'ເລກອໍເດີ້', total: 'ຍອດລວມ', status: 'ສະຖານະ', tracking: 'ເລກພັດສະດຸ', carrier: 'ຂົນສົ່ງ', shop: 'ຊື່ຮ້ານ' },
     previewMsg: 'ຕົວຢ່າງຂໍ້ຄວາມ', receipt: 'ຕົວຢ່າງໃບບິນ', item: 'ສິນຄ້າຕົວຢ່າງ', total: 'ລວມ',
     save: 'ບັນທຶກການຕັ້ງຄ່າ', saving: 'ກຳລັງບັນທຶກ', saved: 'ບັນທຶກແລ້ວ', failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ', needName: 'ໃສ່ຊື່ຮ້ານ', unsaved: 'ມີການປ່ຽນແປງທີ່ຍັງບໍ່ໄດ້ບັນທຶກ',
@@ -24,6 +25,7 @@ const COPY = {
     options: 'ชื่อตัวเลือกสินค้าเริ่มต้น', optionsNote: 'ใช้กับสินค้าใหม่ เช่น สี และ ขนาด', opt1: 'ตัวเลือกที่ 1', opt2: 'ตัวเลือกที่ 2',
     carriers: 'ขนส่งที่ร้านใช้', carriersNote: 'พิมพ์หนึ่งชื่อต่อหนึ่งบรรทัด จะขึ้นให้เลือกตอนออกออเดอร์ออนไลน์', carriersPh: 'Anousith\nHAL\nMixay Express',
     wa: 'ข้อความ WhatsApp', waNote: 'ใช้เมื่อกด "ส่ง WhatsApp" ในหน้าออเดอร์ เว้นว่างเพื่อใช้ข้อความมาตรฐาน', cc: 'รหัสประเทศ', template: 'แม่แบบข้อความ',
+    chat: 'ข้อความส่งรูปบิลทางแชท', chatNote: 'ข้อความเริ่มต้นตอนส่งรูปบิล/พัสดุให้ลูกค้าในหน้าออเดอร์ แก้ครั้งเดียว ครั้งต่อไปไม่ต้องพิมพ์ใหม่ (ยังแก้ตอนส่งได้)', chatPh: 'ออเดอร์ {order_number} · เลขพัสดุ {tracking} ({carrier})',
     insert: 'กดเพื่อแทรกข้อมูล', keys: { name: 'ชื่อลูกค้า', order_number: 'เลขออเดอร์', total: 'ยอดรวม', status: 'สถานะ', tracking: 'เลขพัสดุ', carrier: 'ขนส่ง', shop: 'ชื่อร้าน' },
     previewMsg: 'ตัวอย่างข้อความ', receipt: 'ตัวอย่างใบเสร็จ', item: 'สินค้าตัวอย่าง', total: 'รวม',
     save: 'บันทึกการตั้งค่า', saving: 'กำลังบันทึก', saved: 'บันทึกแล้ว', failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', needName: 'ใส่ชื่อร้าน', unsaved: 'มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก',
@@ -36,6 +38,7 @@ const COPY = {
     options: 'Default option names', optionsNote: 'Used for new products, for example colour and size', opt1: 'First option', opt2: 'Second option',
     carriers: 'Your carriers', carriersNote: 'One name per line. These appear as choices on online orders.', carriersPh: 'Anousith\nHAL\nMixay Express',
     wa: 'WhatsApp message', waNote: 'Used by "Send on WhatsApp" on the orders page. Leave empty to use the standard message.', cc: 'Country code', template: 'Message template',
+    chat: 'Chat message for bill photos', chatNote: 'The standard message when you send a bill or parcel photo to a customer from the orders page. Set it once; you can still edit it per send.', chatPh: 'Order {order_number} · Tracking {tracking} ({carrier})',
     insert: 'Tap to insert', keys: { name: 'Customer name', order_number: 'Order number', total: 'Total', status: 'Status', tracking: 'Tracking no.', carrier: 'Carrier', shop: 'Shop name' },
     previewMsg: 'Message preview', receipt: 'Receipt preview', item: 'Sample item', total: 'Total',
     save: 'Save settings', saving: 'Saving', saved: 'Saved', failed: "Couldn't save. Try again.", needName: 'Enter a shop name', unsaved: 'You have unsaved changes',
@@ -54,6 +57,7 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
   const tplRef = useRef(null);
+  const chatTplRef = useRef(null);
 
   useEffect(() => {
     fetch('/api/shop-settings').then(r => r.json()).then(data => {
@@ -66,6 +70,7 @@ export default function SettingsPage() {
         variant_label_1: data.variant_label_1 || 'color', variant_label_2: data.variant_label_2 || 'size',
         low_stock_threshold: data.low_stock_threshold ?? 5,
         whatsapp_country_code: data.whatsapp_country_code || '856', whatsapp_template: data.whatsapp_template || '',
+        order_chat_template: data.order_chat_template || '',
         shipping_carriers: data.shipping_carriers || '',
       };
       setForm(f);
@@ -117,13 +122,13 @@ export default function SettingsPage() {
     }
   }
 
-  function insertKey(key) {
-    const el = tplRef.current;
+  function insertKey(key, field = 'whatsapp_template', ref = tplRef) {
+    const el = ref.current;
     const token = `{${key}}`;
-    const v = form.whatsapp_template;
+    const v = form[field] || '';
     const start = el ? el.selectionStart : v.length;
     const end = el ? el.selectionEnd : v.length;
-    setForm({ ...form, whatsapp_template: v.slice(0, start) + token + v.slice(end) });
+    setForm({ ...form, [field]: v.slice(0, start) + token + v.slice(end) });
     requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(start + token.length, start + token.length); });
   }
 
@@ -217,6 +222,26 @@ export default function SettingsPage() {
                 )}
               </div>
             </div>
+          </Section>
+
+          <Section title={c.chat} note={c.chatNote}>
+            <textarea id="chat-template" ref={chatTplRef} rows={4} value={form.order_chat_template}
+              onChange={set('order_chat_template')} placeholder={c.chatPh} className={inputCls} />
+            <p className="mt-2 text-xs text-slate-500">{c.insert}</p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {TEMPLATE_KEYS.map(k => (
+                <button key={k} type="button" onClick={() => insertKey(k, 'order_chat_template', chatTplRef)}
+                  className="px-2.5 py-1 rounded-lg border border-line text-xs font-semibold text-slate-600 hover:border-gold hover:text-gold-dark">{c.keys[k]}</button>
+              ))}
+            </div>
+            {form.order_chat_template.trim() && (
+              <div className="mt-4">
+                <p className="text-xs text-slate-500 mb-1.5">{c.previewMsg}</p>
+                <div className="rounded-xl rounded-tr-sm bg-[#E3F5EC] text-[#16443D] px-4 py-3 text-sm whitespace-pre-wrap break-words ml-auto max-w-sm">
+                  {fillTemplate(form.order_chat_template, { ...SAMPLE, shop: form.shop_name })}
+                </div>
+              </div>
+            )}
           </Section>
         </div>
 
