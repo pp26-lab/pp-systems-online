@@ -20,6 +20,7 @@ const COPY = {
     addBatch: 'ຮັບສິນຄ້າເຂົ້າ', product_: 'ສິນຄ້າ', choose: 'ເລືອກສິນຄ້າ', variantNote: 'ປ່ຽນຈຳນວນແຕ່ລະຕົວເລືອກ ແລ້ວກົດບັນທຶກ',
     saved: 'ບັນທຶກແລ້ວ', failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ', needQty: 'ໃສ່ຈຳນວນທີ່ຫຼາຍກວ່າ 0', unchanged: 'ຍັງບໍ່ໄດ້ປ່ຽນຈຳນວນ',
     history: 'ເບິ່ງປະຫວັດສະຕ໋ອກ',
+    left: 'ຄົງເຫຼືອ', modeAdd: 'ໃສ່ຈຳນວນທີ່ໄດ້ຮັບເຂົ້າ ລະບົບຈະບວກເພີ່ມໃສ່ສະຕ໋ອກທີ່ມີຢູ່', modeSub: 'ໃສ່ຈຳນວນທີ່ເສຍຫາຍ ລະບົບຈະຫັກອອກຈາກສະຕ໋ອກ', modeSet: 'ໃສ່ຈຳນວນທີ່ນັບໄດ້ຕົວຈິງ (ຈຳນວນໃໝ່ທັງໝົດ)',
   },
   th: {
     search: 'ค้นหาสินค้าหรือ SKU', receive: 'รับสินค้าเข้า', all: 'ทั้งหมด', low: 'ใกล้หมด', zero: 'สินค้าหมด',
@@ -30,6 +31,7 @@ const COPY = {
     addBatch: 'รับสินค้าเข้า', product_: 'สินค้า', choose: 'เลือกสินค้า', variantNote: 'เปลี่ยนจำนวนแต่ละตัวเลือก แล้วกดบันทึก',
     saved: 'บันทึกแล้ว', failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', needQty: 'ใส่จำนวนที่มากกว่า 0', unchanged: 'ยังไม่ได้เปลี่ยนจำนวน',
     history: 'ดูประวัติสต็อก',
+    left: 'คงเหลือ', modeAdd: 'ใส่จำนวนที่รับเข้า ระบบจะบวกเพิ่มจากสต็อกที่มีอยู่', modeSub: 'ใส่จำนวนที่เสียหาย ระบบจะหักออกจากสต็อก', modeSet: 'ใส่จำนวนที่นับได้จริง (จำนวนใหม่ทั้งหมด)',
   },
   en: {
     search: 'Search product or SKU', receive: 'Receive stock', all: 'All', low: 'Running low', zero: 'Sold out',
@@ -40,6 +42,7 @@ const COPY = {
     addBatch: 'Receive stock', product_: 'Product', choose: 'Choose a product', variantNote: 'Change the quantity of each option, then save.',
     saved: 'Saved', failed: "Couldn't save. Try again.", needQty: 'Enter a quantity above 0', unchanged: 'No quantities changed',
     history: 'View stock history',
+    left: 'In stock', modeAdd: 'Enter how many arrived. It is added to the current stock.', modeSub: 'Enter how many are damaged or lost. It is taken out of stock.', modeSet: 'Enter the counted quantity (the new total).',
   },
 };
 
@@ -207,8 +210,19 @@ function StockEditor({ product, products, batches, c, lang, nameOf, onClose, onC
   const hasVariants = !!(target?.has_variants && target.variants?.length);
   const own = batches.filter(b => target && b.product_id === target.id);
 
-  const [variantQty, setVariantQty] = useState(() => Object.fromEntries((product?.variants || []).map(v => [v.id, v.quantity])));
   const [reason, setReason] = useState(product ? 'count' : 'stock_in');
+  // What the boxes mean follows the reason: received / returned stock is ADDED, damaged stock is
+  // TAKEN OUT, a count or other fix is the NEW TOTAL. (Before, the boxes were always the new total
+  // pre-filled with current stock, so typing "5 received" over "10" left 5 instead of 15.)
+  const mode = reason === 'stock_in' || reason === 'return' ? 'add' : reason === 'damaged' ? 'sub' : 'set';
+  const startQty = (variants, m) => Object.fromEntries((variants || []).map(v => [v.id, m === 'set' ? v.quantity : '']));
+  const [variantQty, setVariantQty] = useState(() => startQty(product?.variants, mode));
+  const newQty = v => {
+    const raw = variantQty[v.id];
+    if (raw === '' || raw == null) return Number(v.quantity);
+    const n = Math.max(0, parseInt(raw) || 0);
+    return mode === 'set' ? n : Math.max(0, Number(v.quantity) + (mode === 'add' ? n : -n));
+  };
   const [note, setNote] = useState('');
   const [add, setAdd] = useState({ quantity: '', status: 'in_stock', batch_number: '', expected_arrival: '' });
   const [edit, setEdit] = useState(null); // { id, quantity, status }
@@ -217,8 +231,8 @@ function StockEditor({ product, products, batches, c, lang, nameOf, onClose, onC
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    if (!product && target) setVariantQty(Object.fromEntries((target.variants || []).map(v => [v.id, v.quantity])));
-  }, [productId]);
+    if (target) setVariantQty(startQty(target.variants, mode));
+  }, [productId, mode]);
 
   async function call(url, method, body) {
     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -240,11 +254,13 @@ function StockEditor({ product, products, batches, c, lang, nameOf, onClose, onC
   }
 
   const saveVariants = () => wrap(async () => {
-    const changed = target.variants.filter(v => Number(variantQty[v.id]) !== Number(v.quantity));
+    const changed = target.variants.filter(v => newQty(v) !== Number(v.quantity));
     if (!changed.length) throw new Error(c.unchanged);
     for (const v of changed) {
-      await call('/api/variants', 'PUT', { ...v, quantity: Math.max(0, parseInt(variantQty[v.id]) || 0), reason, note });
+      await call('/api/variants', 'PUT', { ...v, quantity: newQty(v), reason, note });
     }
+    // Clear the boxes so a second tap on save can't add the same delivery twice.
+    setVariantQty(startQty(changed.reduce((all, v) => all.map(x => (x.id === v.id ? { ...x, quantity: newQty(v) } : x)), target.variants), mode));
   });
 
   const receive = () => wrap(async () => {
@@ -299,24 +315,32 @@ function StockEditor({ product, products, batches, c, lang, nameOf, onClose, onC
 
         {target && hasVariants && (
           <section>
-            <p className="text-sm text-slate-500">{c.variantNote}</p>
-            <ul className="mt-3 divide-y divide-line border-y border-line">
+            {reasonFields}
+            <p className="mt-3 text-sm font-semibold text-primary">{mode === 'add' ? c.modeAdd : mode === 'sub' ? c.modeSub : c.modeSet}</p>
+            <ul className="mt-2 divide-y divide-line border-y border-line">
               {target.variants.map(v => {
-                const changed = Number(variantQty[v.id]) !== Number(v.quantity);
+                const after = newQty(v);
+                const changed = after !== Number(v.quantity);
                 return (
                   <li key={v.id} className="py-2.5 flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-ink">{[v.color, v.size].filter(Boolean).join(' / ') || '-'}</p>
-                      <p className="text-xs text-slate-500 num">{target.sku}{v.sku_suffix}{changed && <span className="ml-2 text-gold-dark">{v.quantity} → {variantQty[v.id] || 0}</span>}</p>
+                      <p className="text-xs text-slate-500 num">{target.sku}{v.sku_suffix}</p>
+                      <p className="text-xs num">
+                        <span className="text-slate-500">{c.left} {v.quantity}</span>
+                        {changed && <span className="ml-1.5 font-bold text-gold-dark">→ {after}</span>}
+                      </p>
                     </div>
-                    <input type="number" min="0" aria-label={c.qty} value={variantQty[v.id] ?? ''}
-                      onChange={e => setVariantQty({ ...variantQty, [v.id]: e.target.value })}
-                      className={`${inputCls} w-28 text-right font-bold num`} />
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {mode !== 'set' && <span className={`text-lg font-bold ${mode === 'add' ? 'text-success' : 'text-danger'}`} aria-hidden="true">{mode === 'add' ? '+' : '−'}</span>}
+                      <input type="number" min="0" inputMode="numeric" aria-label={c.qty} value={variantQty[v.id] ?? ''} placeholder="0"
+                        onChange={e => setVariantQty({ ...variantQty, [v.id]: e.target.value })}
+                        className={`${inputCls} w-24 sm:w-28 text-right font-bold num`} />
+                    </div>
                   </li>
                 );
               })}
             </ul>
-            <div className="mt-4">{reasonFields}</div>
             <div className="mt-4 flex justify-end"><Button onClick={saveVariants} disabled={busy}>{c.save}</Button></div>
           </section>
         )}
