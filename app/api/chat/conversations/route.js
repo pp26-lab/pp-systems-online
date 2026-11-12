@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '../../../../lib/db';
 import { chatGuard } from '../../../../lib/chat/guard';
 import { chatPlatforms } from '../../../../lib/features';
+import { fillMissingPageNames } from '../../../../lib/chat/channel-names';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,8 @@ export async function GET(request) {
       [shopId, ...platforms]
     ),
   ]);
+  // A page still shown by its id: look its name up in the background (rate-limited).
+  if (channels.some(ch => ch.platform === 'messenger' && /^\d+$/.test(ch.name))) fillMissingPageNames(shopId);
   const cr = countRows[0] || {};
   return NextResponse.json({
     conversations,
