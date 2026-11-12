@@ -277,14 +277,25 @@ export default function Dashboard() {
               <ol className="px-5 pb-4 space-y-3">
                 {top.map((p, i) => {
                   const qty = Number(p.total_qty) || 0;
+                  // Each option sells on its own (colour / size), so it is named under the product.
+                  const option = [p.variant_color, p.variant_size].filter(Boolean).join(' / ');
                   return (
-                    <li key={p.sku || i}>
+                    <li key={`${p.product_id}-${p.variant_id || 0}`} className="flex gap-2">
+                      <span className="w-4 shrink-0 text-sm text-slate-400 num leading-5">{i + 1}</span>
+                      <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-3 text-sm">
-                        <span className="min-w-0 truncate text-ink"><span className="text-slate-400 num mr-2">{i + 1}</span>{nameOf(p)}</span>
+                        <span className="min-w-0 truncate text-ink">{nameOf(p)}</span>
                         <span className="shrink-0 font-semibold text-slate-600 num">{c.sold(qty)}</span>
                       </div>
+                      {(option || p.sku) && (
+                        <p className="mt-0.5 flex items-baseline gap-2 min-w-0 text-xs">
+                          {option && <span className="shrink-0 rounded bg-gold-soft px-1.5 py-px font-semibold text-primary-dark">{option}</span>}
+                          <span className="truncate text-slate-400 num">{p.sku}{p.sku_suffix || ''}</span>
+                        </p>
+                      )}
                       <div className="mt-1 h-1 rounded-full bg-canvas overflow-hidden">
                         <div className="h-full rounded-full bg-primary/70" style={{ width: `${(qty / maxQty) * 100}%` }} />
+                      </div>
                       </div>
                     </li>
                   );

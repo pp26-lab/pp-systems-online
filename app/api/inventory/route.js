@@ -44,14 +44,18 @@ export async function PUT(request) {
 
   const body = await request.json();
   const before = await queryOne('SELECT product_id, quantity FROM inventory WHERE id = ? AND shop_id = ?', [body.id, shopId]);
+  if (!before) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  // A batch count: a whole number, never below zero.
+  const quantity = Math.max(0, parseInt(body.quantity) || 0);
+  if (!['in_stock', 'in_transit', 'pre_order', 'ready_to_ship'].includes(body.status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   await query(
     'UPDATE inventory SET quantity=?, status=?, batch_number=?, expected_arrival=?, notes=? WHERE id=? AND shop_id=?',
-    [body.quantity, body.status, body.batch_number || '', body.expected_arrival || null, body.notes || '', body.id, shopId]
+    [quantity, body.status, body.batch_number || '', body.expected_arrival || null, body.notes || '', body.id, shopId]
   );
-  if (before && before.quantity !== body.quantity) {
+  if (Number(before.quantity) !== quantity) {
     await logStockMovement({
       shopId, productId: before.product_id,
-      change: body.quantity - before.quantity, reason: body.reason || 'adjustment',
+      change: quantity - Number(before.quantity), reason: body.reason || 'adjustment',
       note: body.notes || '',
       referenceType: 'inventory', referenceId: body.id,
     });
