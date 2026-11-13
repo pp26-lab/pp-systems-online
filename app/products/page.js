@@ -30,7 +30,7 @@ const COPY = {
     photos: 'ຮູບພາບ', main: 'ຮູບຫຼັກ', extra: 'ຮູບເພີ່ມເຕີມ (ສົ່ງໃຫ້ລູກຄ້າຜ່ານແຊັດບອດ)', saveFirst: 'ບັນທຶກສິນຄ້າກ່ອນ ຈຶ່ງເພີ່ມຮູບເພີ່ມເຕີມໄດ້',
     upload: 'ເລືອກຮູບ', camera: 'ຖ່າຍຮູບ', remove: 'ເອົາອອກ', details: 'ຂໍ້ມູນສິນຄ້າ', nameLo: 'ຊື່ (ລາວ)', nameTh: 'ຊື່ (ໄທ)', nameEn: 'ຊື່ (ອັງກິດ)',
     skuHint: 'ປ່ອຍວ່າງ ລະບົບຈະສ້າງໃຫ້', barcode: 'ບາໂຄ້ດ', category: 'ໝວດໝູ່', endDate: 'ວັນໝົດເຂດຂາຍ', endHint: 'ປ່ອຍວ່າງ = ຂາຍຕະຫຼອດ',
-    pricing: 'ຕົ້ນທຶນ ແລະ ລາຄາ', costNote: 'ຕົ້ນທຶນທັງໝົດຄິດເປັນສະກຸນທີ່ຊື້', landed: 'ຕົ້ນທຶນລວມ (ກີບ)', retail: 'ລາຄາຂາຍ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ', margin: 'ກຳໄລ',
+    pricing: 'ຕົ້ນທຶນ ແລະ ລາຄາ', costNote: 'ຕົ້ນທຶນທັງໝົດຄິດເປັນສະກຸນທີ່ຊື້', modeLot: 'ລາຄາລວມທັງລັອດ', modeUnit: 'ລາຄາຕໍ່ຊິ້ນ', lotNote: 'ໃສ່ຍອດທີ່ຈ່າຍທັງລັອດ ລະບົບຈະຫານເປັນຕໍ່ຊິ້ນໃຫ້', lotQty: 'ຈຳນວນຊິ້ນໃນລັອດນີ້', lotQtyAuto: 'ຕາມສະຕ໋ອກທີ່ໃສ່ ແກ້ໄດ້', perUnit: 'ຊິ້ນ', unitCost: 'ຕົ້ນທຶນຕໍ່ຊິ້ນ (ກີບ)', lotCostLak: 'ຕົ້ນທຶນທັງລັອດ', needLotQty: 'ໃສ່ຈຳນວນຊິ້ນໃນລັອດ ເພື່ອຫານເປັນຕົ້ນທຶນຕໍ່ຊິ້ນ', landed: 'ຕົ້ນທຶນລວມ (ກີບ)', retail: 'ລາຄາຂາຍ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ', margin: 'ກຳໄລ',
     variants: 'ຕົວເລືອກ (ເຊັ່ນ ສີ / ຂະໜາດ)', variantsNone: 'ສິນຄ້ານີ້ບໍ່ມີຕົວເລືອກ ສະຕ໋ອກນັບລວມ', addOption: 'ເພີ່ມຕົວເລືອກ',
     label1: 'ຊື່ຕົວເລືອກທີ 1', label2: 'ຊື່ຕົວເລືອກທີ 2', suffix: 'ທ້າຍ SKU', qty: 'ຈຳນວນ',
     opening: 'ສະຕ໋ອກເລີ່ມຕົ້ນ', save: 'ບັນທຶກສິນຄ້າ', saving: 'ກຳລັງບັນທຶກ…',
@@ -46,7 +46,7 @@ const COPY = {
     photos: 'รูปภาพ', main: 'รูปหลัก', extra: 'รูปเพิ่มเติม (ส่งให้ลูกค้าผ่านแชทบอท)', saveFirst: 'บันทึกสินค้าก่อน จึงเพิ่มรูปเพิ่มเติมได้',
     upload: 'เลือกรูป', camera: 'ถ่ายรูป', remove: 'เอาออก', details: 'ข้อมูลสินค้า', nameLo: 'ชื่อ (ลาว)', nameTh: 'ชื่อ (ไทย)', nameEn: 'ชื่อ (อังกฤษ)',
     skuHint: 'เว้นว่าง ระบบจะสร้างให้', barcode: 'บาร์โค้ด', category: 'หมวดหมู่', endDate: 'วันหมดเขตขาย', endHint: 'เว้นว่าง = ขายตลอด',
-    pricing: 'ต้นทุนและราคา', costNote: 'ต้นทุนทั้งหมดคิดเป็นสกุลเงินที่ซื้อ', landed: 'ต้นทุนรวม (กีบ)', retail: 'ราคาขาย', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก', margin: 'กำไร',
+    pricing: 'ต้นทุนและราคา', costNote: 'ต้นทุนทั้งหมดคิดเป็นสกุลเงินที่ซื้อ', modeLot: 'ราคารวมทั้งล็อต', modeUnit: 'ราคาต่อชิ้น', lotNote: 'ใส่ยอดที่จ่ายทั้งล็อต ระบบจะหารเป็นต่อชิ้นให้', lotQty: 'จำนวนชิ้นในล็อตนี้', lotQtyAuto: 'ตามสต็อกที่ใส่ แก้ได้', perUnit: 'ชิ้น', unitCost: 'ต้นทุนต่อชิ้น (กีบ)', lotCostLak: 'ต้นทุนทั้งล็อต', needLotQty: 'ใส่จำนวนชิ้นในล็อต เพื่อหารเป็นต้นทุนต่อชิ้น', landed: 'ต้นทุนรวม (กีบ)', retail: 'ราคาขาย', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก', margin: 'กำไร',
     variants: 'ตัวเลือก (เช่น สี / ขนาด)', variantsNone: 'สินค้านี้ไม่มีตัวเลือก สต็อกนับรวม', addOption: 'เพิ่มตัวเลือก',
     label1: 'ชื่อตัวเลือกที่ 1', label2: 'ชื่อตัวเลือกที่ 2', suffix: 'ท้าย SKU', qty: 'จำนวน',
     opening: 'สต็อกเริ่มต้น', save: 'บันทึกสินค้า', saving: 'กำลังบันทึก…',
@@ -62,7 +62,7 @@ const COPY = {
     photos: 'Photos', main: 'Main photo', extra: 'Extra photos (sent to customers by the chatbot)', saveFirst: 'Save the product first to add extra photos',
     upload: 'Choose photo', camera: 'Take photo', remove: 'Remove', details: 'Product details', nameLo: 'Name (Lao)', nameTh: 'Name (Thai)', nameEn: 'Name (English)',
     skuHint: 'Leave blank to generate one', barcode: 'Barcode', category: 'Category', endDate: 'Stop selling on', endHint: 'Blank = no end date',
-    pricing: 'Cost and price', costNote: 'All costs are in the purchase currency', landed: 'Landed cost (LAK)', retail: 'Retail price', wholesale: 'Wholesale price', member: 'Member price', margin: 'Margin',
+    pricing: 'Cost and price', costNote: 'All costs are in the purchase currency', modeLot: 'Whole lot', modeUnit: 'Per piece', lotNote: 'Enter what you paid for the whole lot; the system works out the cost per piece', lotQty: 'Pieces in this lot', lotQtyAuto: 'From the stock entered, can be changed', perUnit: 'piece', unitCost: 'Cost per piece (LAK)', lotCostLak: 'Whole lot cost', needLotQty: 'Enter how many pieces are in the lot to work out the cost per piece', landed: 'Landed cost (LAK)', retail: 'Retail price', wholesale: 'Wholesale price', member: 'Member price', margin: 'Margin',
     variants: 'Options (e.g. color / size)', variantsNone: 'No options. Stock is counted as one item.', addOption: 'Add option',
     label1: 'First option name', label2: 'Second option name', suffix: 'SKU suffix', qty: 'Qty',
     opening: 'Opening stock', save: 'Save product', saving: 'Saving…',
@@ -365,6 +365,32 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const num = k => e => set(k, parseFloat(e.target.value) || 0);
 
+  // Costs can be typed per piece, or as totals for the whole lot (what was actually paid),
+  // which are divided by the number of pieces. Either way the per-piece numbers are what is
+  // saved, so profit on every sale stays right. New products start in lot mode.
+  const COST_KEYS = ['cost_price', 'freight_cost', 'customs_duty', 'proxy_fee', 'transfer_fee'];
+  const [costMode, setCostMode] = useState(id ? 'unit' : 'lot');
+  const [lot, setLot] = useState({});
+  const [lotQtyTyped, setLotQtyTyped] = useState(null); // null = follow the stock entered
+  const stockEntered = variants.length
+    ? variants.reduce((n, v) => n + (parseInt(v.quantity) || 0), 0)
+    : parseInt(form.initial_stock) || 0;
+  const lotQty = lotQtyTyped ?? stockEntered;
+  const per = k => (lotQty > 0 ? Math.round(((Number(lot[k]) || 0) / lotQty) * 10000) / 10000 : 0);
+  useEffect(() => {
+    if (costMode !== 'lot') return;
+    setForm(prev => ({ ...prev, ...Object.fromEntries(COST_KEYS.map(k => [k, per(k)])) }));
+  }, [costMode, lot, lotQty]);
+  function switchMode(m) {
+    if (m === costMode) return;
+    // Carry the numbers over so nothing typed is lost: per piece -> lot multiplies by the
+    // pieces; lot -> per piece keeps the divided result.
+    if (m === 'lot') setLot(Object.fromEntries(COST_KEYS.map(k => [k, (Number(form[k]) || 0) * (lotQty || 1) || ''])));
+    setCostMode(m);
+  }
+  const lotNum = k => e => setLot(prev => ({ ...prev, [k]: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 }));
+  const lotHasCost = COST_KEYS.some(k => Number(lot[k]) > 0);
+
   // Same rate the server will use: a saved product keeps the rate it was created with (until its
   // currency is changed); a new product, or a new currency, takes today's rate.
   const keepsRate = id && form.cost_currency === initial.form.cost_currency && Number(initial.form.exchange_rate_used) > 0;
@@ -436,6 +462,7 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
   async function save() {
     setError('');
     if (![form.name_lo, form.name_th, form.name_en].some(v => v && v.trim())) { setError(c.needName); return; }
+    if (costMode === 'lot' && lotHasCost && !(lotQty > 0)) { setError(c.needLotQty); return; }
     const rows = variants.filter(v => (v.color || '').trim() || (v.size || '').trim());
     setBusy('save');
     try {
@@ -570,27 +597,63 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
         </section>
 
         <section>
-          <h3 className="font-bold text-ink">{c.pricing}</h3>
-          <p className="text-xs text-slate-500 mt-0.5">{c.costNote}</p>
-          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Field label={t('cost', lang)}>
-              <div className="flex gap-2">
-                <input type="number" min="0" value={form.cost_price || ''} placeholder="0" onChange={num('cost_price')} className={`${inputCls} num`} />
-                <select value={form.cost_currency} onChange={e => set('cost_currency', e.target.value)} className="px-2.5 border rounded-xl text-sm">
-                  {costCurrencies.map(x => <option key={x} value={x}>{x}</option>)}
-                </select>
-              </div>
-            </Field>
-            <Field label={t('freight', lang)}><input type="number" min="0" value={form.freight_cost || ''} placeholder="0" onChange={num('freight_cost')} className={`${inputCls} num`} /></Field>
-            <Field label={t('customs', lang)}><input type="number" min="0" value={form.customs_duty || ''} placeholder="0" onChange={num('customs_duty')} className={`${inputCls} num`} /></Field>
-            <Field label={t('proxy_fee', lang)}><input type="number" min="0" value={form.proxy_fee || ''} placeholder="0" onChange={num('proxy_fee')} className={`${inputCls} num`} /></Field>
-            <Field label={t('transfer_fee', lang)}><input type="number" min="0" value={form.transfer_fee || ''} placeholder="0" onChange={num('transfer_fee')} className={`${inputCls} num`} /></Field>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-ink">{c.pricing}</h3>
+              <p className="text-xs text-slate-500 mt-0.5">{costMode === 'lot' ? c.lotNote : c.costNote}</p>
+            </div>
+            <Segmented size="sm" value={costMode} onChange={switchMode}
+              options={[{ value: 'lot', label: c.modeLot }, { value: 'unit', label: c.modeUnit }]} />
           </div>
+          {(() => {
+            const cur = form.cost_currency;
+            const currencyPick = (
+              <select value={cur} onChange={e => set('cost_currency', e.target.value)} aria-label="Currency" className="px-2.5 border rounded-xl text-sm">
+                {costCurrencies.map(x => <option key={x} value={x}>{x}</option>)}
+              </select>
+            );
+            const fields = [['cost_price', t('cost', lang)], ['freight_cost', t('freight', lang)], ['customs_duty', t('customs', lang)], ['proxy_fee', t('proxy_fee', lang)], ['transfer_fee', t('transfer_fee', lang)]];
+            const input = (k, value, onChange) => <input type="number" min="0" value={value} placeholder="0" onChange={onChange} className={`${inputCls} num`} />;
+            if (costMode === 'unit') return (
+              <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {fields.map(([k, label], i) => (
+                  <Field key={k} label={label}>
+                    {i === 0 ? <div className="flex gap-2">{input(k, form[k] || '', num(k))}{currencyPick}</div> : input(k, form[k] || '', num(k))}
+                  </Field>
+                ))}
+              </div>
+            );
+            // Lot mode: the total paid in each field, and what that makes per piece underneath.
+            return (
+              <>
+                <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <Field label={c.lotQty}>
+                    <input type="number" min="0" inputMode="numeric" value={lotQty || ''} placeholder="0"
+                      onChange={e => setLotQtyTyped(e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value) || 0))}
+                      className={`${inputCls} num font-bold ${!(lotQty > 0) && lotHasCost ? '!border-danger' : ''}`} />
+                    {lotQtyTyped == null && <span className="mt-1 block text-xs text-slate-500">{c.lotQtyAuto}</span>}
+                  </Field>
+                  {fields.map(([k, label], i) => (
+                    <Field key={k} label={label}>
+                      {i === 0 ? <div className="flex gap-2">{input(k, lot[k] ?? '', lotNum(k))}{currencyPick}</div> : input(k, lot[k] ?? '', lotNum(k))}
+                      {Number(lot[k]) > 0 && lotQty > 0 && (
+                        <span className="mt-1 block text-xs text-slate-500 num">{Number(lot[k]).toLocaleString()} ÷ {lotQty} = <b className="text-ink">{per(k).toLocaleString()}</b> {cur}/{c.perUnit}</span>
+                      )}
+                    </Field>
+                  ))}
+                </div>
+                {lotHasCost && !(lotQty > 0) && <p role="alert" className="mt-2 text-sm text-danger">{c.needLotQty}</p>}
+              </>
+            );
+          })()}
 
           <div className="mt-4 rounded-xl bg-canvas border border-line p-5 grid sm:grid-cols-[1fr_1.2fr_auto] gap-5 items-end">
             <div>
-              <p className="text-xs text-slate-500">{c.landed}</p>
+              <p className="text-xs text-slate-500">{c.unitCost}</p>
               <p className="mt-1 text-xl font-bold text-ink num">{formatCurrency(landed, 'LAK')}</p>
+              {costMode === 'lot' && lotQty > 0 && landed > 0 && (
+                <p className="mt-0.5 text-xs text-slate-500 num">{c.lotCostLak}: {formatCurrency(landed * lotQty, 'LAK')}</p>
+              )}
             </div>
             <label className="block">
               <span className="block text-sm font-semibold text-ink">{c.retail} (LAK)</span>
