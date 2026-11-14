@@ -26,7 +26,7 @@ const COPY = {
     all: 'ທັງໝົດ', active: 'ກຳລັງຂາຍ', hidden: 'ເຊື່ອງ', pre_order: 'ສັ່ງຈອງ', out_of_stock: 'ໝົດສະຕ໋ອກ', low: 'ໃກ້ໝົດ',
     empty: 'ຍັງບໍ່ມີສິນຄ້າ', emptyText: 'ເພີ່ມສິນຄ້າທຳອິດ ຫຼື ນຳເຂົ້າຈາກໄຟລ໌ CSV', noMatch: 'ບໍ່ພົບສິນຄ້າທີ່ກົງກັນ',
     product: 'ສິນຄ້າ', price: 'ລາຄາຂາຍ', stock: 'ສະຕ໋ອກ', status: 'ສະຖານະ', options: n => `${n} ຕົວເລືອກ`, expired: 'ໝົດເຂດຂາຍ',
-    edit: 'ແກ້ໄຂ', duplicate: 'ສຳເນົາ', del: 'ລຶບ', delAsk: p => `ລຶບ "${p}"?`, delNote: 'ຖ້າສິນຄ້ານີ້ເຄີຍຂາຍແລ້ວ ລະບົບຈະເຊື່ອງໄວ້ແທນການລຶບ ເພື່ອຮັກສາປະຫວັດການຂາຍ', archived: 'ສິນຄ້ານີ້ມີປະຫວັດການຂາຍ ຈຶ່ງເຊື່ອງໄວ້ແທນການລຶບ',
+    edit: 'ແກ້ໄຂ', duplicate: 'ສຳເນົາ', del: 'ລຶບ', delAsk: p => `ລຶບ "${p}"?`, delNote: 'ສິນຄ້າຈະຫາຍຈາກທຸກໜ້າ ແລະ ຂາຍບໍ່ໄດ້ອີກ ຮູບ ແລະ ສະຕ໋ອກຈະຖືກລຶບ ສ່ວນຍອດຂາຍ ແລະ ປະຫວັດອໍເດີ້ເກົ່າຍັງເກັບໄວ້',
     duplicated: 'ສຳເນົາແລ້ວ (ຖືກເຊື່ອງໄວ້ ແກ້ໄຂກ່ອນເປີດຂາຍ)', imported: (a, b, e) => `ນຳເຂົ້າ: ເພີ່ມ ${a}, ອັບເດດ ${b}${e ? `, ຜິດພາດ ${e}` : ''}`,
     photos: 'ຮູບພາບ', main: 'ຮູບຫຼັກ', extra: 'ຮູບເພີ່ມເຕີມ (ສົ່ງໃຫ້ລູກຄ້າຜ່ານແຊັດບອດ)', saveFirst: 'ບັນທຶກສິນຄ້າກ່ອນ ຈຶ່ງເພີ່ມຮູບເພີ່ມເຕີມໄດ້',
     upload: 'ເລືອກຮູບ', camera: 'ຖ່າຍຮູບ', remove: 'ເອົາອອກ', details: 'ຂໍ້ມູນສິນຄ້າ', nameLo: 'ຊື່ (ລາວ)', nameTh: 'ຊື່ (ໄທ)', nameEn: 'ຊື່ (ອັງກິດ)',
@@ -43,7 +43,7 @@ const COPY = {
     all: 'ทั้งหมด', active: 'กำลังขาย', hidden: 'ซ่อน', pre_order: 'พรีออเดอร์', out_of_stock: 'สินค้าหมด', low: 'ใกล้หมด',
     empty: 'ยังไม่มีสินค้า', emptyText: 'เพิ่มสินค้าชิ้นแรก หรือนำเข้าจากไฟล์ CSV', noMatch: 'ไม่พบสินค้าที่ตรงกัน',
     product: 'สินค้า', price: 'ราคาขาย', stock: 'สต็อก', status: 'สถานะ', options: n => `${n} ตัวเลือก`, expired: 'หมดเขตขาย',
-    edit: 'แก้ไข', duplicate: 'ทำสำเนา', del: 'ลบ', delAsk: p => `ลบ "${p}"?`, delNote: 'ถ้าสินค้านี้เคยขายแล้ว ระบบจะซ่อนไว้แทนการลบ เพื่อเก็บประวัติการขาย', archived: 'สินค้านี้มีประวัติการขาย จึงซ่อนไว้แทนการลบ',
+    edit: 'แก้ไข', duplicate: 'ทำสำเนา', del: 'ลบ', delAsk: p => `ลบ "${p}"?`, delNote: 'สินค้าจะหายจากทุกหน้าและขายไม่ได้อีก รูปและสต็อกจะถูกลบ ส่วนยอดขายและประวัติออเดอร์เก่ายังเก็บไว้',
     duplicated: 'ทำสำเนาแล้ว (ถูกซ่อนไว้ แก้ไขก่อนเปิดขาย)', imported: (a, b, e) => `นำเข้า: เพิ่ม ${a}, อัปเดต ${b}${e ? `, ผิดพลาด ${e}` : ''}`,
     photos: 'รูปภาพ', main: 'รูปหลัก', extra: 'รูปเพิ่มเติม (ส่งให้ลูกค้าผ่านแชทบอท)', saveFirst: 'บันทึกสินค้าก่อน จึงเพิ่มรูปเพิ่มเติมได้',
     upload: 'เลือกรูป', camera: 'ถ่ายรูป', remove: 'เอาออก', details: 'ข้อมูลสินค้า', nameLo: 'ชื่อ (ลาว)', nameTh: 'ชื่อ (ไทย)', nameEn: 'ชื่อ (อังกฤษ)',
@@ -60,7 +60,7 @@ const COPY = {
     all: 'All', active: 'On sale', hidden: 'Hidden', pre_order: 'Pre-order', out_of_stock: 'Sold out', low: 'Running low',
     empty: 'No products yet', emptyText: 'Add your first product or import a CSV file', noMatch: 'No matching products',
     product: 'Product', price: 'Price', stock: 'Stock', status: 'Status', options: n => `${n} options`, expired: 'Sale ended',
-    edit: 'Edit', duplicate: 'Duplicate', del: 'Delete', delAsk: p => `Delete "${p}"?`, delNote: 'If this product has been sold before, it is hidden instead so your sales history stays intact.', archived: 'This product has sales history, so it was hidden instead of deleted',
+    edit: 'Edit', duplicate: 'Duplicate', del: 'Delete', delAsk: p => `Delete "${p}"?`, delNote: 'It disappears from every page and can no longer be sold. Its photos and stock are removed; past sales and orders are kept.',
     duplicated: 'Copy created and hidden. Edit it before putting it on sale.', imported: (a, b, e) => `Imported: ${a} added, ${b} updated${e ? `, ${e} failed` : ''}`,
     photos: 'Photos', main: 'Main photo', extra: 'Extra photos (sent to customers by the chatbot)', saveFirst: 'Save the product first to add extra photos',
     upload: 'Choose photo', camera: 'Take photo', remove: 'Remove', details: 'Product details', nameLo: 'Name (Lao)', nameTh: 'Name (Thai)', nameEn: 'Name (English)',
@@ -183,7 +183,6 @@ export default function ProductsPage() {
     const res = await fetch(`/api/products?id=${p.id}`, { method: 'DELETE' });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { say(c.failed, 'red'); return; }
-    if (data.archived) say(c.archived, 'gold');
     load();
   }
 
@@ -603,11 +602,15 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
             <Field label={c.endDate} hint={c.endHint}>
               <input type="date" value={form.sale_end_date || ''} onChange={e => set('sale_end_date', e.target.value)} className={inputCls} />
             </Field>
-            <div className="sm:col-span-2">
-              <span className="block text-sm font-semibold text-ink mb-1.5">{c.status}</span>
-              <Segmented value={form.status || 'active'} onChange={v => set('status', v)}
-                options={['active', 'pre_order', 'hidden', 'out_of_stock'].map(v => ({ value: v, label: c[v] }))} />
-            </div>
+            {/* A new product starts on sale: with no stock yet it simply shows as sold out until
+                stock is received. Hiding it or taking pre-orders is set later, when editing. */}
+            {id && (
+              <div className="sm:col-span-2">
+                <span className="block text-sm font-semibold text-ink mb-1.5">{c.status}</span>
+                <Segmented value={form.status || 'active'} onChange={v => set('status', v)}
+                  options={['active', 'pre_order', 'hidden', 'out_of_stock'].map(v => ({ value: v, label: c[v] }))} />
+              </div>
+            )}
           </div>
         </section>
 

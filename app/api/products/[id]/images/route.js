@@ -24,7 +24,7 @@ export async function POST(request, { params }) {
   const body = await request.json();
   if (!body.image_url) return NextResponse.json({ error: 'image_url required' }, { status: 400 });
 
-  const product = await queryOne('SELECT id FROM products WHERE id = ? AND shop_id = ?', [params.id, shopId]);
+  const product = await queryOne('SELECT id FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [params.id, shopId]);
   if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
   const countRow = await queryOne('SELECT COUNT(*) as c FROM product_images WHERE product_id = ? AND shop_id = ?', [params.id, shopId]);

@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
@@ -22,7 +24,7 @@ export async function GET(request) {
       COALESCE(SUM(CASE WHEN i.status = 'ready_to_ship' THEN i.quantity ELSE 0 END), 0) as stock_ready_to_ship
     FROM products p
     LEFT JOIN inventory i ON p.id = i.product_id
-    WHERE p.shop_id = ?
+    WHERE p.shop_id = ? AND p.deleted_at IS NULL
   `;
   const params = [shopId];
 
@@ -72,12 +74,30 @@ async function savePricingKind(body, id, shopId) {
     [type, unit, steps.length ? JSON.stringify(steps) : null, id, shopId]);
 }
 
+// Delete uploaded photo files of a deleted product, unless another product still uses the same
+// file (a copied product shares its photo). Only this shop's own uploads are touched.
+async function removeUnusedUploads(shopId, urls, productId) {
+  for (const url of new Set(urls.filter(Boolean))) {
+    const m = /^\/api\/uploads\/([^/?#]+)$/.exec(String(url));
+    if (!m) continue;
+    const name = path.basename(m[1]);
+    if (!name.startsWith(`${Number(shopId)}-`)) continue;
+    const still = await queryOne(
+      `SELECT (SELECT COUNT(*) FROM products WHERE shop_id = ? AND id <> ? AND image_url = ?)
+            + (SELECT COUNT(*) FROM product_images WHERE shop_id = ? AND product_id <> ? AND image_url = ?) AS n`,
+      [shopId, productId, url, shopId, productId, url]
+    );
+    if (Number(still?.n) > 0) continue;
+    try { fs.unlinkSync(path.join(process.cwd(), 'uploads', name)); } catch { /* already gone */ }
+  }
+}
+
 // SKU is unique per shop; blank SKUs would collide, so generate one.
 async function normalizeProduct(body, shopId, id = null) {
   body.sku = String(body.sku || '').trim() || 'P' + Date.now().toString(36).toUpperCase();
   body.sale_end_date = body.sale_end_date ? String(body.sale_end_date).slice(0, 10) : null;
   const dup = await queryOne(
-    'SELECT id FROM products WHERE shop_id = ? AND sku = ? AND id <> ?',
+    'SELECT id FROM products WHERE shop_id = ? AND sku = ? AND id <> ? AND deleted_at IS NULL',
     [shopId, body.sku, id || 0]
   );
   return dup ? NextResponse.json({ error: 'duplicate_sku' }, { status: 409 }) : null;
@@ -144,7 +164,8 @@ export async function PUT(request) {
   const invalid = await normalizeProduct(body, shopId, body.id);
   if (invalid) return invalid;
 
-  const existing = await queryOne('SELECT cost_currency, exchange_rate_used FROM products WHERE id = ? AND shop_id = ?', [body.id, shopId]);
+  const existing = await queryOne('SELECT cost_currency, exchange_rate_used FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [body.id, shopId]);
+  if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   let exchangeRate;
   if (existing && existing.cost_currency === (body.cost_currency || 'THB')) {
     exchangeRate = existing.exchange_rate_used;
@@ -190,14 +211,28 @@ export async function DELETE(request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
-  // Products that appear on past orders can't be deleted without breaking order history,
-  // so they are hidden instead.
-  const sold = await queryOne('SELECT COUNT(*) as c FROM order_items WHERE product_id = ? AND shop_id = ?', [id, shopId]);
-  if (sold && sold.c > 0) {
-    await query("UPDATE products SET status = 'hidden' WHERE id = ? AND shop_id = ?", [id, shopId]);
-    return NextResponse.json({ success: true, archived: true });
-  }
+  const product = await queryOne('SELECT id, image_url FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [id, shopId]);
+  if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  await query('DELETE FROM products WHERE id = ? AND shop_id = ?', [id, shopId]);
+  // Photos and stock go for good: they are only needed while the product is on sale.
+  const images = await query('SELECT image_url FROM product_images WHERE product_id = ? AND shop_id = ?', [product.id, shopId]);
+  await query('DELETE FROM product_images WHERE product_id = ? AND shop_id = ?', [product.id, shopId]);
+  await query('DELETE FROM inventory WHERE product_id = ? AND shop_id = ?', [product.id, shopId]);
+  await removeUnusedUploads(shopId, [product.image_url, ...images.map(r => r.image_url)], product.id);
+
+  // A product with sales or stock history stays in the database (past orders, profit and the
+  // stock log still name it) but disappears from every list and can't be sold. One without
+  // any history is removed completely.
+  const used = await queryOne(
+    `SELECT (SELECT COUNT(*) FROM order_items WHERE product_id = ? AND shop_id = ?)
+          + (SELECT COUNT(*) FROM stock_movements WHERE product_id = ? AND shop_id = ?) AS n`,
+    [product.id, shopId, product.id, shopId]
+  );
+  if (Number(used?.n) > 0) {
+    await query("UPDATE products SET deleted_at = NOW(), del_key = id, status = 'hidden', image_url = '' WHERE id = ? AND shop_id = ?", [product.id, shopId]);
+    await query('UPDATE product_variants SET quantity = 0 WHERE product_id = ? AND shop_id = ?', [product.id, shopId]);
+    return NextResponse.json({ success: true });
+  }
+  await query('DELETE FROM products WHERE id = ? AND shop_id = ?', [product.id, shopId]);
   return NextResponse.json({ success: true });
 }

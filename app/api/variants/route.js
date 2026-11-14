@@ -22,7 +22,7 @@ export async function POST(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
-  const product = await queryOne('SELECT id FROM products WHERE id = ? AND shop_id = ?', [body.product_id, shopId]);
+  const product = await queryOne('SELECT id FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [body.product_id, shopId]);
   if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
   const quantity = Math.max(0, parseInt(body.quantity) || 0);

@@ -10,7 +10,7 @@ export async function GET() {
     SELECT s.id, s.license_key, s.shop_name, s.created_at,
       (SELECT COUNT(*) FROM bot_api_keys WHERE shop_id = s.id) as key_count,
       (SELECT COUNT(*) FROM orders WHERE shop_id = s.id) as order_count,
-      (SELECT COUNT(*) FROM products WHERE shop_id = s.id) as product_count
+      (SELECT COUNT(*) FROM products WHERE shop_id = s.id AND deleted_at IS NULL) as product_count
     FROM shops s ORDER BY s.created_at DESC
   `);
   return NextResponse.json(shops);

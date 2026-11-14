@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
       COALESCE(SUM(CASE WHEN i.status = 'in_stock' THEN i.quantity ELSE 0 END), 0) as stock
     FROM products p
     LEFT JOIN inventory i ON p.id = i.product_id
-    WHERE p.shop_id = ? AND p.sku = ?
+    WHERE p.shop_id = ? AND p.sku = ? AND p.deleted_at IS NULL
     GROUP BY p.id`,
     [auth.shopId, sku]
   );

@@ -20,7 +20,7 @@ export async function GET(request) {
       data = await query(`
         SELECT p.*, COALESCE(SUM(CASE WHEN i.status='in_stock' THEN i.quantity ELSE 0 END),0) as stock
         FROM products p LEFT JOIN inventory i ON p.id = i.product_id
-        WHERE p.shop_id = ? GROUP BY p.id
+        WHERE p.shop_id = ? AND p.deleted_at IS NULL GROUP BY p.id
       `, [shopId]);
       break;
 

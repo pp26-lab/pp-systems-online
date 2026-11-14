@@ -33,8 +33,8 @@ export async function POST(request) {
   const items = [];
   for (const item of body.items) {
     let product = null;
-    if (item.sku) product = await queryOne('SELECT id, selling_price_lak FROM products WHERE sku = ? AND shop_id = ?', [String(item.sku), shopId]);
-    else if (item.product_id) product = await queryOne('SELECT id, selling_price_lak FROM products WHERE id = ? AND shop_id = ?', [Number(item.product_id), shopId]);
+    if (item.sku) product = await queryOne('SELECT id, selling_price_lak FROM products WHERE sku = ? AND shop_id = ? AND deleted_at IS NULL', [String(item.sku), shopId]);
+    else if (item.product_id) product = await queryOne('SELECT id, selling_price_lak FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [Number(item.product_id), shopId]);
     if (!product) return NextResponse.json({ error: `Product not found: ${item.sku || item.product_id}` }, { status: 404, headers: corsHeaders() });
     items.push({
       product_id: product.id,

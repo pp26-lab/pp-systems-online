@@ -9,7 +9,7 @@ export async function POST(request) {
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await request.json();
-  const source = await queryOne('SELECT * FROM products WHERE id = ? AND shop_id = ?', [body.id, shopId]);
+  const source = await queryOne('SELECT * FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [body.id, shopId]);
   if (!source) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
   const newSku = source.sku + '-copy-' + Date.now().toString(36).slice(-4);

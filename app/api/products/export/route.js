@@ -17,7 +17,7 @@ export async function GET() {
   let shopId;
   try { shopId = await requireShopId(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
-  const products = await query('SELECT * FROM products WHERE shop_id = ? ORDER BY id', [shopId]);
+  const products = await query('SELECT * FROM products WHERE shop_id = ? AND deleted_at IS NULL ORDER BY id', [shopId]);
   const headers = ['sku','name_lo','name_th','name_en','category','cost_price','cost_currency','freight_cost','customs_duty','proxy_fee','transfer_fee','selling_price_lak','barcode','sale_end_date','status'];
   const rows = [headers.join(',')];
   for (const p of products) {

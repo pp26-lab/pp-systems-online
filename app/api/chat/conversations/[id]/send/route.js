@@ -89,7 +89,7 @@ export async function POST(request, { params }) {
 
   const productId = parseInt(form.get('product_id')) || null;
   if (productId) {
-    const p = await queryOne('SELECT * FROM products WHERE id = ? AND shop_id = ?', [productId, g.shopId]);
+    const p = await queryOne('SELECT * FROM products WHERE id = ? AND shop_id = ? AND deleted_at IS NULL', [productId, g.shopId]);
     if (!p) return NextResponse.json({ error: 'product_not_found' }, { status: 404 });
     const name = p.name_lo || p.name_th || p.name_en || p.sku;
     if (!text) text = `${name}\n${formatCurrency(p.selling_price_lak, 'LAK')}`;

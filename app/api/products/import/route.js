@@ -55,7 +55,7 @@ export async function POST(request) {
       const totalForeignCost = num(row.cost_price) + num(row.freight_cost) + num(row.customs_duty) + num(row.proxy_fee) + num(row.transfer_fee);
       const landedCostLak = totalForeignCost * exchangeRate;
 
-      const existing = await queryOne('SELECT id FROM products WHERE sku = ? AND shop_id = ?', [row.sku, shopId]);
+      const existing = await queryOne('SELECT id FROM products WHERE sku = ? AND shop_id = ? AND deleted_at IS NULL', [row.sku, shopId]);
       if (existing) {
         await query(
           `UPDATE products SET name_lo=?, name_th=?, name_en=?, category=?, cost_price=?, cost_currency=?,

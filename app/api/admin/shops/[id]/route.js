@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
     ),
     query('SELECT action, detail, ip, created_at FROM admin_audit_log WHERE shop_id = ? ORDER BY id DESC LIMIT 30', [shop.id]),
     queryOne(
-      `SELECT (SELECT COUNT(*) FROM products WHERE shop_id = ?) AS products,
+      `SELECT (SELECT COUNT(*) FROM products WHERE shop_id = ? AND deleted_at IS NULL) AS products,
          (SELECT COUNT(*) FROM orders WHERE shop_id = ?) AS orders,
          (SELECT COUNT(*) FROM customers WHERE shop_id = ?) AS customers,
          (SELECT MAX(created_at) FROM orders WHERE shop_id = ?) AS last_order`,
