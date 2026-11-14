@@ -34,7 +34,7 @@ const COPY = {
     kind: 'ປະເພດສິນຄ້າ', kindStd: 'ສິນຄ້າທົ່ວໄປ', kindSmall: 'ສິນຄ້າຂະໜາດຍ່ອຍ', kindStdNote: 'ລາຄາດຽວ ສີ ແລະ ຂະໜາດໃຊ້ລາຄາດຽວກັນ', kindSmallNote: 'ຂາຍເປັນຈຳນວນ ລາຄາຕໍ່ໜ່ວຍຫຼຸດລົງເມື່ອຊື້ຄົບຕາມຈຳນວນ', unitLabel: 'ຫົວໜ່ວຍນັບ', unitPh: 'ເຊັ່ນ ຊິ້ນ, ອັນ, ຕົວອັກສອນ', units: ['ຊິ້ນ', 'ອັນ', 'ຕົວອັກສອນ', 'ເມັດ', 'ຄູ່', 'ແພັກ', 'ແມັດ'], unitDefault: 'ຊິ້ນ', steps: 'ລາຄາຕາມຈຳນວນທີ່ຊື້', stepBase: u => `ຊື້ 1 ${u}`, stepUp: u => `${u} ຂຶ້ນໄປ`, buy: 'ຊື້', per: u => `ຕໍ່ ${u}`, addStep: 'ເພີ່ມຂັ້ນລາຄາ', example: (n, u, total) => `ຕົວຢ່າງ: ຊື້ ${n} ${u} = ${total}`, stepBad: 'ກວດລາຄາຕາມຈຳນວນ: ຈຳນວນຕ້ອງ 2 ຂຶ້ນໄປ ບໍ່ຊ້ຳກັນ ແລະ ໃສ່ລາຄາທຸກຂັ້ນ', smallTag: 'ຂະໜາດຍ່ອຍ',
     pricing: 'ຕົ້ນທຶນ ແລະ ລາຄາ', costNote: 'ຕົ້ນທຶນທັງໝົດຄິດເປັນສະກຸນທີ່ຊື້', modeLot: 'ລາຄາລວມທັງລັອດ', modeUnit: 'ລາຄາຕໍ່ຊິ້ນ', lotNote: 'ໃສ່ຍອດທີ່ຈ່າຍທັງລັອດ ລະບົບຈະຫານເປັນຕໍ່ຊິ້ນໃຫ້', lotQty: 'ຈຳນວນຊິ້ນໃນລັອດນີ້', lotQtyAuto: 'ຕາມສະຕ໋ອກທີ່ໃສ່ ແກ້ໄດ້', perUnit: 'ຊິ້ນ', unitCost: 'ຕົ້ນທຶນຕໍ່ຊິ້ນ (ກີບ)', lotCostLak: 'ຕົ້ນທຶນທັງລັອດ', needLotQty: 'ໃສ່ຈຳນວນຊິ້ນໃນລັອດ ເພື່ອຫານເປັນຕົ້ນທຶນຕໍ່ຊິ້ນ', landed: 'ຕົ້ນທຶນລວມ (ກີບ)', retail: 'ລາຄາຂາຍ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ', margin: 'ກຳໄລ',
     variants: 'ຕົວເລືອກ (ເຊັ່ນ ສີ / ຂະໜາດ)', variantsNone: 'ສິນຄ້ານີ້ບໍ່ມີຕົວເລືອກ ສະຕ໋ອກນັບລວມ', addOption: 'ເພີ່ມຕົວເລືອກ',
-    label1: 'ຊື່ຕົວເລືອກທີ 1', label2: 'ຊື່ຕົວເລືອກທີ 2', suffix: 'ທ້າຍ SKU', qty: 'ຈຳນວນ',
+    label1: 'ຊື່ຕົວເລືອກທີ 1', label2: 'ຊື່ຕົວເລືອກທີ 2', optName: 'ຊື່ຕົວເລືອກ', optPh1: 'ເຊັ່ນ ສີ', optPh2: 'ເຊັ່ນ ຂະໜາດ', valuePh1: 'ເຊັ່ນ ແດງ', valuePh2: 'ເຊັ່ນ M', addGroup2: 'ເພີ່ມຕົວເລືອກອີກແບບ (ເຊັ່ນ ຂະໜາດ)', removeGroup: 'ເອົາຕົວເລືອກແບບນີ້ອອກ', addRow: n => `ເພີ່ມ${n}`, maxGroups: 'ສິນຄ້າໜຶ່ງມີຕົວເລືອກໄດ້ສູງສຸດ 2 ແບບ', suffix: 'ທ້າຍ SKU', qty: 'ຈຳນວນ',
     opening: 'ສະຕ໋ອກເລີ່ມຕົ້ນ', save: 'ບັນທຶກສິນຄ້າ', saving: 'ກຳລັງບັນທຶກ…',
     needName: 'ໃສ່ຊື່ສິນຄ້າຢ່າງໜ້ອຍ 1 ພາສາ', dupSku: 'SKU ນີ້ມີສິນຄ້າອື່ນໃຊ້ແລ້ວ', failed: 'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ',
   },
@@ -51,7 +51,7 @@ const COPY = {
     kind: 'ประเภทสินค้า', kindStd: 'สินค้าทั่วไป', kindSmall: 'สินค้าขนาดย่อย', kindStdNote: 'ราคาเดียว สีและขนาดใช้ราคาเดียวกัน', kindSmallNote: 'ขายเป็นจำนวน ราคาต่อหน่วยลดลงเมื่อซื้อครบตามจำนวน', unitLabel: 'หน่วยนับ', unitPh: 'เช่น ชิ้น, อัน, ตัวอักษร', units: ['ชิ้น', 'อัน', 'ตัวอักษร', 'เม็ด', 'คู่', 'แพ็ก', 'เมตร'], unitDefault: 'ชิ้น', steps: 'ราคาตามจำนวนที่ซื้อ', stepBase: u => `ซื้อ 1 ${u}`, stepUp: u => `${u} ขึ้นไป`, buy: 'ซื้อ', per: u => `ต่อ ${u}`, addStep: 'เพิ่มขั้นราคา', example: (n, u, total) => `ตัวอย่าง: ซื้อ ${n} ${u} = ${total}`, stepBad: 'ตรวจราคาตามจำนวน: จำนวนต้อง 2 ขึ้นไป ไม่ซ้ำกัน และใส่ราคาทุกขั้น', smallTag: 'ขนาดย่อย',
     pricing: 'ต้นทุนและราคา', costNote: 'ต้นทุนทั้งหมดคิดเป็นสกุลเงินที่ซื้อ', modeLot: 'ราคารวมทั้งล็อต', modeUnit: 'ราคาต่อชิ้น', lotNote: 'ใส่ยอดที่จ่ายทั้งล็อต ระบบจะหารเป็นต่อชิ้นให้', lotQty: 'จำนวนชิ้นในล็อตนี้', lotQtyAuto: 'ตามสต็อกที่ใส่ แก้ได้', perUnit: 'ชิ้น', unitCost: 'ต้นทุนต่อชิ้น (กีบ)', lotCostLak: 'ต้นทุนทั้งล็อต', needLotQty: 'ใส่จำนวนชิ้นในล็อต เพื่อหารเป็นต้นทุนต่อชิ้น', landed: 'ต้นทุนรวม (กีบ)', retail: 'ราคาขาย', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก', margin: 'กำไร',
     variants: 'ตัวเลือก (เช่น สี / ขนาด)', variantsNone: 'สินค้านี้ไม่มีตัวเลือก สต็อกนับรวม', addOption: 'เพิ่มตัวเลือก',
-    label1: 'ชื่อตัวเลือกที่ 1', label2: 'ชื่อตัวเลือกที่ 2', suffix: 'ท้าย SKU', qty: 'จำนวน',
+    label1: 'ชื่อตัวเลือกที่ 1', label2: 'ชื่อตัวเลือกที่ 2', optName: 'ชื่อตัวเลือก', optPh1: 'เช่น สี', optPh2: 'เช่น ขนาด', valuePh1: 'เช่น แดง', valuePh2: 'เช่น M', addGroup2: 'เพิ่มตัวเลือกอีกแบบ (เช่น ขนาด)', removeGroup: 'เอาตัวเลือกแบบนี้ออก', addRow: n => `เพิ่ม${n}`, maxGroups: 'สินค้าหนึ่งมีตัวเลือกได้สูงสุด 2 แบบ', suffix: 'ท้าย SKU', qty: 'จำนวน',
     opening: 'สต็อกเริ่มต้น', save: 'บันทึกสินค้า', saving: 'กำลังบันทึก…',
     needName: 'ใส่ชื่อสินค้าอย่างน้อย 1 ภาษา', dupSku: 'SKU นี้มีสินค้าอื่นใช้แล้ว', failed: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง',
   },
@@ -68,7 +68,7 @@ const COPY = {
     kind: 'Product type', kindStd: 'Standard', kindSmall: 'Small items', kindStdNote: 'One price; colours and sizes share it', kindSmallNote: 'Sold in quantity; the price per unit drops once a quantity is reached', unitLabel: 'Counting unit', unitPh: 'e.g. piece, item, letter', units: ['piece', 'item', 'letter', 'bead', 'pair', 'pack', 'metre'], unitDefault: 'piece', steps: 'Price by quantity bought', stepBase: u => `Buy 1 ${u}`, stepUp: u => `${u} or more`, buy: 'Buy', per: u => `per ${u}`, addStep: 'Add a price step', example: (n, u, total) => `Example: ${n} ${u} = ${total}`, stepBad: 'Check the price steps: quantities from 2 up, no repeats, and a price for each', smallTag: 'Small items',
     pricing: 'Cost and price', costNote: 'All costs are in the purchase currency', modeLot: 'Whole lot', modeUnit: 'Per piece', lotNote: 'Enter what you paid for the whole lot; the system works out the cost per piece', lotQty: 'Pieces in this lot', lotQtyAuto: 'From the stock entered, can be changed', perUnit: 'piece', unitCost: 'Cost per piece (LAK)', lotCostLak: 'Whole lot cost', needLotQty: 'Enter how many pieces are in the lot to work out the cost per piece', landed: 'Landed cost (LAK)', retail: 'Retail price', wholesale: 'Wholesale price', member: 'Member price', margin: 'Margin',
     variants: 'Options (e.g. color / size)', variantsNone: 'No options. Stock is counted as one item.', addOption: 'Add option',
-    label1: 'First option name', label2: 'Second option name', suffix: 'SKU suffix', qty: 'Qty',
+    label1: 'First option name', label2: 'Second option name', optName: 'Option name', optPh1: 'e.g. Colour', optPh2: 'e.g. Size', valuePh1: 'e.g. Red', valuePh2: 'e.g. M', addGroup2: 'Add another kind of option (e.g. size)', removeGroup: 'Remove this kind of option', addRow: n => `Add ${n}`, maxGroups: 'A product can have up to 2 kinds of option', suffix: 'SKU suffix', qty: 'Qty',
     opening: 'Opening stock', save: 'Save product', saving: 'Saving…',
     needName: 'Enter a product name in at least one language', dupSku: 'Another product already uses this SKU', failed: "Couldn't save. Try again.",
   },
@@ -466,6 +466,26 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
     setImages(prev => prev.filter(i => i.id !== imageId));
   }
 
+  // Kinds of option shown: none until the shop adds one; a second (e.g. size) only on request.
+  const [groups, setGroups] = useState(() => (initial.variants.length ? (initial.variants.some(v => (v.size || '').trim()) ? 2 : 1) : 0));
+  const blankRow = () => ({ color: '', size: '', sku_suffix: '', quantity: 0, _tmp: Date.now() + Math.random() });
+  function addFirstGroup() {
+    setGroups(1);
+    if (!variants.length) setVariants([blankRow()]);
+  }
+  function removeSecondGroup() {
+    setGroups(1);
+    setVariants(prev => prev.map(v => ({ ...v, size: '' })));
+    set('variant_label_2', '');
+  }
+  function removeRow(i) {
+    setVariants(prev => {
+      const next = prev.filter((_, j) => j !== i);
+      if (!next.length) { setGroups(0); set('variant_label_1', ''); set('variant_label_2', ''); }
+      return next;
+    });
+  }
+
   function setVariant(i, k, v) {
     setVariants(prev => prev.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
   }
@@ -751,41 +771,62 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
         </section>
 
         <section>
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="font-bold text-ink">{c.variants}</h3>
-            <Button size="sm" tone="ghost" icon="plus" onClick={() => setVariants(v => [...v, { color: '', size: '', sku_suffix: '', quantity: 0, _tmp: Date.now() }])}>{c.addOption}</Button>
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-4">
-            <Field label={c.label1}><input value={form.variant_label_1} placeholder={t('color', lang)} onChange={e => set('variant_label_1', e.target.value)} className={inputCls} /></Field>
-            <Field label={c.label2}><input value={form.variant_label_2} placeholder={t('size', lang)} onChange={e => set('variant_label_2', e.target.value)} className={inputCls} /></Field>
-          </div>
-          {variants.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">{c.variantsNone}</p>
-          ) : (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-sm min-w-[32rem]">
-                <thead className="border-b border-line">
-                  <tr>
-                    <th className="text-left py-2 pr-2">{label1}</th>
-                    <th className="text-left py-2 pr-2">{label2}</th>
-                    <th className="text-left py-2 pr-2">{c.suffix}</th>
-                    <th className="text-right py-2 pr-2">{c.qty}</th>
-                    <th className="w-10"><span className="sr-only">{c.remove}</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {variants.map((v, i) => (
-                    <tr key={v.id || v._tmp}>
-                      <td className="py-1.5 pr-2"><input aria-label={label1} value={v.color} onChange={e => setVariant(i, 'color', e.target.value)} className={inputCls} /></td>
-                      <td className="py-1.5 pr-2"><input aria-label={label2} value={v.size} onChange={e => setVariant(i, 'size', e.target.value)} className={inputCls} /></td>
-                      <td className="py-1.5 pr-2"><input aria-label={c.suffix} value={v.sku_suffix || ''} placeholder="-BL-M" onChange={e => setVariant(i, 'sku_suffix', e.target.value)} className={`${inputCls} num`} /></td>
-                      <td className="py-1.5 pr-2"><input aria-label={c.qty} type="number" min="0" value={v.quantity} onChange={e => setVariant(i, 'quantity', parseInt(e.target.value) || 0)} className={`${inputCls} text-right num w-24`} /></td>
-                      <td className="py-1.5"><IconButton icon="trash" tone="danger" label={c.remove} onClick={() => setVariants(prev => prev.filter((_, j) => j !== i))} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <h3 className="font-bold text-ink">{c.variants}</h3>
+          {groups === 0 ? (
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-slate-500">{c.variantsNone}</p>
+              <Button size="sm" tone="ghost" icon="plus" onClick={addFirstGroup}>{c.addOption}</Button>
             </div>
+          ) : (
+            <>
+              {/* The names of the kinds of option (e.g. Colour, Size), each typed by the shop. */}
+              <div className="mt-3 grid sm:grid-cols-2 gap-4">
+                <Field label={`${c.optName} 1`}>
+                  <input value={form.variant_label_1} placeholder={c.optPh1} onChange={e => set('variant_label_1', e.target.value)} className={inputCls} />
+                </Field>
+                {groups === 2 ? (
+                  <Field label={`${c.optName} 2`}>
+                    <div className="flex gap-2">
+                      <input value={form.variant_label_2} placeholder={c.optPh2} onChange={e => set('variant_label_2', e.target.value)} className={inputCls} />
+                      <IconButton icon="close" label={c.removeGroup} onClick={removeSecondGroup} />
+                    </div>
+                  </Field>
+                ) : (
+                  <div className="flex items-end">
+                    <Button size="sm" tone="ghost" icon="plus" onClick={() => setGroups(2)}>{c.addGroup2}</Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 overflow-x-auto">
+                <table className={`w-full text-sm ${groups === 2 ? 'min-w-[32rem]' : 'min-w-[24rem]'}`}>
+                  <thead className="border-b border-line">
+                    <tr>
+                      <th className="text-left py-2 pr-2">{label1}</th>
+                      {groups === 2 && <th className="text-left py-2 pr-2">{label2}</th>}
+                      <th className="text-left py-2 pr-2">{c.suffix}</th>
+                      <th className="text-right py-2 pr-2">{c.qty}</th>
+                      <th className="w-10"><span className="sr-only">{c.remove}</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {variants.map((v, i) => (
+                      <tr key={v.id || v._tmp}>
+                        <td className="py-1.5 pr-2"><input aria-label={label1} value={v.color} placeholder={c.valuePh1} onChange={e => setVariant(i, 'color', e.target.value)} className={inputCls} /></td>
+                        {groups === 2 && <td className="py-1.5 pr-2"><input aria-label={label2} value={v.size} placeholder={c.valuePh2} onChange={e => setVariant(i, 'size', e.target.value)} className={inputCls} /></td>}
+                        <td className="py-1.5 pr-2"><input aria-label={c.suffix} value={v.sku_suffix || ''} placeholder="-BL-M" onChange={e => setVariant(i, 'sku_suffix', e.target.value)} className={`${inputCls} num`} /></td>
+                        <td className="py-1.5 pr-2"><input aria-label={c.qty} type="number" min="0" value={v.quantity} onChange={e => setVariant(i, 'quantity', parseInt(e.target.value) || 0)} className={`${inputCls} text-right num w-24`} /></td>
+                        <td className="py-1.5"><IconButton icon="trash" tone="danger" label={c.remove} onClick={() => removeRow(i)} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <Button size="sm" tone="ghost" icon="plus" onClick={() => setVariants(v => [...v, blankRow()])}>{c.addRow((form.variant_label_1 || '').trim() || label1)}</Button>
+                {groups === 2 && <span className="text-xs text-slate-500">{c.maxGroups}</span>}
+              </div>
+            </>
           )}
         </section>
 
