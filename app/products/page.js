@@ -31,7 +31,7 @@ const COPY = {
     photos: 'ຮູບພາບ', main: 'ຮູບຫຼັກ', extra: 'ຮູບເພີ່ມເຕີມ (ສົ່ງໃຫ້ລູກຄ້າຜ່ານແຊັດບອດ)', saveFirst: 'ບັນທຶກສິນຄ້າກ່ອນ ຈຶ່ງເພີ່ມຮູບເພີ່ມເຕີມໄດ້',
     upload: 'ເລືອກຮູບ', camera: 'ຖ່າຍຮູບ', remove: 'ເອົາອອກ', details: 'ຂໍ້ມູນສິນຄ້າ', nameLo: 'ຊື່ (ລາວ)', nameTh: 'ຊື່ (ໄທ)', nameEn: 'ຊື່ (ອັງກິດ)',
     skuHint: 'ປ່ອຍວ່າງ ລະບົບຈະສ້າງໃຫ້', barcode: 'ບາໂຄ້ດ', category: 'ໝວດໝູ່', endDate: 'ວັນໝົດເຂດຂາຍ', endHint: 'ປ່ອຍວ່າງ = ຂາຍຕະຫຼອດ',
-    kind: 'ປະເພດສິນຄ້າ', kindStd: 'ສິນຄ້າທົ່ວໄປ', kindSmall: 'ສິນຄ້າຂະໜາດຍ່ອຍ', kindStdNote: 'ລາຄາດຽວ ສີ ແລະ ຂະໜາດໃຊ້ລາຄາດຽວກັນ', kindSmallNote: 'ຂາຍເປັນຈຳນວນ ລາຄາຕໍ່ໜ່ວຍຫຼຸດລົງເມື່ອຊື້ຄົບຕາມຈຳນວນ', unitLabel: 'ຫົວໜ່ວຍນັບ', unitPh: 'ເຊັ່ນ ຊິ້ນ, ອັນ, ຕົວອັກສອນ', units: ['ຊິ້ນ', 'ອັນ', 'ຕົວອັກສອນ', 'ເມັດ', 'ຄູ່', 'ແພັກ', 'ແມັດ'], unitDefault: 'ຊິ້ນ', steps: 'ລາຄາຕາມຈຳນວນທີ່ຊື້', stepBase: u => `ຊື້ 1 ${u}`, stepUp: u => `${u} ຂຶ້ນໄປ`, buy: 'ຊື້', per: u => `ຕໍ່ ${u}`, addStep: 'ເພີ່ມຂັ້ນລາຄາ', example: (n, u, total) => `ຕົວຢ່າງ: ຊື້ ${n} ${u} = ${total}`, stepBad: 'ກວດລາຄາຕາມຈຳນວນ: ຈຳນວນຕ້ອງ 2 ຂຶ້ນໄປ ບໍ່ຊ້ຳກັນ ແລະ ໃສ່ລາຄາທຸກຂັ້ນ', smallTag: 'ຂະໜາດຍ່ອຍ',
+    kind: 'ປະເພດສິນຄ້າ', kindStd: 'ສິນຄ້າທົ່ວໄປ', kindSmall: 'ສິນຄ້າຂະໜາດຍ່ອຍ', kindStdNote: 'ລາຄາດຽວ ສີ ແລະ ຂະໜາດໃຊ້ລາຄາດຽວກັນ', kindSmallNote: 'ຂາຍເປັນຈຳນວນ ລາຄາຕໍ່ໜ່ວຍຫຼຸດລົງເມື່ອຊື້ຄົບຕາມຈຳນວນ', unitLabel: 'ຫົວໜ່ວຍນັບ', unitPh: 'ເຊັ່ນ ຊິ້ນ, ອັນ, ຕົວອັກສອນ', units: ['ຊິ້ນ', 'ອັນ', 'ຕົວອັກສອນ', 'ເມັດ', 'ຄູ່', 'ແພັກ', 'ແມັດ'], unitDefault: 'ຊິ້ນ', steps: 'ລາຄາຕາມຈຳນວນທີ່ຊື້', stepBase: u => `ຊື້ 1 ${u}`, stepUp: u => `${u} ລາຄາລວມ`, eachIs: (x, u) => `= ${x} ຕໍ່ ${u}`, dearer: 'ແພງກວ່າຊື້ແຍກ: ລະບົບຈະຄິດລາຄາປົກກະຕິ', aboveLast: u => `ຊື້ເກີນຂັ້ນສຸດທ້າຍ ຄິດຕາມລາຄາຕໍ່ ${u} ຂອງຂັ້ນສຸດທ້າຍ`, buy: 'ຊື້', per: u => `ຕໍ່ ${u}`, addStep: 'ເພີ່ມຂັ້ນລາຄາ', example: (n, u, total) => `ຕົວຢ່າງ: ຊື້ ${n} ${u} = ${total}`, stepBad: 'ກວດລາຄາຕາມຈຳນວນ: ຈຳນວນຕ້ອງ 2 ຂຶ້ນໄປ ບໍ່ຊ້ຳກັນ ແລະ ໃສ່ລາຄາທຸກຂັ້ນ', smallTag: 'ຂະໜາດຍ່ອຍ',
     pricing: 'ຕົ້ນທຶນ ແລະ ລາຄາ', costNote: 'ຕົ້ນທຶນທັງໝົດຄິດເປັນສະກຸນທີ່ຊື້', modeLot: 'ລາຄາລວມທັງລັອດ', modeUnit: 'ລາຄາຕໍ່ຊິ້ນ', lotNote: 'ໃສ່ຍອດທີ່ຈ່າຍທັງລັອດ ລະບົບຈະຫານເປັນຕໍ່ຊິ້ນໃຫ້', lotQty: 'ຈຳນວນຊິ້ນໃນລັອດນີ້', lotQtyAuto: 'ຕາມສະຕ໋ອກທີ່ໃສ່ ແກ້ໄດ້', perUnit: 'ຊິ້ນ', unitCost: 'ຕົ້ນທຶນຕໍ່ຊິ້ນ (ກີບ)', lotCostLak: 'ຕົ້ນທຶນທັງລັອດ', needLotQty: 'ໃສ່ຈຳນວນຊິ້ນໃນລັອດ ເພື່ອຫານເປັນຕົ້ນທຶນຕໍ່ຊິ້ນ', landed: 'ຕົ້ນທຶນລວມ (ກີບ)', retail: 'ລາຄາຂາຍ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ', margin: 'ກຳໄລ',
     variants: 'ຕົວເລືອກ (ເຊັ່ນ ສີ / ຂະໜາດ)', variantsNone: 'ສິນຄ້ານີ້ບໍ່ມີຕົວເລືອກ ສະຕ໋ອກນັບລວມ', addOption: 'ເພີ່ມຕົວເລືອກ',
     label1: 'ຊື່ຕົວເລືອກທີ 1', label2: 'ຊື່ຕົວເລືອກທີ 2', optName: 'ຊື່ຕົວເລືອກ', optPh1: 'ເຊັ່ນ ສີ', optPh2: 'ເຊັ່ນ ຂະໜາດ', valuePh1: 'ເຊັ່ນ ແດງ', valuePh2: 'ເຊັ່ນ M', addGroup2: 'ເພີ່ມຕົວເລືອກອີກແບບ (ເຊັ່ນ ຂະໜາດ)', removeGroup: 'ເອົາຕົວເລືອກແບບນີ້ອອກ', addRow: n => `ເພີ່ມ${n}`, maxGroups: 'ສິນຄ້າໜຶ່ງມີຕົວເລືອກໄດ້ສູງສຸດ 2 ແບບ', suffix: 'ທ້າຍ SKU', qty: 'ຈຳນວນ',
@@ -48,7 +48,7 @@ const COPY = {
     photos: 'รูปภาพ', main: 'รูปหลัก', extra: 'รูปเพิ่มเติม (ส่งให้ลูกค้าผ่านแชทบอท)', saveFirst: 'บันทึกสินค้าก่อน จึงเพิ่มรูปเพิ่มเติมได้',
     upload: 'เลือกรูป', camera: 'ถ่ายรูป', remove: 'เอาออก', details: 'ข้อมูลสินค้า', nameLo: 'ชื่อ (ลาว)', nameTh: 'ชื่อ (ไทย)', nameEn: 'ชื่อ (อังกฤษ)',
     skuHint: 'เว้นว่าง ระบบจะสร้างให้', barcode: 'บาร์โค้ด', category: 'หมวดหมู่', endDate: 'วันหมดเขตขาย', endHint: 'เว้นว่าง = ขายตลอด',
-    kind: 'ประเภทสินค้า', kindStd: 'สินค้าทั่วไป', kindSmall: 'สินค้าขนาดย่อย', kindStdNote: 'ราคาเดียว สีและขนาดใช้ราคาเดียวกัน', kindSmallNote: 'ขายเป็นจำนวน ราคาต่อหน่วยลดลงเมื่อซื้อครบตามจำนวน', unitLabel: 'หน่วยนับ', unitPh: 'เช่น ชิ้น, อัน, ตัวอักษร', units: ['ชิ้น', 'อัน', 'ตัวอักษร', 'เม็ด', 'คู่', 'แพ็ก', 'เมตร'], unitDefault: 'ชิ้น', steps: 'ราคาตามจำนวนที่ซื้อ', stepBase: u => `ซื้อ 1 ${u}`, stepUp: u => `${u} ขึ้นไป`, buy: 'ซื้อ', per: u => `ต่อ ${u}`, addStep: 'เพิ่มขั้นราคา', example: (n, u, total) => `ตัวอย่าง: ซื้อ ${n} ${u} = ${total}`, stepBad: 'ตรวจราคาตามจำนวน: จำนวนต้อง 2 ขึ้นไป ไม่ซ้ำกัน และใส่ราคาทุกขั้น', smallTag: 'ขนาดย่อย',
+    kind: 'ประเภทสินค้า', kindStd: 'สินค้าทั่วไป', kindSmall: 'สินค้าขนาดย่อย', kindStdNote: 'ราคาเดียว สีและขนาดใช้ราคาเดียวกัน', kindSmallNote: 'ขายเป็นจำนวน ราคาต่อหน่วยลดลงเมื่อซื้อครบตามจำนวน', unitLabel: 'หน่วยนับ', unitPh: 'เช่น ชิ้น, อัน, ตัวอักษร', units: ['ชิ้น', 'อัน', 'ตัวอักษร', 'เม็ด', 'คู่', 'แพ็ก', 'เมตร'], unitDefault: 'ชิ้น', steps: 'ราคาตามจำนวนที่ซื้อ', stepBase: u => `ซื้อ 1 ${u}`, stepUp: u => `${u} ราคารวม`, eachIs: (x, u) => `= ${x} ต่อ ${u}`, dearer: 'แพงกว่าซื้อแยก: ระบบจะคิดราคาปกติ', aboveLast: u => `ซื้อเกินขั้นสุดท้าย คิดตามราคาต่อ ${u} ของขั้นสุดท้าย`, buy: 'ซื้อ', per: u => `ต่อ ${u}`, addStep: 'เพิ่มขั้นราคา', example: (n, u, total) => `ตัวอย่าง: ซื้อ ${n} ${u} = ${total}`, stepBad: 'ตรวจราคาตามจำนวน: จำนวนต้อง 2 ขึ้นไป ไม่ซ้ำกัน และใส่ราคาทุกขั้น', smallTag: 'ขนาดย่อย',
     pricing: 'ต้นทุนและราคา', costNote: 'ต้นทุนทั้งหมดคิดเป็นสกุลเงินที่ซื้อ', modeLot: 'ราคารวมทั้งล็อต', modeUnit: 'ราคาต่อชิ้น', lotNote: 'ใส่ยอดที่จ่ายทั้งล็อต ระบบจะหารเป็นต่อชิ้นให้', lotQty: 'จำนวนชิ้นในล็อตนี้', lotQtyAuto: 'ตามสต็อกที่ใส่ แก้ได้', perUnit: 'ชิ้น', unitCost: 'ต้นทุนต่อชิ้น (กีบ)', lotCostLak: 'ต้นทุนทั้งล็อต', needLotQty: 'ใส่จำนวนชิ้นในล็อต เพื่อหารเป็นต้นทุนต่อชิ้น', landed: 'ต้นทุนรวม (กีบ)', retail: 'ราคาขาย', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก', margin: 'กำไร',
     variants: 'ตัวเลือก (เช่น สี / ขนาด)', variantsNone: 'สินค้านี้ไม่มีตัวเลือก สต็อกนับรวม', addOption: 'เพิ่มตัวเลือก',
     label1: 'ชื่อตัวเลือกที่ 1', label2: 'ชื่อตัวเลือกที่ 2', optName: 'ชื่อตัวเลือก', optPh1: 'เช่น สี', optPh2: 'เช่น ขนาด', valuePh1: 'เช่น แดง', valuePh2: 'เช่น M', addGroup2: 'เพิ่มตัวเลือกอีกแบบ (เช่น ขนาด)', removeGroup: 'เอาตัวเลือกแบบนี้ออก', addRow: n => `เพิ่ม${n}`, maxGroups: 'สินค้าหนึ่งมีตัวเลือกได้สูงสุด 2 แบบ', suffix: 'ท้าย SKU', qty: 'จำนวน',
@@ -65,7 +65,7 @@ const COPY = {
     photos: 'Photos', main: 'Main photo', extra: 'Extra photos (sent to customers by the chatbot)', saveFirst: 'Save the product first to add extra photos',
     upload: 'Choose photo', camera: 'Take photo', remove: 'Remove', details: 'Product details', nameLo: 'Name (Lao)', nameTh: 'Name (Thai)', nameEn: 'Name (English)',
     skuHint: 'Leave blank to generate one', barcode: 'Barcode', category: 'Category', endDate: 'Stop selling on', endHint: 'Blank = no end date',
-    kind: 'Product type', kindStd: 'Standard', kindSmall: 'Small items', kindStdNote: 'One price; colours and sizes share it', kindSmallNote: 'Sold in quantity; the price per unit drops once a quantity is reached', unitLabel: 'Counting unit', unitPh: 'e.g. piece, item, letter', units: ['piece', 'item', 'letter', 'bead', 'pair', 'pack', 'metre'], unitDefault: 'piece', steps: 'Price by quantity bought', stepBase: u => `Buy 1 ${u}`, stepUp: u => `${u} or more`, buy: 'Buy', per: u => `per ${u}`, addStep: 'Add a price step', example: (n, u, total) => `Example: ${n} ${u} = ${total}`, stepBad: 'Check the price steps: quantities from 2 up, no repeats, and a price for each', smallTag: 'Small items',
+    kind: 'Product type', kindStd: 'Standard', kindSmall: 'Small items', kindStdNote: 'One price; colours and sizes share it', kindSmallNote: 'Sold in quantity; the price per unit drops once a quantity is reached', unitLabel: 'Counting unit', unitPh: 'e.g. piece, item, letter', units: ['piece', 'item', 'letter', 'bead', 'pair', 'pack', 'metre'], unitDefault: 'piece', steps: 'Price by quantity bought', stepBase: u => `Buy 1 ${u}`, stepUp: u => `${u} in total`, eachIs: (x, u) => `= ${x} per ${u}`, dearer: 'Dearer than buying separately: the normal price applies', aboveLast: u => `Above the last step, each ${u} costs the same as in the last step`, buy: 'Buy', per: u => `per ${u}`, addStep: 'Add a price step', example: (n, u, total) => `Example: ${n} ${u} = ${total}`, stepBad: 'Check the price steps: quantities from 2 up, no repeats, and a price for each', smallTag: 'Small items',
     pricing: 'Cost and price', costNote: 'All costs are in the purchase currency', modeLot: 'Whole lot', modeUnit: 'Per piece', lotNote: 'Enter what you paid for the whole lot; the system works out the cost per piece', lotQty: 'Pieces in this lot', lotQtyAuto: 'From the stock entered, can be changed', perUnit: 'piece', unitCost: 'Cost per piece (LAK)', lotCostLak: 'Whole lot cost', needLotQty: 'Enter how many pieces are in the lot to work out the cost per piece', landed: 'Landed cost (LAK)', retail: 'Retail price', wholesale: 'Wholesale price', member: 'Member price', margin: 'Margin',
     variants: 'Options (e.g. color / size)', variantsNone: 'No options. Stock is counted as one item.', addOption: 'Add option',
     label1: 'First option name', label2: 'Second option name', optName: 'Option name', optPh1: 'e.g. Colour', optPh2: 'e.g. Size', valuePh1: 'e.g. Red', valuePh2: 'e.g. M', addGroup2: 'Add another kind of option (e.g. size)', removeGroup: 'Remove this kind of option', addRow: n => `Add ${n}`, maxGroups: 'A product can have up to 2 kinds of option', suffix: 'SKU suffix', qty: 'Qty',
@@ -726,7 +726,12 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
                   <span className="text-xs text-slate-500">{c.per(unitWord)}</span>
                 </li>
                 {steps.map((x, i) => {
-                  const m = calculateMargin(Number(x.price) || 0, landed);
+                  // x.price is the total for x.min_qty units.
+                  const n = Number(x.min_qty) || 0;
+                  const total = Number(x.price) || 0;
+                  const each = n > 0 ? total / n : 0;
+                  const m = calculateMargin(total, landed * n);
+                  const dearer = total > 0 && n > 0 && each > (Number(form.selling_price_lak) || 0);
                   return (
                     <li key={x._k} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                       <span className="flex items-center gap-1.5 text-slate-600">
@@ -739,12 +744,13 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
                       </span>
                       <span className="flex items-center gap-1.5">
                         <span className="w-32 shrink-0">
-                          <input type="number" min="0" inputMode="numeric" aria-label={c.per(unitWord)} value={x.price ?? ''} placeholder="0"
-                            onChange={e => setStep(i, 'price', e.target.value)} className={`${inputCls} font-bold num`} />
+                          <input type="number" min="0" inputMode="numeric" aria-label={c.stepUp(unitWord)} value={x.price ?? ''} placeholder="0"
+                            onChange={e => setStep(i, 'price', e.target.value)} className={`${inputCls} font-bold num ${dearer ? '!border-danger' : ''}`} />
                         </span>
-                        <span className="text-xs text-slate-500 whitespace-nowrap">{c.per(unitWord)}</span>
+                        {each > 0 && <span className="text-xs text-slate-500 whitespace-nowrap num">{c.eachIs(formatCurrency(each, 'LAK'), unitWord)}</span>}
                       </span>
-                      {Number(x.price) > 0 && landed > 0 && <span className={`text-xs font-semibold num ${m >= 30 ? 'text-success' : m >= 15 ? 'text-warning' : 'text-danger'}`}>{m.toFixed(1)}%</span>}
+                      {total > 0 && landed > 0 && !dearer && <span className={`text-xs font-semibold num ${m >= 30 ? 'text-success' : m >= 15 ? 'text-warning' : 'text-danger'}`}>{m.toFixed(1)}%</span>}
+                      {dearer && <span className="text-xs font-semibold text-danger">{c.dearer}</span>}
                       <IconButton icon="trash" label={c.remove} tone="danger" onClick={() => setSteps(prev => prev.filter((_, j) => j !== i))} />
                     </li>
                   );
@@ -755,11 +761,7 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
                   const last = prev[prev.length - 1];
                   return [...prev, { min_qty: last ? Number(last.min_qty) + 1 || '' : 2, price: '', _k: Date.now() }];
                 })}>{c.addStep}</Button>
-                {steps.length > 0 && stepsOk && (() => {
-                  const top = [...steps].sort((a, b) => Number(b.min_qty) - Number(a.min_qty))[0];
-                  const n = Number(top.min_qty);
-                  return <span className="text-xs text-slate-500 num">{c.example(n, unitWord, formatCurrency(n * Math.min(Number(top.price), Number(form.selling_price_lak) || Infinity), 'LAK'))}</span>;
-                })()}
+                {steps.length > 0 && stepsOk && <span className="text-xs text-slate-500">{c.aboveLast(unitWord)}</span>}
               </div>
             </div>
           )}

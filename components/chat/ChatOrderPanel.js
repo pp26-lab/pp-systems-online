@@ -12,7 +12,7 @@ import { orderErrorText, RELOAD_PRODUCTS } from '../../lib/order-messages';
 const COPY = {
   lo: {
     title: 'ສ້າງອໍເດີ້ຈາກແຊັດ', products: 'ສິນຄ້າ', search: 'ຄົ້ນຫາສິນຄ້າ ຫຼື SKU', bought: 'ເຄີຍຊື້', all: 'ສິນຄ້າທັງໝົດ',
-    left: n => `ເຫຼືອ ${n}`, unit: 'ຊິ້ນ', more: (n, u, price) => `ຊື້ເພີ່ມ ${n} ${u} ລາຄາເຫຼືອ ${price}/${u}`, preorder: 'ພຣີອໍເດີ້', soldOut: 'ໝົດ', noMatch: 'ບໍ່ພົບສິນຄ້າ', empty: 'ກົດສິນຄ້າເພື່ອເພີ່ມໃສ່ອໍເດີ້',
+    left: n => `ເຫຼືອ ${n}`, unit: 'ຊິ້ນ', more: (n, u, total, all) => `ຊື້ເພີ່ມ ${n} ${u} (ຄົບ ${all} ${u}) ລາຄາລວມ ${total}`, preorder: 'ພຣີອໍເດີ້', soldOut: 'ໝົດ', noMatch: 'ບໍ່ພົບສິນຄ້າ', empty: 'ກົດສິນຄ້າເພື່ອເພີ່ມໃສ່ອໍເດີ້',
     customer: 'ລູກຄ້າ ແລະ ການຈັດສົ່ງ', name: 'ຊື່ ແລະ ນາມສະກຸນ', phone: 'ເບີໂທ', address: 'ທີ່ຢູ່ຈັດສົ່ງ', carrier: 'ຂົນສົ່ງ', notes: 'ໝາຍເຫດ',
     tip: 'ເຄັດລັບ: ແຕະຂໍ້ຄວາມຂອງລູກຄ້າໃນແຊັດ ແລ້ວເລືອກ ຊື່ / ເບີໂທ / ທີ່ຢູ່ ລະບົບຈະຈື່ໄວ້ໃຊ້ຄັ້ງຕໍ່ໄປ',
     payment: 'ການຊຳລະ', discount: 'ສ່ວນຫຼຸດ', paid: 'ຮັບເງິນແລ້ວ (ໂອນ/ມັດຈຳ)', method: 'ຊ່ອງທາງ', transfer: 'ໂອນ', cash: 'ເງິນສົດ',
@@ -28,7 +28,7 @@ const COPY = {
   },
   th: {
     title: 'สร้างออเดอร์จากแชท', products: 'สินค้า', search: 'ค้นหาสินค้าหรือ SKU', bought: 'เคยซื้อ', all: 'สินค้าทั้งหมด',
-    left: n => `เหลือ ${n}`, unit: 'ชิ้น', more: (n, u, price) => `ซื้อเพิ่ม ${n} ${u} ราคาเหลือ ${price}/${u}`, preorder: 'พรีออเดอร์', soldOut: 'หมด', noMatch: 'ไม่พบสินค้า', empty: 'กดสินค้าเพื่อเพิ่มในออเดอร์',
+    left: n => `เหลือ ${n}`, unit: 'ชิ้น', more: (n, u, total, all) => `ซื้อเพิ่ม ${n} ${u} (ครบ ${all} ${u}) ราคารวม ${total}`, preorder: 'พรีออเดอร์', soldOut: 'หมด', noMatch: 'ไม่พบสินค้า', empty: 'กดสินค้าเพื่อเพิ่มในออเดอร์',
     customer: 'ลูกค้าและการจัดส่ง', name: 'ชื่อและนามสกุล', phone: 'เบอร์โทร', address: 'ที่อยู่จัดส่ง', carrier: 'ขนส่ง', notes: 'หมายเหตุ',
     tip: 'เคล็ดลับ: แตะข้อความของลูกค้าในแชท แล้วเลือก ชื่อ / เบอร์โทร / ที่อยู่ ระบบจะจำไว้ใช้ครั้งต่อไป',
     payment: 'การชำระ', discount: 'ส่วนลด', paid: 'รับเงินแล้ว (โอน/มัดจำ)', method: 'ช่องทาง', transfer: 'โอน', cash: 'เงินสด',
@@ -44,7 +44,7 @@ const COPY = {
   },
   en: {
     title: 'Create order from chat', products: 'Products', search: 'Search product or SKU', bought: 'Bought before', all: 'All products',
-    left: n => `${n} left`, unit: 'pc', more: (n, u, price) => `Buy ${n} more ${u} to pay ${price}/${u}`, preorder: 'Pre-order', soldOut: 'Sold out', noMatch: 'No products found', empty: 'Tap a product to add it',
+    left: n => `${n} left`, unit: 'pc', more: (n, u, total, all) => `Buy ${n} more ${u} (${all} in all) for ${total} in total`, preorder: 'Pre-order', soldOut: 'Sold out', noMatch: 'No products found', empty: 'Tap a product to add it',
     customer: 'Customer and delivery', name: 'Full name', phone: 'Phone', address: 'Delivery address', carrier: 'Carrier', notes: 'Notes',
     tip: 'Tip: tap a customer message in the chat and choose Name / Phone / Address. It is remembered for next time.',
     payment: 'Payment', discount: 'Discount', paid: 'Already paid (transfer/deposit)', method: 'Method', transfer: 'Transfer', cash: 'Cash',
@@ -281,7 +281,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
                           {i.option && <span className="mr-1.5">{i.option}</span>}
                           <span className="num">{money(i.unit)}</span>{isSmall(i.pricing) && `/${i.unitLabel || c.unit}`}
                         </span>
-                        {i.next && <span className="block text-xs font-semibold text-primary">{c.more(i.next.min_qty - i.totalQty, i.unitLabel || c.unit, money(i.next.price))}</span>}
+                        {i.next && <span className="block text-xs font-semibold text-primary">{c.more(i.next.min_qty - i.totalQty, i.unitLabel || c.unit, money(i.next.price), i.next.min_qty)}</span>}
                       </span>
                       <span className="flex items-center border border-line rounded-lg">
                         <button type="button" onClick={() => setQty(i.key, i.quantity - 1)} className="w-9 h-9 lg:w-8 lg:h-8 text-lg" aria-label="-">−</button>

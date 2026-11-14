@@ -14,7 +14,7 @@ const COPY = {
     retail: 'ລາຄາປົກກະຕິ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ',
     emptyCart: 'ກະຕ່າຍັງວ່າງ', emptyCartText: 'ກົດທີ່ສິນຄ້າ ຫຼື ຍິງບາໂຄ້ດເພື່ອເພີ່ມ',
     noMatch: 'ບໍ່ພົບສິນຄ້າ', noMatchText: 'ລອງຄຳອື່ນ ຫຼື ເລືອກໝວດ "ທັງໝົດ"',
-    unit: 'ຊິ້ນ', per: u => `ຕໍ່ ${u}`, more: (n, u, price) => `ຊື້ເພີ່ມ ${n} ${u} ລາຄາເຫຼືອ ${price}/${u}`, from: (n, price) => `${n}+ ${price}`,
+    unit: 'ຊິ້ນ', per: u => `ຕໍ່ ${u}`, more: (n, u, total, all) => `ຊື້ເພີ່ມ ${n} ${u} (ຄົບ ${all} ${u}) ລາຄາລວມ ${total}`, from: (n, total, u) => `${n} ${u} = ${total}`,
     out: 'ໝົດ', left: n => `ເຫຼືອ ${n}`, options: n => `${n} ຕົວເລືອກ`, preorder: 'ສັ່ງຈອງ',
     subtotal: 'ລວມຍ່ອຍ', discount: 'ສ່ວນຫຼຸດ', total: 'ຍອດລວມ', charge: 'ຊຳລະເງິນ',
     checkout: 'ຊຳລະເງິນ', who: 'ລູກຄ້າ', pay: 'ການຊຳລະ', received: 'ຮັບເງິນມາ', exact: 'ພໍດີ',
@@ -31,7 +31,7 @@ const COPY = {
     retail: 'ราคาปกติ', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก',
     emptyCart: 'ตะกร้ายังว่าง', emptyCartText: 'แตะที่สินค้าหรือยิงบาร์โค้ดเพื่อเพิ่ม',
     noMatch: 'ไม่พบสินค้า', noMatchText: 'ลองคำอื่น หรือเลือกหมวด "ทั้งหมด"',
-    unit: 'ชิ้น', per: u => `ต่อ ${u}`, more: (n, u, price) => `ซื้อเพิ่ม ${n} ${u} ราคาเหลือ ${price}/${u}`, from: (n, price) => `${n}+ ${price}`,
+    unit: 'ชิ้น', per: u => `ต่อ ${u}`, more: (n, u, total, all) => `ซื้อเพิ่ม ${n} ${u} (ครบ ${all} ${u}) ราคารวม ${total}`, from: (n, total, u) => `${n} ${u} = ${total}`,
     out: 'หมด', left: n => `เหลือ ${n}`, options: n => `${n} ตัวเลือก`, preorder: 'พรีออเดอร์',
     subtotal: 'รวมย่อย', discount: 'ส่วนลด', total: 'ยอดรวม', charge: 'ชำระเงิน',
     checkout: 'ชำระเงิน', who: 'ลูกค้า', pay: 'การชำระเงิน', received: 'รับเงินมา', exact: 'พอดี',
@@ -48,7 +48,7 @@ const COPY = {
     retail: 'Retail', wholesale: 'Wholesale', member: 'Member',
     emptyCart: 'Cart is empty', emptyCartText: 'Tap a product or scan a barcode to add it',
     noMatch: 'No products found', noMatchText: 'Try another word or choose "All"',
-    unit: 'pc', per: u => `per ${u}`, more: (n, u, price) => `Buy ${n} more ${u} to pay ${price}/${u}`, from: (n, price) => `${n}+ ${price}`,
+    unit: 'pc', per: u => `per ${u}`, more: (n, u, total, all) => `Buy ${n} more ${u} (${all} in all) for ${total} in total`, from: (n, total, u) => `${n} ${u} = ${total}`,
     out: 'Sold out', left: n => `${n} left`, options: n => `${n} options`, preorder: 'Pre-order',
     subtotal: 'Subtotal', discount: 'Discount', total: 'Total', charge: 'Charge',
     checkout: 'Checkout', who: 'Customer', pay: 'Payment', received: 'Cash received', exact: 'Exact',
@@ -399,7 +399,7 @@ export default function POSPage() {
                     </p>
                     {i.next && (
                       <p className="mt-0.5 text-xs font-semibold text-primary">
-                        {c.more(i.next.min_qty - i.totalQty, i.unitLabel || c.unit, formatCurrency(i.next.price, 'LAK'))}
+                        {c.more(i.next.min_qty - i.totalQty, i.unitLabel || c.unit, formatCurrency(i.next.price, 'LAK'), i.next.min_qty)}
                       </p>
                     )}
                   </div>
@@ -516,7 +516,7 @@ export default function POSPage() {
                           {isSmall(p) && <span className="block text-xs text-slate-500 truncate">{c.per(p.unit_label || c.unit)}</span>}
                           {isSmall(p) && cleanSteps(p.price_tiers).length > 0 && (() => {
                             const last = cleanSteps(p.price_tiers).slice(-1)[0];
-                            return <span className="block text-[0.7rem] font-semibold text-success num">{c.from(last.min_qty, formatCurrency(last.price, 'LAK'))}</span>;
+                            return <span className="block text-[0.7rem] font-semibold text-success num">{c.from(last.min_qty, formatCurrency(last.price, 'LAK'), p.unit_label || c.unit)}</span>;
                           })()}
                         </span>
                         {!preorder && (
