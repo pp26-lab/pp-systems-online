@@ -7,6 +7,7 @@ import { compressImage } from '../../lib/image';
 import CameraCapture from '../../components/CameraCapture';
 import { Icon, IconButton, Button, Modal, Field, SearchInput, Chip, Pill, EmptyState, Toolbar, Segmented, inputCls, card } from '../../components/ui';
 import LoadMore from '../../components/LoadMore';
+import { cleanSteps } from '../../lib/pricing';
 
 const PAGE = 30;
 
@@ -30,6 +31,7 @@ const COPY = {
     photos: 'ຮູບພາບ', main: 'ຮູບຫຼັກ', extra: 'ຮູບເພີ່ມເຕີມ (ສົ່ງໃຫ້ລູກຄ້າຜ່ານແຊັດບອດ)', saveFirst: 'ບັນທຶກສິນຄ້າກ່ອນ ຈຶ່ງເພີ່ມຮູບເພີ່ມເຕີມໄດ້',
     upload: 'ເລືອກຮູບ', camera: 'ຖ່າຍຮູບ', remove: 'ເອົາອອກ', details: 'ຂໍ້ມູນສິນຄ້າ', nameLo: 'ຊື່ (ລາວ)', nameTh: 'ຊື່ (ໄທ)', nameEn: 'ຊື່ (ອັງກິດ)',
     skuHint: 'ປ່ອຍວ່າງ ລະບົບຈະສ້າງໃຫ້', barcode: 'ບາໂຄ້ດ', category: 'ໝວດໝູ່', endDate: 'ວັນໝົດເຂດຂາຍ', endHint: 'ປ່ອຍວ່າງ = ຂາຍຕະຫຼອດ',
+    kind: 'ປະເພດສິນຄ້າ', kindStd: 'ສິນຄ້າທົ່ວໄປ', kindSmall: 'ສິນຄ້າຂະໜາດຍ່ອຍ', kindStdNote: 'ລາຄາດຽວ ສີ ແລະ ຂະໜາດໃຊ້ລາຄາດຽວກັນ', kindSmallNote: 'ຂາຍເປັນຈຳນວນ ລາຄາຕໍ່ໜ່ວຍຫຼຸດລົງເມື່ອຊື້ຄົບຕາມຈຳນວນ', unitLabel: 'ຫົວໜ່ວຍນັບ', unitPh: 'ເຊັ່ນ ຊິ້ນ, ອັນ, ຕົວອັກສອນ', units: ['ຊິ້ນ', 'ອັນ', 'ຕົວອັກສອນ', 'ເມັດ', 'ຄູ່', 'ແພັກ', 'ແມັດ'], unitDefault: 'ຊິ້ນ', steps: 'ລາຄາຕາມຈຳນວນທີ່ຊື້', stepBase: u => `ຊື້ 1 ${u}`, stepUp: u => `${u} ຂຶ້ນໄປ`, buy: 'ຊື້', per: u => `ຕໍ່ ${u}`, addStep: 'ເພີ່ມຂັ້ນລາຄາ', example: (n, u, total) => `ຕົວຢ່າງ: ຊື້ ${n} ${u} = ${total}`, stepBad: 'ກວດລາຄາຕາມຈຳນວນ: ຈຳນວນຕ້ອງ 2 ຂຶ້ນໄປ ບໍ່ຊ້ຳກັນ ແລະ ໃສ່ລາຄາທຸກຂັ້ນ', smallTag: 'ຂະໜາດຍ່ອຍ',
     pricing: 'ຕົ້ນທຶນ ແລະ ລາຄາ', costNote: 'ຕົ້ນທຶນທັງໝົດຄິດເປັນສະກຸນທີ່ຊື້', modeLot: 'ລາຄາລວມທັງລັອດ', modeUnit: 'ລາຄາຕໍ່ຊິ້ນ', lotNote: 'ໃສ່ຍອດທີ່ຈ່າຍທັງລັອດ ລະບົບຈະຫານເປັນຕໍ່ຊິ້ນໃຫ້', lotQty: 'ຈຳນວນຊິ້ນໃນລັອດນີ້', lotQtyAuto: 'ຕາມສະຕ໋ອກທີ່ໃສ່ ແກ້ໄດ້', perUnit: 'ຊິ້ນ', unitCost: 'ຕົ້ນທຶນຕໍ່ຊິ້ນ (ກີບ)', lotCostLak: 'ຕົ້ນທຶນທັງລັອດ', needLotQty: 'ໃສ່ຈຳນວນຊິ້ນໃນລັອດ ເພື່ອຫານເປັນຕົ້ນທຶນຕໍ່ຊິ້ນ', landed: 'ຕົ້ນທຶນລວມ (ກີບ)', retail: 'ລາຄາຂາຍ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ', margin: 'ກຳໄລ',
     variants: 'ຕົວເລືອກ (ເຊັ່ນ ສີ / ຂະໜາດ)', variantsNone: 'ສິນຄ້ານີ້ບໍ່ມີຕົວເລືອກ ສະຕ໋ອກນັບລວມ', addOption: 'ເພີ່ມຕົວເລືອກ',
     label1: 'ຊື່ຕົວເລືອກທີ 1', label2: 'ຊື່ຕົວເລືອກທີ 2', suffix: 'ທ້າຍ SKU', qty: 'ຈຳນວນ',
@@ -46,6 +48,7 @@ const COPY = {
     photos: 'รูปภาพ', main: 'รูปหลัก', extra: 'รูปเพิ่มเติม (ส่งให้ลูกค้าผ่านแชทบอท)', saveFirst: 'บันทึกสินค้าก่อน จึงเพิ่มรูปเพิ่มเติมได้',
     upload: 'เลือกรูป', camera: 'ถ่ายรูป', remove: 'เอาออก', details: 'ข้อมูลสินค้า', nameLo: 'ชื่อ (ลาว)', nameTh: 'ชื่อ (ไทย)', nameEn: 'ชื่อ (อังกฤษ)',
     skuHint: 'เว้นว่าง ระบบจะสร้างให้', barcode: 'บาร์โค้ด', category: 'หมวดหมู่', endDate: 'วันหมดเขตขาย', endHint: 'เว้นว่าง = ขายตลอด',
+    kind: 'ประเภทสินค้า', kindStd: 'สินค้าทั่วไป', kindSmall: 'สินค้าขนาดย่อย', kindStdNote: 'ราคาเดียว สีและขนาดใช้ราคาเดียวกัน', kindSmallNote: 'ขายเป็นจำนวน ราคาต่อหน่วยลดลงเมื่อซื้อครบตามจำนวน', unitLabel: 'หน่วยนับ', unitPh: 'เช่น ชิ้น, อัน, ตัวอักษร', units: ['ชิ้น', 'อัน', 'ตัวอักษร', 'เม็ด', 'คู่', 'แพ็ก', 'เมตร'], unitDefault: 'ชิ้น', steps: 'ราคาตามจำนวนที่ซื้อ', stepBase: u => `ซื้อ 1 ${u}`, stepUp: u => `${u} ขึ้นไป`, buy: 'ซื้อ', per: u => `ต่อ ${u}`, addStep: 'เพิ่มขั้นราคา', example: (n, u, total) => `ตัวอย่าง: ซื้อ ${n} ${u} = ${total}`, stepBad: 'ตรวจราคาตามจำนวน: จำนวนต้อง 2 ขึ้นไป ไม่ซ้ำกัน และใส่ราคาทุกขั้น', smallTag: 'ขนาดย่อย',
     pricing: 'ต้นทุนและราคา', costNote: 'ต้นทุนทั้งหมดคิดเป็นสกุลเงินที่ซื้อ', modeLot: 'ราคารวมทั้งล็อต', modeUnit: 'ราคาต่อชิ้น', lotNote: 'ใส่ยอดที่จ่ายทั้งล็อต ระบบจะหารเป็นต่อชิ้นให้', lotQty: 'จำนวนชิ้นในล็อตนี้', lotQtyAuto: 'ตามสต็อกที่ใส่ แก้ได้', perUnit: 'ชิ้น', unitCost: 'ต้นทุนต่อชิ้น (กีบ)', lotCostLak: 'ต้นทุนทั้งล็อต', needLotQty: 'ใส่จำนวนชิ้นในล็อต เพื่อหารเป็นต้นทุนต่อชิ้น', landed: 'ต้นทุนรวม (กีบ)', retail: 'ราคาขาย', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก', margin: 'กำไร',
     variants: 'ตัวเลือก (เช่น สี / ขนาด)', variantsNone: 'สินค้านี้ไม่มีตัวเลือก สต็อกนับรวม', addOption: 'เพิ่มตัวเลือก',
     label1: 'ชื่อตัวเลือกที่ 1', label2: 'ชื่อตัวเลือกที่ 2', suffix: 'ท้าย SKU', qty: 'จำนวน',
@@ -62,6 +65,7 @@ const COPY = {
     photos: 'Photos', main: 'Main photo', extra: 'Extra photos (sent to customers by the chatbot)', saveFirst: 'Save the product first to add extra photos',
     upload: 'Choose photo', camera: 'Take photo', remove: 'Remove', details: 'Product details', nameLo: 'Name (Lao)', nameTh: 'Name (Thai)', nameEn: 'Name (English)',
     skuHint: 'Leave blank to generate one', barcode: 'Barcode', category: 'Category', endDate: 'Stop selling on', endHint: 'Blank = no end date',
+    kind: 'Product type', kindStd: 'Standard', kindSmall: 'Small items', kindStdNote: 'One price; colours and sizes share it', kindSmallNote: 'Sold in quantity; the price per unit drops once a quantity is reached', unitLabel: 'Counting unit', unitPh: 'e.g. piece, item, letter', units: ['piece', 'item', 'letter', 'bead', 'pair', 'pack', 'metre'], unitDefault: 'piece', steps: 'Price by quantity bought', stepBase: u => `Buy 1 ${u}`, stepUp: u => `${u} or more`, buy: 'Buy', per: u => `per ${u}`, addStep: 'Add a price step', example: (n, u, total) => `Example: ${n} ${u} = ${total}`, stepBad: 'Check the price steps: quantities from 2 up, no repeats, and a price for each', smallTag: 'Small items',
     pricing: 'Cost and price', costNote: 'All costs are in the purchase currency', modeLot: 'Whole lot', modeUnit: 'Per piece', lotNote: 'Enter what you paid for the whole lot; the system works out the cost per piece', lotQty: 'Pieces in this lot', lotQtyAuto: 'From the stock entered, can be changed', perUnit: 'piece', unitCost: 'Cost per piece (LAK)', lotCostLak: 'Whole lot cost', needLotQty: 'Enter how many pieces are in the lot to work out the cost per piece', landed: 'Landed cost (LAK)', retail: 'Retail price', wholesale: 'Wholesale price', member: 'Member price', margin: 'Margin',
     variants: 'Options (e.g. color / size)', variantsNone: 'No options. Stock is counted as one item.', addOption: 'Add option',
     label1: 'First option name', label2: 'Second option name', suffix: 'SKU suffix', qty: 'Qty',
@@ -365,6 +369,14 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const num = k => e => set(k, parseFloat(e.target.value) || 0);
 
+  // Small items: price steps by quantity, edited as rows (strings while typing).
+  const small = form.product_type === 'small';
+  const [steps, setSteps] = useState(() => cleanSteps(initial.form.price_tiers).map((x, i) => ({ ...x, _k: i })));
+  const setStep = (i, k, v) => setSteps(prev => prev.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+  const unitWord = (form.unit_label || '').trim() || c.unitDefault;
+  const stepsOk = steps.every(x => Number(x.min_qty) >= 2 && Number(x.price) > 0)
+    && new Set(steps.map(x => Number(x.min_qty))).size === steps.length;
+
   // Costs can be typed per piece, or as totals for the whole lot (what was actually paid),
   // which are divided by the number of pieces. Either way the per-piece numbers are what is
   // saved, so profit on every sale stays right. New products start in lot mode.
@@ -463,11 +475,14 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
     setError('');
     if (![form.name_lo, form.name_th, form.name_en].some(v => v && v.trim())) { setError(c.needName); return; }
     if (costMode === 'lot' && lotHasCost && !(lotQty > 0)) { setError(c.needLotQty); return; }
+    if (small && !stepsOk) { setError(c.stepBad); return; }
     const rows = variants.filter(v => (v.color || '').trim() || (v.size || '').trim());
     setBusy('save');
     try {
       const body = {
         ...form,
+        product_type: small ? 'small' : 'standard',
+        price_tiers: small ? steps.map(x => ({ min_qty: Number(x.min_qty), price: Number(x.price) })) : [],
         variant_label_1: form.variant_label_1.trim() || 'color',
         variant_label_2: form.variant_label_2.trim() || 'size',
         has_variants: rows.length > 0 ? 1 : 0,
@@ -597,6 +612,12 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
         </section>
 
         <section>
+          <div className="mb-5">
+            <span className="block text-sm font-semibold text-ink mb-1.5">{c.kind}</span>
+            <Segmented value={small ? 'small' : 'standard'} onChange={v => set('product_type', v)}
+              options={[{ value: 'standard', label: c.kindStd }, { value: 'small', label: c.kindSmall }]} />
+            <p className="mt-1.5 text-xs text-slate-500">{small ? c.kindSmallNote : c.kindStdNote}</p>
+          </div>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-bold text-ink">{c.pricing}</h3>
@@ -665,6 +686,60 @@ function ProductEditor({ initial, c, lang, currencies, categories, onClose, onSa
               <p className={`mt-1 text-xl font-extrabold num ${margin >= 30 ? 'text-success' : margin >= 15 ? 'text-warning' : 'text-danger'}`}>{margin.toFixed(1)}%</p>
             </div>
           </div>
+
+          {small && (
+            <div className="mt-4 rounded-xl border border-line p-4 sm:p-5">
+              <Field label={c.unitLabel} className="max-w-xs">
+                <input value={form.unit_label || ''} list="unit-labels" maxLength={50} placeholder={c.unitPh}
+                  onChange={e => set('unit_label', e.target.value)} className={inputCls} />
+              </Field>
+              <datalist id="unit-labels">{c.units.map(u => <option key={u} value={u} />)}</datalist>
+
+              <p className="mt-4 text-sm font-semibold text-ink">{c.steps}</p>
+              <ul className="mt-2 space-y-2">
+                <li className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm min-h-10">
+                  <span className="text-slate-600">{c.stepBase(unitWord)}</span>
+                  <span className="font-bold text-ink num">{formatCurrency(Number(form.selling_price_lak) || 0, 'LAK')}</span>
+                  <span className="text-xs text-slate-500">{c.per(unitWord)}</span>
+                </li>
+                {steps.map((x, i) => {
+                  const m = calculateMargin(Number(x.price) || 0, landed);
+                  return (
+                    <li key={x._k} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                      <span className="flex items-center gap-1.5 text-slate-600">
+                        {c.buy}
+                        <span className="w-16 shrink-0">
+                          <input type="number" min="2" inputMode="numeric" aria-label={c.stepUp(unitWord)} value={x.min_qty ?? ''}
+                            onChange={e => setStep(i, 'min_qty', e.target.value)} className={`${inputCls} px-2 text-center num`} />
+                        </span>
+                        <span className="whitespace-nowrap">{c.stepUp(unitWord)}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-32 shrink-0">
+                          <input type="number" min="0" inputMode="numeric" aria-label={c.per(unitWord)} value={x.price ?? ''} placeholder="0"
+                            onChange={e => setStep(i, 'price', e.target.value)} className={`${inputCls} font-bold num`} />
+                        </span>
+                        <span className="text-xs text-slate-500 whitespace-nowrap">{c.per(unitWord)}</span>
+                      </span>
+                      {Number(x.price) > 0 && landed > 0 && <span className={`text-xs font-semibold num ${m >= 30 ? 'text-success' : m >= 15 ? 'text-warning' : 'text-danger'}`}>{m.toFixed(1)}%</span>}
+                      <IconButton icon="trash" label={c.remove} tone="danger" onClick={() => setSteps(prev => prev.filter((_, j) => j !== i))} />
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <Button size="sm" tone="ghost" icon="plus" onClick={() => setSteps(prev => {
+                  const last = prev[prev.length - 1];
+                  return [...prev, { min_qty: last ? Number(last.min_qty) + 1 || '' : 2, price: '', _k: Date.now() }];
+                })}>{c.addStep}</Button>
+                {steps.length > 0 && stepsOk && (() => {
+                  const top = [...steps].sort((a, b) => Number(b.min_qty) - Number(a.min_qty))[0];
+                  const n = Number(top.min_qty);
+                  return <span className="text-xs text-slate-500 num">{c.example(n, unitWord, formatCurrency(n * Math.min(Number(top.price), Number(form.selling_price_lak) || Infinity), 'LAK'))}</span>;
+                })()}
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 grid grid-cols-2 gap-4">
             <Field label={`${c.wholesale} (LAK)`}><input type="number" min="0" value={form.wholesale_price_lak || ''} placeholder="0" onChange={num('wholesale_price_lak')} className={`${inputCls} num`} /></Field>

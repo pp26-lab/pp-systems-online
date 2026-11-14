@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
+import { unitPrice, nextStep, isSmall, qtyByProduct } from '../../lib/pricing';
 import { Modal, Button, Icon, SearchInput, inputCls } from '../ui';
 import { formatCurrency } from '../../lib/currency';
 import { orderErrorText, RELOAD_PRODUCTS } from '../../lib/order-messages';
@@ -11,7 +12,7 @@ import { orderErrorText, RELOAD_PRODUCTS } from '../../lib/order-messages';
 const COPY = {
   lo: {
     title: 'ສ້າງອໍເດີ້ຈາກແຊັດ', products: 'ສິນຄ້າ', search: 'ຄົ້ນຫາສິນຄ້າ ຫຼື SKU', bought: 'ເຄີຍຊື້', all: 'ສິນຄ້າທັງໝົດ',
-    left: n => `ເຫຼືອ ${n}`, preorder: 'ພຣີອໍເດີ້', soldOut: 'ໝົດ', noMatch: 'ບໍ່ພົບສິນຄ້າ', empty: 'ກົດສິນຄ້າເພື່ອເພີ່ມໃສ່ອໍເດີ້',
+    left: n => `ເຫຼືອ ${n}`, unit: 'ຊິ້ນ', more: (n, u, price) => `ຊື້ເພີ່ມ ${n} ${u} ລາຄາເຫຼືອ ${price}/${u}`, preorder: 'ພຣີອໍເດີ້', soldOut: 'ໝົດ', noMatch: 'ບໍ່ພົບສິນຄ້າ', empty: 'ກົດສິນຄ້າເພື່ອເພີ່ມໃສ່ອໍເດີ້',
     customer: 'ລູກຄ້າ ແລະ ການຈັດສົ່ງ', name: 'ຊື່ ແລະ ນາມສະກຸນ', phone: 'ເບີໂທ', address: 'ທີ່ຢູ່ຈັດສົ່ງ', carrier: 'ຂົນສົ່ງ', notes: 'ໝາຍເຫດ',
     tip: 'ເຄັດລັບ: ແຕະຂໍ້ຄວາມຂອງລູກຄ້າໃນແຊັດ ແລ້ວເລືອກ ຊື່ / ເບີໂທ / ທີ່ຢູ່ ລະບົບຈະຈື່ໄວ້ໃຊ້ຄັ້ງຕໍ່ໄປ',
     payment: 'ການຊຳລະ', discount: 'ສ່ວນຫຼຸດ', paid: 'ຮັບເງິນແລ້ວ (ໂອນ/ມັດຈຳ)', method: 'ຊ່ອງທາງ', transfer: 'ໂອນ', cash: 'ເງິນສົດ',
@@ -27,7 +28,7 @@ const COPY = {
   },
   th: {
     title: 'สร้างออเดอร์จากแชท', products: 'สินค้า', search: 'ค้นหาสินค้าหรือ SKU', bought: 'เคยซื้อ', all: 'สินค้าทั้งหมด',
-    left: n => `เหลือ ${n}`, preorder: 'พรีออเดอร์', soldOut: 'หมด', noMatch: 'ไม่พบสินค้า', empty: 'กดสินค้าเพื่อเพิ่มในออเดอร์',
+    left: n => `เหลือ ${n}`, unit: 'ชิ้น', more: (n, u, price) => `ซื้อเพิ่ม ${n} ${u} ราคาเหลือ ${price}/${u}`, preorder: 'พรีออเดอร์', soldOut: 'หมด', noMatch: 'ไม่พบสินค้า', empty: 'กดสินค้าเพื่อเพิ่มในออเดอร์',
     customer: 'ลูกค้าและการจัดส่ง', name: 'ชื่อและนามสกุล', phone: 'เบอร์โทร', address: 'ที่อยู่จัดส่ง', carrier: 'ขนส่ง', notes: 'หมายเหตุ',
     tip: 'เคล็ดลับ: แตะข้อความของลูกค้าในแชท แล้วเลือก ชื่อ / เบอร์โทร / ที่อยู่ ระบบจะจำไว้ใช้ครั้งต่อไป',
     payment: 'การชำระ', discount: 'ส่วนลด', paid: 'รับเงินแล้ว (โอน/มัดจำ)', method: 'ช่องทาง', transfer: 'โอน', cash: 'เงินสด',
@@ -43,7 +44,7 @@ const COPY = {
   },
   en: {
     title: 'Create order from chat', products: 'Products', search: 'Search product or SKU', bought: 'Bought before', all: 'All products',
-    left: n => `${n} left`, preorder: 'Pre-order', soldOut: 'Sold out', noMatch: 'No products found', empty: 'Tap a product to add it',
+    left: n => `${n} left`, unit: 'pc', more: (n, u, price) => `Buy ${n} more ${u} to pay ${price}/${u}`, preorder: 'Pre-order', soldOut: 'Sold out', noMatch: 'No products found', empty: 'Tap a product to add it',
     customer: 'Customer and delivery', name: 'Full name', phone: 'Phone', address: 'Delivery address', carrier: 'Carrier', notes: 'Notes',
     tip: 'Tip: tap a customer message in the chat and choose Name / Phone / Address. It is remembered for next time.',
     payment: 'Payment', discount: 'Discount', paid: 'Already paid (transfer/deposit)', method: 'Method', transfer: 'Transfer', cash: 'Cash',
@@ -65,12 +66,6 @@ function nameOf(p, lang) {
   if (lang === 'th') return p.name_th || p.name_lo || p.name_en || p.sku;
   if (lang === 'en') return p.name_en || p.name_lo || p.name_th || p.sku;
   return p.name_lo || p.name_th || p.name_en || p.sku;
-}
-
-function priceOf(p, type) {
-  if (type === 'wholesale' && Number(p.wholesale_price_lak) > 0) return Number(p.wholesale_price_lak);
-  if (type === 'member' && Number(p.member_price_lak) > 0) return Number(p.member_price_lak);
-  return Number(p.selling_price_lak) || 0;
 }
 
 export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone }) {
@@ -136,7 +131,12 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
       return [...prev, {
         key, product_id: p.id, variant_id: v?.id || null, max,
         name: nameOf(p, lang), option: v ? [v.color, v.size].filter(Boolean).join(' / ') : '',
-        unit: priceOf(p, tier), quantity: 1,
+        // What the price depends on; the price itself is worked out from the whole cart below.
+        pricing: {
+          selling_price_lak: p.selling_price_lak, wholesale_price_lak: p.wholesale_price_lak, member_price_lak: p.member_price_lak,
+          product_type: p.product_type, price_tiers: p.price_tiers,
+        },
+        unitLabel: p.unit_label || '', quantity: 1,
       }];
     });
     setPicker(null);
@@ -150,7 +150,10 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
 
   const setQty = (key, q) => setCart(prev => (q <= 0 ? prev.filter(i => i.key !== key) : prev.map(i => (i.key === key ? { ...i, quantity: Math.min(q, i.max) } : i))));
 
-  const subtotal = cart.reduce((s, i) => s + i.unit * i.quantity, 0);
+  // Small items: the price per unit follows the product's whole quantity in the cart.
+  const qtyOf = qtyByProduct(cart);
+  const priced = cart.map(i => ({ ...i, unit: unitPrice(i.pricing, qtyOf[i.product_id], tier), next: nextStep(i.pricing, qtyOf[i.product_id]), totalQty: qtyOf[i.product_id] }));
+  const subtotal = priced.reduce((s, i) => s + i.unit * i.quantity, 0);
   const disc = Math.min(Math.max(0, Number(discount) || 0), subtotal);
   const total = subtotal - disc;
   const paidNum = payFull ? total : Math.min(Math.max(0, Number(paid) || 0), total);
@@ -160,7 +163,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
   const autoSummary = useMemo(() => {
     const s = c.sum;
     const lines = [s.head(prefill?.shop_name)];
-    for (const i of cart) lines.push(`- ${i.name}${i.option ? ` (${i.option})` : ''} x${i.quantity} = ${money(i.unit * i.quantity)}`);
+    for (const i of priced) lines.push(`- ${i.name}${i.option ? ` (${i.option})` : ''} x${i.quantity}${isSmall(i.pricing) && i.unitLabel ? ` ${i.unitLabel}` : ''} = ${money(i.unit * i.quantity)}`);
     lines.push(`${s.total}: ${money(total)}`);
     if (paidNum > 0) lines.push(`${s.paid}: ${money(paidNum)}`);
     if (cod > 0) lines.push(`${s.cod}: ${money(cod)}`);
@@ -170,7 +173,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
     if (cust.carrier) lines.push(`${s.carrier}: ${cust.carrier}`);
     lines.push(s.thanks);
     return lines.join('\n');
-  }, [cart, total, paidNum, cod, cust, prefill, c]);
+  }, [priced, total, paidNum, cod, cust, prefill, c]);
   useEffect(() => { if (!summaryEdited) setSummary(autoSummary); }, [autoSummary, summaryEdited]);
 
   async function confirm() {
@@ -183,7 +186,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
       const res = await fetch(`/api/chat/conversations/${convId}/order`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cart.map(i => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity, unit_price: i.unit })),
+          items: priced.map(i => ({ product_id: i.product_id, variant_id: i.variant_id, quantity: i.quantity, unit_price: i.unit })),
           discount: disc, amount_paid: paidNum, payment_method: method,
           customer_name: cust.name.trim(), customer_phone: cust.phone.trim(), customer_address: cust.address.trim(),
           shipping_carrier: cust.carrier.trim(), shipping_notes: cust.notes.trim(),
@@ -242,7 +245,7 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
                       <span className="flex-1 min-w-0">
                         <span className="block text-sm font-semibold text-ink truncate">{nameOf(p, lang)}</span>
                         <span className="block text-xs text-slate-500">
-                          {money(priceOf(p, tier))}
+                          {money(unitPrice(p, 1, tier))}{isSmall(p) && `/${p.unit_label || c.unit}`}
                           <span className={`ml-2 ${out ? 'text-danger' : pre ? 'text-primary' : 'text-slate-400'}`}>{out ? c.soldOut : pre ? c.preorder : c.left(stock)}</span>
                           {boughtSet.has(p.id) && !search && <span className="ml-2 text-[#8A4B00]">{c.bought}</span>}
                         </span>
@@ -270,15 +273,21 @@ export default function ChatOrderPanel({ convId, lang = 'lo', onClose, onDone })
             <div className="mt-4">
               {cart.length === 0 ? <p className="text-sm text-slate-500">{c.empty}</p> : (
                 <ul className="space-y-2">
-                  {cart.map(i => (
+                  {priced.map(i => (
                     <li key={i.key} className="flex items-center gap-2 text-sm">
                       <span className="flex-1 min-w-0">
                         <span className="block font-semibold text-ink truncate">{i.name}</span>
-                        {i.option && <span className="block text-xs text-slate-500">{i.option}</span>}
+                        <span className="block text-xs text-slate-500">
+                          {i.option && <span className="mr-1.5">{i.option}</span>}
+                          <span className="num">{money(i.unit)}</span>{isSmall(i.pricing) && `/${i.unitLabel || c.unit}`}
+                        </span>
+                        {i.next && <span className="block text-xs font-semibold text-primary">{c.more(i.next.min_qty - i.totalQty, i.unitLabel || c.unit, money(i.next.price))}</span>}
                       </span>
                       <span className="flex items-center border border-line rounded-lg">
                         <button type="button" onClick={() => setQty(i.key, i.quantity - 1)} className="w-9 h-9 lg:w-8 lg:h-8 text-lg" aria-label="-">−</button>
-                        <span className="w-8 text-center num font-semibold">{i.quantity}</span>
+                        <input type="number" min="1" inputMode="numeric" aria-label="Qty" value={i.quantity}
+                          onChange={e => { const n = parseInt(e.target.value); if (n > 0) setQty(i.key, n); }} onFocus={e => e.target.select()}
+                          className="w-11 text-center num font-semibold bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
                         <button type="button" onClick={() => setQty(i.key, i.quantity + 1)} disabled={i.quantity >= i.max} className="w-9 h-9 lg:w-8 lg:h-8 text-lg disabled:opacity-30" aria-label="+">+</button>
                       </span>
                       <span className="w-24 text-right num font-semibold">{money(i.unit * i.quantity)}</span>

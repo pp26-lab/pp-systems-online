@@ -26,6 +26,13 @@ export async function POST(request) {
   );
 
   const newId = result.insertId;
+  // The rest of the pricing: wholesale / member prices, category, and small-item settings.
+  await query(
+    `UPDATE products SET wholesale_price_lak = ?, member_price_lak = ?, category_id = ?,
+       product_type = ?, unit_label = ?, price_tiers = ? WHERE id = ? AND shop_id = ?`,
+    [source.wholesale_price_lak || 0, source.member_price_lak || 0, source.category_id || null,
+      source.product_type || 'standard', source.unit_label || '', source.price_tiers || null, newId, shopId]
+  );
 
   if (source.has_variants) {
     const variants = await query('SELECT color, size, sku_suffix, quantity FROM product_variants WHERE product_id = ? AND shop_id = ?', [source.id, shopId]);

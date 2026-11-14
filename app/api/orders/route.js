@@ -68,7 +68,7 @@ export async function GET(request) {
   if (orders.length) {
     const byOrder = new Map(orders.map(o => [o.id, o]));
     const items = await query(`
-      SELECT oi.*, p.name_lo, p.name_th, p.name_en, p.sku, p.image_url,
+      SELECT oi.*, p.name_lo, p.name_th, p.name_en, p.sku, p.image_url, p.product_type, p.unit_label,
         COALESCE(oi.item_color, pv.color) as variant_color, COALESCE(oi.item_size, pv.size) as variant_size
       FROM order_items oi
       LEFT JOIN products p ON oi.product_id = p.id

@@ -144,7 +144,7 @@ function itemsLine(order, lang, c) {
   if (!items.length) return '';
   const first = items[0];
   const v = variantOf(first);
-  return `${itemName(first, lang)}${v ? ` (${v})` : ''} ×${first.quantity}${items.length > 1 ? `  ${c.more(items.length - 1)}` : ''}`;
+  return `${itemName(first, lang)}${v ? ` (${v})` : ''} ×${first.quantity}${first.product_type === 'small' && first.unit_label ? ` ${first.unit_label}` : ''}${items.length > 1 ? `  ${c.more(items.length - 1)}` : ''}`;
 }
 
 // Small product photo; a box when the product has none.
@@ -619,7 +619,7 @@ function OrderDetail({ order, c, lang, shop, onPatch, onLocal }) {
                   <p className="font-semibold text-ink leading-snug">{itemName(i, lang)}</p>
                   <p className="mt-0.5 text-sm text-slate-600">
                     {v && <span className="mr-2">{v}</span>}
-                    <span className="font-bold text-ink num">×{i.quantity}</span>
+                    <span className="font-bold text-ink num">×{i.quantity}{i.product_type === 'small' && i.unit_label ? ` ${i.unit_label}` : ''}</span>
                     <span className="ml-2 text-xs text-slate-400 num">{formatCurrency(i.unit_price, order.currency)}</span>
                   </p>
                   {i.sku && <p className="text-[0.68rem] text-slate-400 num">{i.sku}</p>}

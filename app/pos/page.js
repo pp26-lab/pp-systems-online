@@ -5,6 +5,7 @@ import { t } from '../../lib/i18n';
 import { formatCurrency, localToday } from '../../lib/currency';
 import { printReceipt, printShippingLabel } from '../../lib/receipt';
 import { orderErrorText, RELOAD_PRODUCTS } from '../../lib/order-messages';
+import { unitPrice, nextStep, isSmall, cleanSteps, qtyByProduct } from '../../lib/pricing';
 import { Icon, IconButton, Button, Segmented, Modal, Field, SearchInput, Chip, Pill, EmptyState, inputCls } from '../../components/ui';
 
 const COPY = {
@@ -13,6 +14,7 @@ const COPY = {
     retail: 'ລາຄາປົກກະຕິ', wholesale: 'ລາຄາສົ່ງ', member: 'ລາຄາສະມາຊິກ',
     emptyCart: 'ກະຕ່າຍັງວ່າງ', emptyCartText: 'ກົດທີ່ສິນຄ້າ ຫຼື ຍິງບາໂຄ້ດເພື່ອເພີ່ມ',
     noMatch: 'ບໍ່ພົບສິນຄ້າ', noMatchText: 'ລອງຄຳອື່ນ ຫຼື ເລືອກໝວດ "ທັງໝົດ"',
+    unit: 'ຊິ້ນ', per: u => `ຕໍ່ ${u}`, more: (n, u, price) => `ຊື້ເພີ່ມ ${n} ${u} ລາຄາເຫຼືອ ${price}/${u}`, from: (n, price) => `${n}+ ${price}`,
     out: 'ໝົດ', left: n => `ເຫຼືອ ${n}`, options: n => `${n} ຕົວເລືອກ`, preorder: 'ສັ່ງຈອງ',
     subtotal: 'ລວມຍ່ອຍ', discount: 'ສ່ວນຫຼຸດ', total: 'ຍອດລວມ', charge: 'ຊຳລະເງິນ',
     checkout: 'ຊຳລະເງິນ', who: 'ລູກຄ້າ', pay: 'ການຊຳລະ', received: 'ຮັບເງິນມາ', exact: 'ພໍດີ',
@@ -29,6 +31,7 @@ const COPY = {
     retail: 'ราคาปกติ', wholesale: 'ราคาส่ง', member: 'ราคาสมาชิก',
     emptyCart: 'ตะกร้ายังว่าง', emptyCartText: 'แตะที่สินค้าหรือยิงบาร์โค้ดเพื่อเพิ่ม',
     noMatch: 'ไม่พบสินค้า', noMatchText: 'ลองคำอื่น หรือเลือกหมวด "ทั้งหมด"',
+    unit: 'ชิ้น', per: u => `ต่อ ${u}`, more: (n, u, price) => `ซื้อเพิ่ม ${n} ${u} ราคาเหลือ ${price}/${u}`, from: (n, price) => `${n}+ ${price}`,
     out: 'หมด', left: n => `เหลือ ${n}`, options: n => `${n} ตัวเลือก`, preorder: 'พรีออเดอร์',
     subtotal: 'รวมย่อย', discount: 'ส่วนลด', total: 'ยอดรวม', charge: 'ชำระเงิน',
     checkout: 'ชำระเงิน', who: 'ลูกค้า', pay: 'การชำระเงิน', received: 'รับเงินมา', exact: 'พอดี',
@@ -45,6 +48,7 @@ const COPY = {
     retail: 'Retail', wholesale: 'Wholesale', member: 'Member',
     emptyCart: 'Cart is empty', emptyCartText: 'Tap a product or scan a barcode to add it',
     noMatch: 'No products found', noMatchText: 'Try another word or choose "All"',
+    unit: 'pc', per: u => `per ${u}`, more: (n, u, price) => `Buy ${n} more ${u} to pay ${price}/${u}`, from: (n, price) => `${n}+ ${price}`,
     out: 'Sold out', left: n => `${n} left`, options: n => `${n} options`, preorder: 'Pre-order',
     subtotal: 'Subtotal', discount: 'Discount', total: 'Total', charge: 'Charge',
     checkout: 'Checkout', who: 'Customer', pay: 'Payment', received: 'Cash received', exact: 'Exact',
@@ -151,12 +155,6 @@ export default function POSPage() {
     return Number(p.stock_in_stock) || 0;
   }
 
-  function priceOf(prices, type = customerType) {
-    if (type === 'wholesale' && prices.wholesale > 0) return prices.wholesale;
-    if (type === 'member' && prices.member > 0) return prices.member;
-    return prices.retail;
-  }
-
   function addToCart(product, variant) {
     const key = variant ? `${product.id}-v${variant.id}` : `${product.id}`;
     const preorder = product.status === 'pre_order';
@@ -174,11 +172,12 @@ export default function POSPage() {
         name: nameOf(product),
         variant: variant ? [variant.color, variant.size].filter(Boolean).join(' / ') : '',
         sku: product.sku + (variant?.sku_suffix || ''),
-        prices: {
-          retail: Number(product.selling_price_lak) || 0,
-          wholesale: Number(product.wholesale_price_lak) || 0,
-          member: Number(product.member_price_lak) || 0,
+        // Everything the price depends on (customer type, and quantity steps for small items).
+        pricing: {
+          selling_price_lak: product.selling_price_lak, wholesale_price_lak: product.wholesale_price_lak,
+          member_price_lak: product.member_price_lak, product_type: product.product_type, price_tiers: product.price_tiers,
         },
+        unitLabel: product.unit_label || '',
         quantity: 1,
         max,
       }];
@@ -217,7 +216,9 @@ export default function POSPage() {
     }
   }
 
-  const lines = cart.map(i => ({ ...i, unit: priceOf(i.prices) }));
+  // Small items get cheaper per unit as the product's whole quantity in the cart grows.
+  const qtyOf = qtyByProduct(cart);
+  const lines = cart.map(i => ({ ...i, unit: unitPrice(i.pricing, qtyOf[i.product_id], customerType), next: nextStep(i.pricing, qtyOf[i.product_id]), totalQty: qtyOf[i.product_id] }));
   const subtotal = lines.reduce((s, i) => s + i.unit * i.quantity, 0);
   const couponOff = coupon ? coupon.discount : 0;
   const total = Math.max(0, subtotal - (Number(discount) || 0) - couponOff);
@@ -394,7 +395,13 @@ export default function POSPage() {
                     <p className="text-xs text-slate-500 mt-0.5">
                       {i.variant && <span>{i.variant} </span>}
                       <span className="num">{formatCurrency(i.unit, 'LAK')}</span>
+                      {isSmall(i.pricing) && <span>/{i.unitLabel || c.unit}</span>}
                     </p>
+                    {i.next && (
+                      <p className="mt-0.5 text-xs font-semibold text-primary">
+                        {c.more(i.next.min_qty - i.totalQty, i.unitLabel || c.unit, formatCurrency(i.next.price, 'LAK'))}
+                      </p>
+                    )}
                   </div>
                   <p className="font-bold text-ink num text-[0.92rem] shrink-0">{formatCurrency(i.unit * i.quantity, 'LAK')}</p>
                 </div>
@@ -403,7 +410,10 @@ export default function POSPage() {
                     <button onClick={() => setQty(i.key, i.quantity - 1)} aria-label="−1" className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-canvas rounded-l-lg">
                       <Icon name="minus" className="w-4 h-4" strokeWidth={2} />
                     </button>
-                    <span className="w-9 text-center text-sm font-bold num">{i.quantity}</span>
+                    <input type="number" min="1" inputMode="numeric" aria-label={c.qty || 'Qty'} value={i.quantity}
+                      onChange={e => { const n = parseInt(e.target.value); if (n > 0) setQty(i.key, n); }}
+                      onFocus={e => e.target.select()}
+                      className="w-12 h-8 text-center text-sm font-bold num bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/30 rounded [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
                     <button onClick={() => setQty(i.key, i.quantity + 1)} disabled={i.quantity >= i.max} aria-label="+1"
                       className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-canvas rounded-r-lg disabled:opacity-30">
                       <Icon name="plus" className="w-4 h-4" strokeWidth={2} />
@@ -501,11 +511,14 @@ export default function POSPage() {
                     <div className="p-3">
                       <p className="text-[0.88rem] font-semibold text-ink leading-snug line-clamp-2 min-h-[2.5em]">{nameOf(p)}</p>
                       <div className="mt-2 flex items-baseline justify-between gap-2">
-                        <span className="font-extrabold text-primary num">{formatCurrency(priceOf({
-                          retail: Number(p.selling_price_lak) || 0,
-                          wholesale: Number(p.wholesale_price_lak) || 0,
-                          member: Number(p.member_price_lak) || 0,
-                        }), 'LAK')}</span>
+                        <span className="min-w-0">
+                          <span className="font-extrabold text-primary num">{formatCurrency(unitPrice(p, 1, customerType), 'LAK')}</span>
+                          {isSmall(p) && <span className="block text-xs text-slate-500 truncate">{c.per(p.unit_label || c.unit)}</span>}
+                          {isSmall(p) && cleanSteps(p.price_tiers).length > 0 && (() => {
+                            const last = cleanSteps(p.price_tiers).slice(-1)[0];
+                            return <span className="block text-[0.7rem] font-semibold text-success num">{c.from(last.min_qty, formatCurrency(last.price, 'LAK'))}</span>;
+                          })()}
+                        </span>
                         {!preorder && (
                           <span className={`text-xs num shrink-0 ${soldOut ? 'text-danger font-semibold' : stock <= 5 ? 'text-warning font-semibold' : 'text-slate-400'}`}>
                             {soldOut ? c.out : c.left(stock)}
@@ -543,25 +556,29 @@ export default function POSPage() {
 
       <Modal open={!!variantPicker} onClose={() => setVariantPicker(null)} title={variantPicker ? nameOf(variantPicker) : ''} description={c.pick}>
         {variantPicker && (() => {
-          const label1 = variantPicker.variant_label_1 || t('color', lang);
-          const label2 = variantPicker.variant_label_2 || t('size', lang);
+          // 'color' / 'size' are the stored defaults; show them in the shop's language.
+          const nice = (v, key) => (!v || v === key ? t(key, lang) : v);
+          const label1 = nice(variantPicker.variant_label_1, 'color');
+          const label2 = nice(variantPicker.variant_label_2, 'size');
+          // Options with only one level (colour, no size): one row of buttons named by colour.
+          const oneLevel = (variantPicker.variants || []).every(v => !v.size);
           const groups = {};
-          for (const v of variantPicker.variants || []) (groups[v.color || '-'] ||= []).push(v);
+          for (const v of variantPicker.variants || []) (groups[oneLevel ? '' : v.color || '-'] ||= []).push(v);
           return (
             <div className="space-y-5">
               {Object.entries(groups).map(([color, vs]) => (
-                <div key={color}>
-                  <p className="text-sm text-slate-500 mb-2">{label1}: <span className="font-semibold text-ink">{color}</span></p>
+                <div key={color || 'all'}>
+                  <p className="text-sm text-slate-500 mb-2">{label1}{!oneLevel && <>: <span className="font-semibold text-ink">{color}</span></>}</p>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {vs.map(v => {
                       const none = variantPicker.status !== 'pre_order' && (Number(v.quantity) || 0) <= 0;
                       return (
                         <button key={v.id} disabled={none} onClick={() => addToCart(variantPicker, v)}
-                          aria-label={`${label2} ${v.size || '-'}`}
+                          aria-label={oneLevel ? `${label1} ${v.color || '-'}` : `${label2} ${v.size || '-'}`}
                           className={`rounded-xl border px-2 py-3 text-center transition-colors ${
                             none ? 'border-line bg-canvas opacity-50 cursor-not-allowed' : 'border-line hover:border-gold hover:bg-gold-soft'
                           }`}>
-                          <span className="block font-bold text-ink">{v.size || '-'}</span>
+                          <span className="block font-bold text-ink break-words">{oneLevel ? v.color || '-' : v.size || '-'}</span>
                           <span className={`block text-xs mt-0.5 num ${none ? 'text-danger' : 'text-slate-500'}`}>
                             {none ? c.out : c.left(v.quantity)}
                           </span>

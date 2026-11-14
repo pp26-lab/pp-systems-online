@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query, queryOne } from '../../../lib/db';
 import { requireShopId } from '../../../lib/auth';
+import { PRODUCT_TYPES, cleanSteps } from '../../../lib/pricing';
 import { logStockMovement } from '../../../lib/stock-log';
 
 export const dynamic = 'force-dynamic';
@@ -60,6 +61,15 @@ export async function GET(request) {
   }
 
   return NextResponse.json(products);
+}
+
+// Product type, counting unit and quantity price steps (only kept for small-item products).
+async function savePricingKind(body, id, shopId) {
+  const type = PRODUCT_TYPES.includes(body.product_type) ? body.product_type : 'standard';
+  const unit = String(body.unit_label || '').trim().slice(0, 50);
+  const steps = type === 'small' ? cleanSteps(body.price_tiers) : [];
+  await query('UPDATE products SET product_type = ?, unit_label = ?, price_tiers = ? WHERE id = ? AND shop_id = ?',
+    [type, unit, steps.length ? JSON.stringify(steps) : null, id, shopId]);
 }
 
 // SKU is unique per shop; blank SKUs would collide, so generate one.
@@ -122,6 +132,7 @@ export async function POST(request) {
     );
   }
 
+  await savePricingKind(body, productId, shopId);
   return NextResponse.json({ id: productId }, { status: 201 });
 }
 
@@ -167,6 +178,7 @@ export async function PUT(request) {
     'UPDATE products SET wholesale_price_lak = ?, member_price_lak = ?, category_id = ? WHERE id = ? AND shop_id = ?',
     [parseFloat(body.wholesale_price_lak) || 0, parseFloat(body.member_price_lak) || 0, body.category_id || null, body.id, shopId]
   );
+  await savePricingKind(body, body.id, shopId);
 
   return NextResponse.json({ success: true });
 }
