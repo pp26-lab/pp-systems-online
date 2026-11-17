@@ -24,7 +24,7 @@ const COPY = {
     customer: 'ລູກຄ້າ', link: 'ຜູກກັບລູກຄ້າທີ່ມີຢູ່', create: 'ບັນທຶກເປັນລູກຄ້າໃໝ່', unlink: 'ຍົກເລີກການຜູກ', suggest: 'ລູກຄ້າທີ່ເບີໂທກົງກັນ', pickCustomer: 'ເລືອກລູກຄ້າ',
     spent: 'ຍອດຊື້ລວມ', orders: 'ບິນ', avg: 'ສະເລ່ຍ', bought: 'ສິນຄ້າທີ່ເຄີຍຊື້', sendProduct: 'ກົດເພື່ອສົ່ງສິນຄ້ານີ້ໃຫ້ລູກຄ້າ', recent: 'ອໍເດີ້ຫຼ້າສຸດ',
     openProfile: 'ເປີດໜ້າລູກຄ້າ', blacklisted: 'ລູກຄ້ານີ້ຢູ່ໃນບັນຊີດຳ', vip: 'VIP', regular: 'ລູກຄ້າປະຈຳ', newC: 'ລູກຄ້າໃໝ່',
-    errors: { voice_failed: 'ແປງສຽງບໍ່ສຳເລັດ ລອງອັດໃໝ່', window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
+    errors: { human_agent_not_approved: 'ລູກຄ້າທັກມາເກີນ 24 ຊົ່ວໂມງ ແລະ Facebook ຍັງບໍ່ອະນຸມັດໃຫ້ຕອບຫຼັງ 24 ຊົ່ວໂມງ ລໍຖ້າລູກຄ້າທັກມາໃໝ່', user_unavailable: 'ລູກຄ້າຮັບຂໍ້ຄວາມບໍ່ໄດ້ (ອາດບລັອກເພຈ ຫຼື ປິດບັນຊີ)', no_permission: 'Facebook ຍັງບໍ່ອະນຸຍາດໃຫ້ແອັບສົ່ງຫາລູກຄ້າຄົນນີ້', token_expired: 'ການເຊື່ອມຕໍ່ເພຈໝົດອາຍຸ ໃຫ້ແອັດມິນປ່ຽນ token ໃໝ່', voice_failed: 'ແປງສຽງບໍ່ສຳເລັດ ລອງອັດໃໝ່', window_closed: 'ໝົດເວລາຕອບ 24 ຊົ່ວໂມງແລ້ວ', feature_disabled: 'ຮ້ານນີ້ຍັງບໍ່ໄດ້ເປີດໃຊ້ຊ່ອງທາງນີ້', channel_disabled: 'ຊ່ອງທາງນີ້ຖືກຢຸດຊົ່ວຄາວ', unsupported_type: 'ສົ່ງໄຟລ໌ປະເພດນີ້ບໍ່ໄດ້', file_too_large: 'ໄຟລ໌ໃຫຍ່ເກີນ 16MB', send_failed: 'ສົ່ງບໍ່ສຳເລັດ', not_reply: 'ລູກຄ້າຕ້ອງທັກມາກ່ອນ', not_connected: 'ເບີ WhatsApp ນີ້ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່', rate_limited: 'ສົ່ງໄວເກີນໄປ ລໍຖ້າບຶດໜຶ່ງ', daily_limit: 'ສົ່ງຄົບຈຳນວນຂອງມື້ນີ້ແລ້ວ' },
     replyOnly: 'ລໍຖ້າລູກຄ້າທັກມາກ່ອນ', replyOnlyText: 'ເພື່ອບໍ່ໃຫ້ເບີຖືກແບນ ລະບົບຕອບໄດ້ສະເພາະລູກຄ້າທີ່ທັກມາກ່ອນ',
     status: { pending: 'ລໍຖ້າຈັດສົ່ງ', shipping: 'ກຳລັງຈັດສົ່ງ', completed: 'ສຳເລັດ', cancelled: 'ຍົກເລີກ' }, details: 'ຂໍ້ມູນລູກຄ້າ', back: 'ກັບ',
     saveAs: 'ບັນທຶກເປັນ:', saveInfo: 'ບັນທຶກເປັນຂໍ້ມູນລູກຄ້າ', asName: 'ຊື່', asPhone: 'ເບີໂທ', asAddress: 'ທີ່ຢູ່', noPhone: 'ບໍ່ພົບເບີໂທໃນຂໍ້ຄວາມນີ້', saveFailed: 'ບັນທຶກບໍ່ສຳເລັດ',
@@ -44,7 +44,7 @@ const COPY = {
     customer: 'ลูกค้า', link: 'ผูกกับลูกค้าที่มีอยู่', create: 'บันทึกเป็นลูกค้าใหม่', unlink: 'ยกเลิกการผูก', suggest: 'ลูกค้าที่เบอร์ตรงกัน', pickCustomer: 'เลือกลูกค้า',
     spent: 'ยอดซื้อรวม', orders: 'บิล', avg: 'เฉลี่ย', bought: 'สินค้าที่เคยซื้อ', sendProduct: 'กดเพื่อส่งสินค้านี้ให้ลูกค้า', recent: 'ออเดอร์ล่าสุด',
     openProfile: 'เปิดหน้าลูกค้า', blacklisted: 'ลูกค้านี้อยู่ในบัญชีดำ', vip: 'VIP', regular: 'ลูกค้าประจำ', newC: 'ลูกค้าใหม่',
-    errors: { voice_failed: 'แปลงเสียงไม่สำเร็จ ลองอัดใหม่', window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
+    errors: { human_agent_not_approved: 'ลูกค้าทักมาเกิน 24 ชั่วโมง และ Facebook ยังไม่อนุมัติให้ตอบหลัง 24 ชั่วโมง รอลูกค้าทักมาใหม่', user_unavailable: 'ลูกค้ารับข้อความไม่ได้ (อาจบล็อกเพจหรือปิดบัญชี)', no_permission: 'Facebook ยังไม่อนุญาตให้แอปส่งหาลูกค้าคนนี้', token_expired: 'การเชื่อมต่อเพจหมดอายุ ให้แอดมินเปลี่ยน token ใหม่', voice_failed: 'แปลงเสียงไม่สำเร็จ ลองอัดใหม่', window_closed: 'หมดเวลาตอบ 24 ชั่วโมงแล้ว', feature_disabled: 'ร้านนี้ยังไม่ได้เปิดใช้ช่องทางนี้', channel_disabled: 'ช่องทางนี้ถูกหยุดชั่วคราว', unsupported_type: 'ส่งไฟล์ประเภทนี้ไม่ได้', file_too_large: 'ไฟล์ใหญ่เกิน 16MB', send_failed: 'ส่งไม่สำเร็จ', not_reply: 'ลูกค้าต้องทักมาก่อน', not_connected: 'เบอร์ WhatsApp นี้ยังไม่ได้เชื่อมต่อ', rate_limited: 'ส่งเร็วเกินไป รอสักครู่', daily_limit: 'ส่งครบจำนวนของวันนี้แล้ว' },
     replyOnly: 'รอลูกค้าทักมาก่อน', replyOnlyText: 'เพื่อไม่ให้เบอร์ถูกแบน ระบบตอบได้เฉพาะลูกค้าที่ทักมาก่อน',
     status: { pending: 'รอจัดส่ง', shipping: 'กำลังจัดส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' }, details: 'ข้อมูลลูกค้า', back: 'กลับ',
     saveAs: 'บันทึกเป็น:', saveInfo: 'บันทึกเป็นข้อมูลลูกค้า', asName: 'ชื่อ', asPhone: 'เบอร์โทร', asAddress: 'ที่อยู่', noPhone: 'ไม่พบเบอร์โทรในข้อความนี้', saveFailed: 'บันทึกไม่สำเร็จ',
@@ -64,7 +64,7 @@ const COPY = {
     customer: 'Customer', link: 'Link to existing customer', create: 'Save as new customer', unlink: 'Unlink', suggest: 'Customers with this phone', pickCustomer: 'Choose customer',
     spent: 'Lifetime', orders: 'Orders', avg: 'Average', bought: 'Bought before', sendProduct: 'Tap to send this product', recent: 'Recent orders',
     openProfile: 'Open customer page', blacklisted: 'This customer is blacklisted', vip: 'VIP', regular: 'Regular', newC: 'New customer',
-    errors: { voice_failed: "Couldn't prepare the voice message. Record it again.", window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
+    errors: { human_agent_not_approved: 'The customer wrote over 24 hours ago and Facebook has not yet approved replies after 24 hours. Wait for them to write again.', user_unavailable: "The customer can't receive messages (they may have blocked the page or closed their account)", no_permission: "Facebook doesn't allow the app to message this customer yet", token_expired: 'The page connection has expired; the admin needs to renew the token', voice_failed: "Couldn't prepare the voice message. Record it again.", window_closed: 'The 24-hour window has closed', feature_disabled: 'This channel is not enabled', channel_disabled: 'This channel is paused', unsupported_type: "This file type can't be sent", file_too_large: 'File is over 16MB', send_failed: "Couldn't send", not_reply: 'The customer has to message first', not_connected: 'This WhatsApp number is not connected', rate_limited: 'Sending too fast, wait a moment', daily_limit: "Today's sending limit is reached" },
     replyOnly: 'Waiting for the customer to write first', replyOnlyText: 'To keep the number from being banned, the system only replies to customers who wrote first.',
     status: { pending: 'To ship', shipping: 'Shipped', completed: 'Completed', cancelled: 'Cancelled' }, details: 'Customer details', back: 'Back',
     saveAs: 'Save as:', saveInfo: 'Save as customer details', asName: 'Name', asPhone: 'Phone', asAddress: 'Address', noPhone: 'No phone number in this message', saveFailed: "Couldn't save",
@@ -776,7 +776,7 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip, tagOpen, onTagToggle
           {out && m.status !== 'failed' && <span title={c[m.status]} className={m.status === 'read' ? 'text-success font-bold' : ''}>{TICKS[m.status]}</span>}
           {out && m.status === 'failed' && (
             <span className="text-danger font-semibold" title={m.error || ''}>
-              {c.failed}{c.errors[m.error] ? ` (${c.errors[m.error]})` : ''} <button onClick={() => onRetry(m)} className="underline ml-1">{c.retry}</button>
+              {c.failed} <button onClick={() => onRetry(m)} className="underline ml-1">{c.retry}</button>
             </span>
           )}
           {!out && isImg && (
@@ -785,6 +785,12 @@ function Bubble({ m, c, locale, onRetry, onPreview, onSlip, tagOpen, onTagToggle
             </button>
           )}
         </div>
+        {out && m.status === 'failed' && m.error && (() => {
+          // Stored as "code: Meta's words"; show the code in plain language, else Meta's words.
+          const code = String(m.error).split(':')[0].trim();
+          const text = c.errors[code] || String(m.error).replace(/^[a-z_]+:\s*/, '');
+          return <p className="max-w-[20rem] px-1 text-[0.7rem] leading-snug text-danger text-right">{text}</p>;
+        })()}
       </div>
     </div>
   );
