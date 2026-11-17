@@ -652,7 +652,7 @@ function Thread({ id, summary, c, lang, locale, view, setView, onChanged }) {
           {conv && !canSend && (
             <div className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-danger">
               <p className="font-semibold">{win.replyOnly ? c.replyOnly : c.windowClosed}</p>
-              <p className="text-xs">{win.replyOnly ? c.replyOnlyText : c.windowClosedText}</p>
+              <p className="text-xs">{win.replyOnly ? c.replyOnlyText : win.humanAgentDenied ? c.errors.human_agent_not_approved : c.windowClosedText}</p>
             </div>
           )}
           {error && <p role="alert" className="mb-2 text-sm text-danger">{error}</p>}
